@@ -1,14 +1,17 @@
-import { useState, type ReactNode } from "react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { useState, useEffect, type ReactNode } from "react";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard, ScanLine, History, User, Settings, BookOpen, LifeBuoy,
-  Bell, Search, ChevronLeft, ChevronRight, LogOut,
+  Bell, Search, ChevronLeft, ChevronRight, LogOut, MessageSquare, Salad,
 } from "lucide-react";
 import { Logo } from "@/components/landing/Logo";
+import { useAuth } from "@/lib/auth-context";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
   { to: "/analyze", label: "New Analysis", icon: ScanLine },
+  { to: "/chat", label: "Health Chat", icon: MessageSquare },
+  { to: "/diet", label: "Diet Planner", icon: Salad },
   { to: "/history", label: "History", icon: History },
   { to: "/profile", label: "Profile", icon: User },
   { to: "/settings", label: "Settings", icon: Settings },
@@ -22,6 +25,24 @@ const secondaryNav = [
 export function AppShell({ children, title }: { children: ReactNode; title: string }) {
   const [collapsed, setCollapsed] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const navigate = useNavigate();
+
+  // Auth guard — redirect to login if not authenticated
+  useEffect(() => {
+    if (!isLoading && !isAuthenticated) {
+      navigate({ to: "/auth/login" });
+    }
+  }, [isLoading, isAuthenticated, navigate]);
+
+  const initials = user?.full_name
+    ? user.full_name.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase()
+    : "??";
+
+  const handleLogout = () => {
+    logout();
+    navigate({ to: "/" });
+  };
 
   return (
     <div className="relative min-h-screen bg-background text-foreground">
@@ -134,19 +155,18 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
                 className="relative flex h-10 w-10 items-center justify-center rounded-md border border-border bg-card/60 text-muted-foreground hover:border-primary/60 hover:text-foreground"
               >
                 <Bell size={16} />
-                <span className="absolute right-2 top-2 h-2 w-2 rounded-full bg-destructive shadow-[0_0_8px_rgba(255,71,87,0.8)]" />
               </button>
               <div className="flex items-center gap-3 rounded-md border border-border bg-card/60 px-2 py-1.5">
                 <div className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/20 font-mono text-xs font-semibold text-primary">
-                  DR
+                  {initials}
                 </div>
                 <div className="hidden sm:block">
-                  <div className="text-xs font-semibold leading-tight">Dr. Reyes</div>
-                  <div className="text-[10px] leading-tight text-muted-foreground">Radiologist</div>
+                  <div className="text-xs font-semibold leading-tight">{user?.full_name || "User"}</div>
+                  <div className="text-[10px] leading-tight text-muted-foreground">{user?.role || "Radiologist"}</div>
                 </div>
-                <Link to="/" aria-label="Sign out" className="text-muted-foreground hover:text-foreground">
+                <button onClick={handleLogout} aria-label="Sign out" className="text-muted-foreground hover:text-foreground">
                   <LogOut size={14} />
-                </Link>
+                </button>
               </div>
             </div>
           </header>

@@ -1,36 +1,17 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
-import { Search, Calendar, UploadCloud, ScanLine, FileImage } from "lucide-react";
+import { Search, Calendar, UploadCloud, ScanLine, FileImage, Loader2 } from "lucide-react";
 import { AppShell } from "@/components/app/AppShell";
+import { useScans } from "@/hooks/use-scans";
+import type { ScanListItem } from "@/lib/types";
 
 export const Route = createFileRoute("/history")({
   head: () => ({ meta: [{ title: "History — XRayVision AI" }] }),
   component: HistoryPage,
 });
 
-type Scan = {
-  id: string;
-  type: "chest" | "fracture" | "wound";
-  date: string;
-  session: string;
-  urgency: "critical" | "high" | "medium" | "low" | "clear";
-  findings: number;
-};
-
-const scans: Scan[] = [
-  { id: "scan_2026_05_21_03", type: "chest", date: "May 21, 09:42", session: "PT-4821", urgency: "high", findings: 3 },
-  { id: "scan_2026_05_21_02", type: "fracture", date: "May 21, 08:55", session: "PT-4820", urgency: "medium", findings: 1 },
-  { id: "scan_2026_05_21_01", type: "wound", date: "May 21, 07:18", session: "PT-4819", urgency: "low", findings: 2 },
-  { id: "scan_2026_05_20_18", type: "chest", date: "May 20, 18:42", session: "PT-4818", urgency: "clear", findings: 0 },
-  { id: "scan_2026_05_20_17", type: "chest", date: "May 20, 15:11", session: "PT-4817", urgency: "critical", findings: 4 },
-  { id: "scan_2026_05_20_12", type: "fracture", date: "May 20, 12:36", session: "PT-4816", urgency: "high", findings: 2 },
-  { id: "scan_2026_05_19_22", type: "wound", date: "May 19, 22:05", session: "PT-4815", urgency: "low", findings: 1 },
-  { id: "scan_2026_05_19_14", type: "chest", date: "May 19, 14:27", session: "PT-4814", urgency: "medium", findings: 2 },
-  { id: "scan_2026_05_19_09", type: "chest", date: "May 19, 09:03", session: "PT-4813", urgency: "clear", findings: 0 },
-];
-
 const filters = ["All", "Chest", "Fracture", "Wound"] as const;
-const urgencyStyle: Record<Scan["urgency"], string> = {
+const urgencyStyle: Record<string, string> = {
   critical: "bg-destructive/15 text-destructive border-destructive/30",
   high: "bg-warning/15 text-warning border-warning/30",
   medium: "bg-info/15 text-info border-info/30",
@@ -42,9 +23,11 @@ function HistoryPage() {
   const [filter, setFilter] = useState<typeof filters[number]>("All");
   const [query, setQuery] = useState("");
 
-  const filtered = scans.filter((s) => {
-    if (filter !== "All" && s.type !== filter.toLowerCase()) return false;
-    if (query && !s.id.includes(query) && !s.session.toLowerCase().includes(query.toLowerCase())) return false;
+  const scanType = filter === "All" ? undefined : filter.toLowerCase();
+  const { data, isLoading } = useScans({ scan_type: scanType, limit: 50 });
+
+  const scans = (data?.scans ?? []).filter((s) => {
+    if (query && !s.id.includes(query) && !(s.session_label || "").toLowerCase().includes(query.toLowerCase())) return false;
     return true;
   });
 
@@ -82,22 +65,18 @@ function HistoryPage() {
             </button>
           ))}
         </div>
-        <button className="inline-flex items-center gap-1.5 rounded-md border border-border bg-background/60 px-3 py-2 text-xs text-muted-foreground hover:text-foreground">
-          <Calendar size={12} /> Date range
-        </button>
-        <select className="rounded-md border border-border bg-background/60 px-3 py-2 text-xs text-foreground focus:border-primary focus:outline-none">
-          <option>Newest first</option>
-          <option>Oldest first</option>
-          <option>Highest urgency</option>
-        </select>
       </div>
 
       {/* Grid */}
-      {filtered.length === 0 ? (
+      {isLoading ? (
+        <div className="mt-12 flex items-center justify-center">
+          <Loader2 size={28} className="animate-spin text-primary" />
+        </div>
+      ) : scans.length === 0 ? (
         <EmptyState />
       ) : (
         <div className="mt-6 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-          {filtered.map((s, i) => (
+          {scans.map((s, i) => (
             <Link
               key={s.id}
               to="/results/$scanId"
@@ -106,23 +85,27 @@ function HistoryPage() {
               style={{ animationDelay: `${i * 40}ms`, background: "var(--gradient-card)" }}
             >
               <div className="relative flex h-40 items-center justify-center overflow-hidden bg-black">
-                <FileImage size={36} className="text-muted-foreground/40" />
+                {s.image_url ? (
+                  <img src={s.image_url} alt={`Scan ${s.id}`} className="h-full w-full object-cover opacity-60" />
+                ) : (
+                  <FileImage size={36} className="text-muted-foreground/40" />
+                )}
                 <div className="pointer-events-none absolute inset-0 grid-bg opacity-30" />
-                <span className={`absolute right-3 top-3 rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${urgencyStyle[s.urgency]}`}>
+                <span className={`absolute right-3 top-3 rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${urgencyStyle[s.urgency] || urgencyStyle.clear}`}>
                   {s.urgency}
                 </span>
               </div>
               <div className="p-4">
                 <div className="flex items-center justify-between">
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">
-                    {s.type}
+                    {s.scan_type}
                   </span>
-                  <span className="font-mono text-[10px] text-muted-foreground">{s.findings} findings</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">{s.findings_count} findings</span>
                 </div>
-                <p className="mt-2 truncate font-mono text-xs text-muted-foreground">{s.id}</p>
+                <p className="mt-2 truncate font-mono text-xs text-muted-foreground">{s.id.slice(0, 16)}…</p>
                 <div className="mt-1 flex items-center justify-between text-xs">
-                  <span className="font-medium">{s.session}</span>
-                  <span className="text-muted-foreground">{s.date}</span>
+                  <span className="font-medium">{s.session_label || "—"}</span>
+                  <span className="text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</span>
                 </div>
                 <div className="mt-4 flex items-center justify-between text-xs">
                   <span className="text-primary opacity-0 transition-opacity group-hover:opacity-100">View report →</span>

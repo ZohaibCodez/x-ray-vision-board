@@ -1,8 +1,9 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
-import { useState, useCallback, useRef, useEffect } from "react";
-import { UploadCloud, FileImage, X, Loader2, ScanLine, Stethoscope, Bone, Activity, CheckCircle2, Circle } from "lucide-react";
+import { useState, useCallback, useRef } from "react";
+import { UploadCloud, FileImage, X, Loader2, ScanLine, Stethoscope, Bone, Activity, CheckCircle2, Circle, AlertTriangle } from "lucide-react";
 import { AppShell } from "@/components/app/AppShell";
 import { Field } from "@/components/ui-x/Field";
+import { useAnalyze } from "@/hooks/use-analyze";
 
 export const Route = createFileRoute("/analyze")({
   head: () => ({ meta: [{ title: "New Analysis — XRayVision AI" }] }),
@@ -19,9 +20,11 @@ function AnalyzePage() {
   const [file, setFile] = useState<File | null>(null);
   const [drag, setDrag] = useState(false);
   const [type, setType] = useState<(typeof types)[number]["id"]>("chest");
-  const [processing, setProcessing] = useState(false);
+  const [label, setLabel] = useState("");
+  const [notes, setNotes] = useState("");
   const navigate = useNavigate();
   const inputRef = useRef<HTMLInputElement>(null);
+  const analyzeMutation = useAnalyze();
 
   const onDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -35,10 +38,37 @@ function AnalyzePage() {
   const onSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!file) return;
-    setProcessing(true);
+
+    analyzeMutation.mutate(
+      { file, scanType: type, sessionLabel: label || undefined, notes: notes || undefined },
+      {
+        onSuccess: (result) => {
+          navigate({ to: "/results/$scanId", params: { scanId: result.id } });
+        },
+      },
+    );
   };
 
-  if (processing) return <Processing onDone={() => navigate({ to: "/results/$scanId", params: { scanId: "demo-001" } })} />;
+  if (analyzeMutation.isPending) return <Processing />;
+  if (analyzeMutation.isError) {
+    return (
+      <AppShell title="Analysis Error">
+        <div className="mx-auto max-w-3xl text-center">
+          <div className="flex h-16 w-16 mx-auto items-center justify-center rounded-full bg-destructive/10 text-destructive">
+            <AlertTriangle size={28} />
+          </div>
+          <h2 className="mt-4 font-display text-2xl font-bold">Analysis Failed</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{analyzeMutation.error.message}</p>
+          <button
+            onClick={() => analyzeMutation.reset()}
+            className="mt-6 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:shadow-[var(--glow-cyan)]"
+          >
+            Try Again
+          </button>
+        </div>
+      </AppShell>
+    );
+  }
 
   return (
     <AppShell title="New Analysis">
@@ -135,8 +165,8 @@ function AnalyzePage() {
           </div>
 
           <div className="grid gap-4 sm:grid-cols-2">
-            <Field label="Patient / Session Label (optional)" name="label" placeholder="PT-4821" />
-            <Field label="Notes for AI Agent (optional)" name="notes" placeholder="Patient reports chest tightness…" />
+            <Field label="Patient / Session Label (optional)" name="label" placeholder="PT-4821" value={label} onChange={(e) => setLabel(e.target.value)} />
+            <Field label="Notes for AI Agent (optional)" name="notes" placeholder="Patient reports chest tightness…" value={notes} onChange={(e) => setNotes(e.target.value)} />
           </div>
 
           {/* Step 3 — Submit */}
@@ -161,33 +191,14 @@ const processingSteps = [
   "Synthesizing report with Gemini 1.5 Flash",
 ];
 
-function Processing({ onDone }: { onDone: () => void }) {
-  const [step, setStep] = useState(0);
-  const [pct, setPct] = useState(0);
-
-  useEffect(() => {
-    const id = setInterval(() => {
-      setPct((p) => {
-        const np = Math.min(100, p + 2);
-        const s = Math.min(processingSteps.length - 1, Math.floor((np / 100) * processingSteps.length));
-        setStep(s);
-        if (np >= 100) {
-          clearInterval(id);
-          setTimeout(onDone, 400);
-        }
-        return np;
-      });
-    }, 90);
-    return () => clearInterval(id);
-  }, [onDone]);
-
+function Processing() {
   return (
     <AppShell title="Processing">
       <div className="mx-auto max-w-3xl">
         <header className="mb-8 text-center">
           <p className="font-mono text-[11px] uppercase tracking-widest text-primary">Analyzing</p>
           <h2 className="mt-1 font-display text-3xl font-bold">AI models are processing your scan</h2>
-          <p className="mt-1.5 text-sm text-muted-foreground">Estimated time remaining · {Math.max(1, Math.ceil((100 - pct) / 12))}s</p>
+          <p className="mt-1.5 text-sm text-muted-foreground">This may take 10–30 seconds depending on model load time…</p>
         </header>
 
         <div className="relative overflow-hidden rounded-2xl border border-border bg-black aspect-video" style={{ boxShadow: "var(--glow-cyan)" }}>
@@ -200,33 +211,13 @@ function Processing({ onDone }: { onDone: () => void }) {
           </div>
         </div>
 
-        <div className="mt-6">
-          <div className="flex items-center justify-between font-mono text-xs">
-            <span className="text-muted-foreground">Progress</span>
-            <span className="text-primary">{pct}%</span>
-          </div>
-          <div className="mt-2 h-2 overflow-hidden rounded-full bg-border">
-            <div className="h-full rounded-full bg-primary transition-[width] duration-200" style={{ width: `${pct}%`, boxShadow: "0 0 8px rgba(0,200,224,0.6)" }} />
-          </div>
-        </div>
-
         <ul className="mt-6 space-y-3" aria-live="polite">
-          {processingSteps.map((s, i) => {
-            const done = i < step || pct === 100;
-            const active = i === step && pct < 100;
-            return (
-              <li key={s} className="flex items-center gap-3 rounded-lg border border-border bg-card/60 px-4 py-3 text-sm">
-                {done ? (
-                  <CheckCircle2 size={16} className="shrink-0 text-success" />
-                ) : active ? (
-                  <Loader2 size={16} className="shrink-0 animate-spin text-primary" />
-                ) : (
-                  <Circle size={16} className="shrink-0 text-muted-foreground/50" />
-                )}
-                <span className={done || active ? "text-foreground" : "text-muted-foreground"}>{s}</span>
-              </li>
-            );
-          })}
+          {processingSteps.map((s) => (
+            <li key={s} className="flex items-center gap-3 rounded-lg border border-border bg-card/60 px-4 py-3 text-sm">
+              <Loader2 size={16} className="shrink-0 animate-spin text-primary" />
+              <span className="text-foreground">{s}</span>
+            </li>
+          ))}
         </ul>
       </div>
     </AppShell>

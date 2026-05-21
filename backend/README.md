@@ -1,0 +1,51 @@
+# XRayVision AI — Backend
+
+Advanced medical diagnostic API using a Hybrid Multi-Model Ensemble.
+
+## Quick Start
+
+```bash
+# 1. Create virtual environment
+python -m venv venv
+venv\Scripts\activate  # Windows
+# source venv/bin/activate  # Mac/Linux
+
+# 2. Install dependencies
+pip install -r requirements.txt
+
+# 3. Copy environment variables
+copy .env.example .env
+# Edit .env with your Supabase URL, keys, and Gemini API key
+
+# 4. Run the server
+uvicorn app.main:app --reload --port 8000
+```
+
+## API Documentation
+
+Once running, visit:
+- **Swagger UI**: http://localhost:8000/docs
+- **ReDoc**: http://localhost:8000/redoc
+
+## Models
+
+| Model | Task | Input | Output |
+|-------|------|-------|--------|
+| TorchXRayVision DenseNet121 | Chest Pathology | 224×224 grayscale | 18 pathology probabilities |
+| YOLOv8 | Fracture Detection | Any size RGB | Bounding boxes + confidence |
+| ViT (google/vit-base-patch16-224) | Wound Classification | 224×224 RGB | Classification labels |
+| Gemini 1.5 Flash | Agentic Synthesis | Model outputs + notes | Structured diagnostic report |
+
+## Database Setup
+
+1. Create a Supabase project at https://supabase.com
+2. Run `supabase_schema.sql` in the SQL Editor
+3. Create a storage bucket named `xray-images` (private)
+4. Copy the project URL and keys into `.env`
+
+## Docker Deployment (HF Spaces)
+
+```bash
+docker build -t xrayvision-backend .
+docker run -p 7860:7860 --env-file .env xrayvision-backend
+```

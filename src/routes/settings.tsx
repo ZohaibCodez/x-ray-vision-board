@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { Globe, Palette, Brain, Save } from "lucide-react";
+import { Save, Loader2 } from "lucide-react";
 import { AppShell } from "@/components/app/AppShell";
 
 export const Route = createFileRoute("/settings")({
@@ -9,84 +9,159 @@ export const Route = createFileRoute("/settings")({
 });
 
 function SettingsPage() {
-  const [lang, setLang] = useState("English (US)");
-  const [units, setUnits] = useState<"metric" | "imperial">("metric");
-  const [autoHeatmap, setAutoHeatmap] = useState(false);
-  const [threshold, setThreshold] = useState(60);
+  const [theme, setTheme] = useState("dark");
+  const [confidence, setConfidence] = useState("40");
+  const [notifications, setNotifications] = useState(true);
+  const [showBoxes, setShowBoxes] = useState(true);
+  const [showHeatmap, setShowHeatmap] = useState(true);
+  const [language, setLanguage] = useState("en");
+  const [saving, setSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+
+  const onSave = async () => {
+    setSaving(true);
+    // TODO: persist to user settings in Supabase
+    await new Promise((r) => setTimeout(r, 600));
+    setSaving(false);
+    setSaved(true);
+    setTimeout(() => setSaved(false), 2000);
+  };
 
   return (
     <AppShell title="Settings">
       <div className="mx-auto max-w-3xl space-y-6">
-        <Section title="Region & Language" icon={<Globe size={14} />}>
-          <Row label="Language">
-            <select value={lang} onChange={(e) => setLang(e.target.value)} className="rounded-md border border-border bg-background/60 px-3 py-2 text-sm focus:border-primary focus:outline-none">
-              <option>English (US)</option><option>English (UK)</option><option>Español</option><option>Français</option><option>Deutsch</option>
-            </select>
-          </Row>
-          <Row label="Units">
-            <div className="flex gap-1 rounded-md border border-border bg-background/60 p-1">
-              {(["metric", "imperial"] as const).map((u) => (
-                <button key={u} onClick={() => setUnits(u)} className={`rounded px-3 py-1.5 text-xs font-medium capitalize ${units === u ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}>
-                  {u}
+
+        {/* Appearance */}
+        <Section title="Appearance">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Theme</label>
+            <div className="flex gap-2">
+              {[
+                { id: "dark", label: "Dark" },
+                { id: "light", label: "Light" },
+                { id: "system", label: "System" },
+              ].map((t) => (
+                <button
+                  key={t.id}
+                  onClick={() => setTheme(t.id)}
+                  className={`rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
+                    theme === t.id
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background/60 text-muted-foreground hover:border-primary/40"
+                  }`}
+                >
+                  {t.label}
                 </button>
               ))}
             </div>
-          </Row>
-        </Section>
+          </div>
 
-        <Section title="Appearance" icon={<Palette size={14} />}>
-          <Row label="Theme">
-            <span className="rounded-md bg-primary/10 px-3 py-1.5 font-mono text-xs uppercase tracking-wider text-primary">Clinical Dark</span>
-          </Row>
-          <Row label="Reduced motion">
-            <span className="text-xs text-muted-foreground">Honors OS preference automatically</span>
-          </Row>
-        </Section>
-
-        <Section title="AI Behavior" icon={<Brain size={14} />}>
-          <Row label="Show heatmap by default">
-            <input type="checkbox" checked={autoHeatmap} onChange={(e) => setAutoHeatmap(e.target.checked)} className="h-4 w-4 accent-[--primary]" />
-          </Row>
-          <div className="border-t border-border py-4">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Low-confidence threshold</p>
-                <p className="mt-0.5 text-xs text-muted-foreground">Flag findings below this confidence</p>
-              </div>
-              <span className="font-mono text-sm text-primary">{threshold}%</span>
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Language</label>
+            <div className="flex gap-2">
+              {[
+                { id: "en", label: "English" },
+                { id: "ur", label: "اردو (Urdu)" },
+              ].map((l) => (
+                <button
+                  key={l.id}
+                  onClick={() => setLanguage(l.id)}
+                  className={`rounded-lg border px-4 py-2 text-sm font-medium transition-all ${
+                    language === l.id
+                      ? "border-primary bg-primary/10 text-primary"
+                      : "border-border bg-background/60 text-muted-foreground hover:border-primary/40"
+                  }`}
+                >
+                  {l.label}
+                </button>
+              ))}
             </div>
-            <input
-              type="range" min={30} max={90} value={threshold} onChange={(e) => setThreshold(Number(e.target.value))}
-              className="mt-3 w-full accent-[--primary]"
-            />
           </div>
         </Section>
 
-        <button className="inline-flex items-center gap-2 rounded-md bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground hover:shadow-[var(--glow-cyan)]">
-          <Save size={14} /> Save preferences
+        {/* Analysis */}
+        <Section title="Analysis Preferences">
+          <div>
+            <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">
+              Confidence Threshold: {confidence}%
+            </label>
+            <input
+              type="range"
+              min="10"
+              max="90"
+              step="5"
+              value={confidence}
+              onChange={(e) => setConfidence(e.target.value)}
+              className="w-full accent-[--primary]"
+            />
+            <div className="mt-1 flex justify-between font-mono text-[10px] text-muted-foreground">
+              <span>10% (more findings)</span>
+              <span>90% (fewer, high-confidence)</span>
+            </div>
+          </div>
+
+          <Toggle
+            label="Show AI detection boxes on images"
+            checked={showBoxes}
+            onChange={setShowBoxes}
+          />
+          <Toggle
+            label="Show confidence heatmap overlay"
+            checked={showHeatmap}
+            onChange={setShowHeatmap}
+          />
+        </Section>
+
+        {/* Notifications */}
+        <Section title="Notifications">
+          <Toggle
+            label="Email notifications for critical findings"
+            checked={notifications}
+            onChange={setNotifications}
+          />
+        </Section>
+
+        <button
+          onClick={onSave}
+          disabled={saving}
+          className="flex items-center gap-2 rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-primary-foreground hover:shadow-[var(--glow-cyan)] disabled:opacity-50"
+        >
+          {saving ? <Loader2 size={14} className="animate-spin" /> : <Save size={14} />}
+          {saved ? "Saved ✓" : "Save Settings"}
         </button>
       </div>
     </AppShell>
   );
 }
 
-function Section({ title, icon, children }: { title: string; icon: React.ReactNode; children: React.ReactNode }) {
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <section className="rounded-2xl border border-border bg-card p-6" style={{ background: "var(--gradient-card)" }}>
-      <h3 className="mb-2 flex items-center gap-2 text-base font-semibold">
-        <span className="flex h-6 w-6 items-center justify-center rounded-md bg-primary/15 text-primary">{icon}</span>
-        {title}
-      </h3>
+    <div className="rounded-2xl border border-border bg-card p-6 space-y-5" style={{ background: "var(--gradient-card)" }}>
+      <h3 className="font-display text-lg font-bold">{title}</h3>
       {children}
-    </section>
+    </div>
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Toggle({ label, checked, onChange }: { label: string; checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <div className="flex items-center justify-between border-b border-border py-4 last:border-b-0 last:pb-0">
-      <p className="text-sm font-medium">{label}</p>
-      {children}
-    </div>
+    <label className="flex items-center justify-between cursor-pointer">
+      <span className="text-sm text-foreground">{label}</span>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={checked}
+        onClick={() => onChange(!checked)}
+        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+          checked ? "bg-primary" : "bg-border"
+        }`}
+      >
+        <span
+          className={`inline-block h-4 w-4 rounded-full bg-white transition-transform ${
+            checked ? "translate-x-6" : "translate-x-1"
+          }`}
+        />
+      </button>
+    </label>
   );
 }
