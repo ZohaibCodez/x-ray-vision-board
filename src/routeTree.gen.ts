@@ -9,38 +9,194 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SettingsRouteImport } from './routes/settings'
+import { Route as ProfileRouteImport } from './routes/profile'
+import { Route as HistoryRouteImport } from './routes/history'
+import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as AnalyzeRouteImport } from './routes/analyze'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as ResultsScanIdRouteImport } from './routes/results.$scanId'
+import { Route as AuthRegisterRouteImport } from './routes/auth.register'
+import { Route as AuthLoginRouteImport } from './routes/auth.login'
+import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
 
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ProfileRoute = ProfileRouteImport.update({
+  id: '/profile',
+  path: '/profile',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HistoryRoute = HistoryRouteImport.update({
+  id: '/history',
+  path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DashboardRoute = DashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AnalyzeRoute = AnalyzeRouteImport.update({
+  id: '/analyze',
+  path: '/analyze',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ResultsScanIdRoute = ResultsScanIdRouteImport.update({
+  id: '/results/$scanId',
+  path: '/results/$scanId',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRegisterRoute = AuthRegisterRouteImport.update({
+  id: '/auth/register',
+  path: '/auth/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthLoginRoute = AuthLoginRouteImport.update({
+  id: '/auth/login',
+  path: '/auth/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthForgotPasswordRoute = AuthForgotPasswordRouteImport.update({
+  id: '/auth/forgot-password',
+  path: '/auth/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/analyze': typeof AnalyzeRoute
+  '/dashboard': typeof DashboardRoute
+  '/history': typeof HistoryRoute
+  '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/results/$scanId': typeof ResultsScanIdRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/analyze': typeof AnalyzeRoute
+  '/dashboard': typeof DashboardRoute
+  '/history': typeof HistoryRoute
+  '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/results/$scanId': typeof ResultsScanIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/analyze': typeof AnalyzeRoute
+  '/dashboard': typeof DashboardRoute
+  '/history': typeof HistoryRoute
+  '/profile': typeof ProfileRoute
+  '/settings': typeof SettingsRoute
+  '/auth/forgot-password': typeof AuthForgotPasswordRoute
+  '/auth/login': typeof AuthLoginRoute
+  '/auth/register': typeof AuthRegisterRoute
+  '/results/$scanId': typeof ResultsScanIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/analyze'
+    | '/dashboard'
+    | '/history'
+    | '/profile'
+    | '/settings'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
+    | '/results/$scanId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/analyze'
+    | '/dashboard'
+    | '/history'
+    | '/profile'
+    | '/settings'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
+    | '/results/$scanId'
+  id:
+    | '__root__'
+    | '/'
+    | '/analyze'
+    | '/dashboard'
+    | '/history'
+    | '/profile'
+    | '/settings'
+    | '/auth/forgot-password'
+    | '/auth/login'
+    | '/auth/register'
+    | '/results/$scanId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AnalyzeRoute: typeof AnalyzeRoute
+  DashboardRoute: typeof DashboardRoute
+  HistoryRoute: typeof HistoryRoute
+  ProfileRoute: typeof ProfileRoute
+  SettingsRoute: typeof SettingsRoute
+  AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
+  AuthLoginRoute: typeof AuthLoginRoute
+  AuthRegisterRoute: typeof AuthRegisterRoute
+  ResultsScanIdRoute: typeof ResultsScanIdRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/profile': {
+      id: '/profile'
+      path: '/profile'
+      fullPath: '/profile'
+      preLoaderRoute: typeof ProfileRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/history': {
+      id: '/history'
+      path: '/history'
+      fullPath: '/history'
+      preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/dashboard': {
+      id: '/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/analyze': {
+      id: '/analyze'
+      path: '/analyze'
+      fullPath: '/analyze'
+      preLoaderRoute: typeof AnalyzeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/': {
       id: '/'
       path: '/'
@@ -48,11 +204,48 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/results/$scanId': {
+      id: '/results/$scanId'
+      path: '/results/$scanId'
+      fullPath: '/results/$scanId'
+      preLoaderRoute: typeof ResultsScanIdRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/register': {
+      id: '/auth/register'
+      path: '/auth/register'
+      fullPath: '/auth/register'
+      preLoaderRoute: typeof AuthRegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/login': {
+      id: '/auth/login'
+      path: '/auth/login'
+      fullPath: '/auth/login'
+      preLoaderRoute: typeof AuthLoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth/forgot-password': {
+      id: '/auth/forgot-password'
+      path: '/auth/forgot-password'
+      fullPath: '/auth/forgot-password'
+      preLoaderRoute: typeof AuthForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AnalyzeRoute: AnalyzeRoute,
+  DashboardRoute: DashboardRoute,
+  HistoryRoute: HistoryRoute,
+  ProfileRoute: ProfileRoute,
+  SettingsRoute: SettingsRoute,
+  AuthForgotPasswordRoute: AuthForgotPasswordRoute,
+  AuthLoginRoute: AuthLoginRoute,
+  AuthRegisterRoute: AuthRegisterRoute,
+  ResultsScanIdRoute: ResultsScanIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
