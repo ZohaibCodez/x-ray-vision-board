@@ -1,26 +1,26 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { Landing } from "@/components/landing/Landing";
 
 export const Route = createFileRoute("/")({
+  head: () => ({
+    meta: [
+      { title: "XRayVision AI — See Beyond the Surface" },
+      {
+        name: "description",
+        content:
+          "AI-powered radiology assistant. Multi-model ensemble for chest pathology, fracture detection, and wound classification — synthesized into actionable clinical insights.",
+      },
+      { property: "og:title", content: "XRayVision AI — See Beyond the Surface" },
+      {
+        property: "og:description",
+        content:
+          "AI-powered radiology assistant. Diagnose with precision using a multi-model ensemble.",
+      },
+    ],
+  }),
   component: Index,
 });
 
-// IMPORTANT: Replace this placeholder. For sites with multiple pages (About, Services, Contact, etc.),
-// create separate route files (about.tsx, services.tsx, contact.tsx) — don't put all pages in this file.
-function PlaceholderIndex() {
-  return (
-    <div
-      className="flex min-h-screen items-center justify-center"
-      style={{ backgroundColor: "#fcfbf8" }}
-    >
-      <img
-        data-lovable-blank-page-placeholder="REMOVE_THIS"
-        src="https://cdn.gpteng.co/blank-app-v1.svg"
-        alt="Your app will live here!"
-      />
-    </div>
-  );
-}
-
 function Index() {
-  return <PlaceholderIndex />;
+  return <Landing />;
 }
