@@ -1,4 +1,4 @@
-"""Personalized diet plan generator powered by Gemini 1.5 Flash.
+"""Personalized diet plan generator powered by OpenRouter GLM 4.5 Air.
 
 FYP requirement: Generate personalized diet plans based on
 medical conditions, dietary preferences, and health goals.
@@ -7,21 +7,9 @@ medical conditions, dietary preferences, and health goals.
 from __future__ import annotations
 import json
 import logging
-from app.config import get_settings
+from app.services.openrouter_client import complete_text
 
 logger = logging.getLogger(__name__)
-
-_model = None
-
-
-def _get_model():
-    global _model
-    if _model is None:
-        import google.generativeai as genai
-        settings = get_settings()
-        genai.configure(api_key=settings.gemini_api_key)
-        _model = genai.GenerativeModel("gemini-1.5-flash")
-    return _model
 
 
 def generate_diet_plan(
@@ -43,8 +31,6 @@ def generate_diet_plan(
     Returns:
         Dict with title, summary, plan (7 days), and tips.
     """
-    model = _get_model()
-
     restrictions_text = ", ".join(restrictions) if restrictions else "none"
     condition_text = condition or "general wellness"
 
@@ -85,15 +71,15 @@ Ensure the plan is medically appropriate for the stated condition.
 """
 
     try:
-        response = model.generate_content(prompt)
-        return _parse_diet_response(response.text)
+        response_text = complete_text(prompt, temperature=0.3, max_tokens=2200)
+        return _parse_diet_response(response_text)
     except Exception as e:
         logger.error(f"Diet plan generation failed: {e}")
         return _fallback_diet_plan()
 
 
 def _parse_diet_response(text: str) -> dict:
-    """Parse the Gemini response into structured diet plan."""
+    """Parse the model response into structured diet plan."""
     cleaned = text.strip()
 
     if cleaned.startswith("```"):

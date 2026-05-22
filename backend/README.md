@@ -15,7 +15,7 @@ pip install -r requirements.txt
 
 # 3. Copy environment variables
 copy .env.example .env
-# Edit .env with your Supabase URL, keys, and Gemini API key
+# Edit .env with your Supabase, OpenRouter, and Hugging Face keys
 
 # 4. Run the server
 uvicorn app.main:app --reload --port 8000
@@ -34,7 +34,7 @@ Once running, visit:
 | TorchXRayVision DenseNet121 | Chest Pathology | 224×224 grayscale | 18 pathology probabilities |
 | YOLOv8 | Fracture Detection | Any size RGB | Bounding boxes + confidence |
 | ViT (google/vit-base-patch16-224) | Wound Classification | 224×224 RGB | Classification labels |
-| Gemini 1.5 Flash | Agentic Synthesis | Model outputs + notes | Structured diagnostic report |
+| OpenRouter GLM 4.5 Air | Agentic Synthesis | Model outputs + notes | Structured diagnostic report |
 
 ## Database Setup
 

@@ -96,7 +96,7 @@ function Hero() {
           </div>
 
           <div className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-            {["DenseNet121", "YOLOv8", "ViT", "Gemini 1.5 Flash"].map((t, i) => (
+            {["DenseNet121", "YOLOv8", "ViT", "GLM 4.5 Air"].map((t, i) => (
               <span key={t} className="flex items-center gap-2">
                 {i > 0 && <span className="h-1 w-1 rounded-full bg-border" />}
                 <span>{t}</span>
@@ -117,7 +117,7 @@ const capabilities = [
   { icon: Stethoscope, title: "Chest Pathology", sub: "DenseNet121 · AUC 0.83+" },
   { icon: Bone, title: "Fracture Detection", sub: "YOLOv8 · Real-time Localization" },
   { icon: Activity, title: "Wound Classification", sub: "Vision Transformer (ViT)" },
-  { icon: Brain, title: "Agentic Synthesis", sub: "Gemini 1.5 Flash Reasoning" },
+  { icon: Brain, title: "Agentic Synthesis", sub: "OpenRouter GLM 4.5 Air" },
 ];
 
 function CapabilitiesBar() {
@@ -144,7 +144,7 @@ const steps = [
   { n: "01", title: "Upload X-Ray Image", desc: "DICOM, PNG or JPG. Drag-and-drop or browse.", icon: Upload },
   { n: "02", title: "Select Analysis Type", desc: "Chest, fracture, or external wound.", icon: ScanLine },
   { n: "03", title: "Parallel Model Inference", desc: "DenseNet121 · YOLOv8 · ViT run in parallel.", icon: Cpu },
-  { n: "04", title: "Agentic Synthesis", desc: "Gemini 1.5 Flash prioritizes findings and recommends next steps.", icon: Brain },
+  { n: "04", title: "Agentic Synthesis", desc: "GLM 4.5 Air prioritizes findings and recommends next steps.", icon: Brain },
   { n: "05", title: "Structured Clinical Report", desc: "Confidence, severity, ICD-10, urgency, downloadable PDF.", icon: FileText },
 ];
 
@@ -297,7 +297,7 @@ function TrustSection() {
           <span className="text-border">/</span>
           <span>Hugging Face</span>
           <span className="text-border">/</span>
-          <span>Google Gemini</span>
+          <span>OpenRouter</span>
           <span className="text-border">/</span>
           <span>Supabase</span>
           <span className="text-border">/</span>

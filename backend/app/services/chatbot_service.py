@@ -1,29 +1,14 @@
-"""Health chatbot service powered by Gemini 1.5 Flash.
+"""Health chatbot service powered by OpenRouter GLM 4.5 Air.
 
 FYP requirement: General doctor bot for health queries, symptom analysis,
 home remedies, doctor type recommendation, and multilingual support.
 """
 
 from __future__ import annotations
-import json
 import logging
-from app.config import get_settings
+from app.services.openrouter_client import complete_text
 
 logger = logging.getLogger(__name__)
-
-_model = None
-
-
-def _get_model():
-    """Initialize the Gemini model for chatbot (lazy singleton)."""
-    global _model
-    if _model is None:
-        import google.generativeai as genai
-        settings = get_settings()
-        genai.configure(api_key=settings.gemini_api_key)
-        _model = genai.GenerativeModel("gemini-1.5-flash")
-        logger.info("Gemini chatbot model initialized.")
-    return _model
 
 
 SYSTEM_PROMPT_EN = """You are XRayVision AI Health Assistant — a knowledgeable, empathetic medical chatbot.
@@ -76,8 +61,6 @@ def chat_with_health_bot(
     Returns:
         Dict with reply, doctor_type, and home_remedies.
     """
-    model = _get_model()
-
     system_prompt = SYSTEM_PROMPT_UR if language == "ur" else SYSTEM_PROMPT_EN
 
     # Build conversation context
@@ -102,8 +85,8 @@ HOME_REMEDIES: <comma-separated list of remedies or "none">
 """
 
     try:
-        response = model.generate_content(full_prompt)
-        return _parse_chat_response(response.text)
+        response_text = complete_text(full_prompt, temperature=0.35, max_tokens=1200)
+        return _parse_chat_response(response_text)
     except Exception as e:
         logger.error(f"Chatbot error: {e}")
         return {

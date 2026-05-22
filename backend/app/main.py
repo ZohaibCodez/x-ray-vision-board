@@ -5,6 +5,7 @@ Initializes the FastAPI app with CORS, model preloading, and all routers.
 
 from __future__ import annotations
 import logging
+import threading
 from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,11 +18,9 @@ logging.basicConfig(
 logger = logging.getLogger("xrayvision")
 
 
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    """Preload AI models on startup for faster first inference."""
-    logger.info("🚀 XRayVision AI backend starting...")
-    logger.info("📦 Preloading AI models (this may take a minute)...")
+def _preload_models_background():
+    """Load AI models in a background thread so the server starts immediately."""
+    logger.info("📦 Preloading AI models in background thread...")
 
     try:
         from app.services.chest_model import _get_model as load_chest
@@ -44,7 +43,20 @@ async def lifespan(app: FastAPI):
     except Exception as e:
         logger.warning(f"⚠️ ViT failed to preload: {e}")
 
-    logger.info("🟢 XRayVision AI is ready to serve requests!")
+    logger.info("🟢 All AI models loaded and ready!")
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    """Start model loading in background — server is ready immediately."""
+    logger.info("🚀 XRayVision AI backend starting...")
+
+    # Start model preloading in a background thread so the server
+    # can accept auth/chat/diet requests immediately while models download
+    thread = threading.Thread(target=_preload_models_background, daemon=True)
+    thread.start()
+
+    logger.info("🟢 XRayVision AI is accepting requests! (models loading in background)")
     yield
     logger.info("🔴 XRayVision AI shutting down...")
 
@@ -58,7 +70,7 @@ def create_app() -> FastAPI:
         description=(
             "Advanced medical diagnostic API using a Hybrid Multi-Model Ensemble. "
             "DenseNet121 for chest pathology, YOLOv8 for fracture detection, "
-            "ViT for wound classification, and Gemini 1.5 Flash for agentic synthesis."
+            "ViT for wound classification, and OpenRouter GLM 4.5 Air for agentic synthesis."
         ),
         version="2.1.0",
         lifespan=lifespan,
@@ -66,14 +78,19 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
     )
 
-    # CORS
+    # CORS — allow common dev origins
     app.add_middleware(
         CORSMiddleware,
         allow_origins=[
             settings.frontend_url,
             "http://localhost:5173",
+            "http://localhost:5174",
             "http://localhost:3000",
-            "https://*.vercel.app",
+            "http://localhost:3001",
+            "http://localhost:8080",
+            "http://localhost:8081",
+            "http://127.0.0.1:5173",
+            "http://127.0.0.1:3000",
         ],
         allow_credentials=True,
         allow_methods=["*"],
@@ -96,7 +113,7 @@ def create_app() -> FastAPI:
             "status": "healthy",
             "service": "XRayVision AI",
             "version": "2.1.0",
-            "models": ["DenseNet121", "YOLOv8", "ViT", "Gemini 1.5 Flash"],
+            "models": ["DenseNet121", "YOLOv8", "ViT", "OpenRouter GLM 4.5 Air"],
         }
 
     @app.get("/health", tags=["health"])

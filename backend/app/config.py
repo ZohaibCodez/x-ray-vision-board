@@ -2,6 +2,7 @@
 
 from pydantic_settings import BaseSettings
 from functools import lru_cache
+import os
 
 
 class Settings(BaseSettings):
@@ -10,8 +11,15 @@ class Settings(BaseSettings):
     supabase_key: str = "your-supabase-service-role-key"
     supabase_anon_key: str = "your-supabase-anon-key"
 
-    # Gemini
-    gemini_api_key: str = "your-gemini-api-key"
+    # OpenRouter
+    openrouter_api_key: str = ""
+    openrouter_model: str = "z-ai/glm-4.5-air:free"
+    openrouter_site_url: str = "http://localhost:5173"
+    openrouter_app_name: str = "XRayVision AI"
+    openrouter_timeout_seconds: float = 60.0
+
+    # Hugging Face
+    hf_token: str | None = None
 
     # JWT
     jwt_secret: str = "change-this-to-a-random-secret-string"
@@ -25,9 +33,17 @@ class Settings(BaseSettings):
     # CORS
     frontend_url: str = "http://localhost:5173"
 
-    model_config = {"env_file": ".env", "env_file_encoding": "utf-8"}
+    model_config = {
+        "env_file": ".env",
+        "env_file_encoding": "utf-8",
+        "extra": "ignore",
+    }
 
 
 @lru_cache()
 def get_settings() -> Settings:
-    return Settings()
+    settings = Settings()
+    if settings.hf_token:
+        os.environ.setdefault("HF_TOKEN", settings.hf_token)
+        os.environ.setdefault("HUGGINGFACE_HUB_TOKEN", settings.hf_token)
+    return settings

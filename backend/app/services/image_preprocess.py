@@ -74,6 +74,6 @@ def preprocess_for_vit(file_bytes: bytes) -> Image.Image:
 
 
 def image_to_base64(file_bytes: bytes) -> str:
-    """Convert image bytes to a base64-encoded string for Gemini API."""
+    """Convert image bytes to a base64-encoded string for multimodal APIs."""
     import base64
     return base64.b64encode(file_bytes).decode("utf-8")

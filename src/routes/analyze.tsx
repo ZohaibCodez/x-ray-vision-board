@@ -188,7 +188,7 @@ const processingSteps = [
   "Running DenseNet121 — chest pathology",
   "Running YOLOv8 — fracture detection",
   "Running ViT — wound classification",
-  "Synthesizing report with Gemini 1.5 Flash",
+  "Synthesizing report with GLM 4.5 Air",
 ];
 
 function Processing() {

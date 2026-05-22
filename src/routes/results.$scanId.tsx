@@ -150,7 +150,7 @@ function ResultsPage() {
           <div className="mt-6 rounded-lg border border-primary/30 bg-primary/5 p-4">
             <div className="flex items-center gap-2">
               <Sparkles size={14} className="text-primary" />
-              <span className="font-mono text-[10px] uppercase tracking-widest text-primary">Gemini Agent Analysis</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-primary">GLM Agent Analysis</span>
             </div>
             <Typewriter text={agent.synthesis_text} className="mt-2 text-sm leading-relaxed text-foreground" />
           </div>

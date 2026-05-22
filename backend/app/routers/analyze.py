@@ -7,7 +7,7 @@ from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException, s
 from app.models.schemas import ScanResult, Finding, AgentSynthesis, BoundingBox
 from app.services.auth_service import get_current_user_id
 from app.services import image_preprocess
-from app.services.gemini_agent import synthesize_report
+from app.services.openrouter_agent import synthesize_report
 from app.utils.supabase_client import insert_scan, upload_image
 from app.config import get_settings
 
@@ -27,7 +27,7 @@ async def analyze_image(
 
     1. Preprocess the image
     2. Run the appropriate model(s)
-    3. Synthesize with Gemini
+    3. Synthesize with OpenRouter GLM 4.5 Air
     4. Store results in Supabase
     5. Return structured report
     """
@@ -83,7 +83,7 @@ async def analyze_image(
             detail=f"AI model inference failed: {str(e)}",
         )
 
-    # ── Step 2: Gemini agentic synthesis ────────────────────────
+    # ── Step 2: OpenRouter agentic synthesis ─────────────────────
     try:
         agent_result = synthesize_report(
             findings=raw_findings,
@@ -91,7 +91,7 @@ async def analyze_image(
             patient_notes=notes if notes else None,
         )
     except Exception as e:
-        logger.error(f"Gemini synthesis failed: {e}")
+        logger.error(f"OpenRouter synthesis failed: {e}")
         # Use fallback
         agent_result = {
             "urgency": "medium",

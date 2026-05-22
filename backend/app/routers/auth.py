@@ -29,9 +29,9 @@ async def register(req: RegisterRequest):
 
         user_id = auth_response.user.id
 
-        # Create profile record
+        # Create profile record manually in the backend
         insert_profile(user_id, req.full_name, req.role)
-
+        
         # Generate JWT
         token = create_access_token(user_id, req.email)
 
