@@ -2,6 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { Download, Share2, Sparkles, AlertTriangle, ZoomIn, ZoomOut, RotateCcw, Eye, Layers, Tag, Loader2, MapPin } from "lucide-react";
 import { AppShell } from "@/components/app/AppShell";
+import { scansApi } from "@/lib/api";
 import { useScan } from "@/hooks/use-scans";
 import type { Finding as FindingType } from "@/lib/types";
 
@@ -17,6 +18,7 @@ function ResultsPage() {
   const [showHeatmap, setShowHeatmap] = useState(false);
   const [showLabels, setShowLabels] = useState(true);
   const [zoom, setZoom] = useState(1);
+  const [exporting, setExporting] = useState<"pdf" | "json" | null>(null);
 
   if (isLoading) {
     return (
@@ -41,9 +43,50 @@ function ResultsPage() {
     );
   }
 
-  const findings = scan.findings || [];
+  const allFindings = scan.findings || [];
+  // Split findings: hide "clear/no fracture" entries from chest reports — not clinically useful
+  const findings = allFindings.filter((f) => f.severity !== "clear");
+  const clearFindings = allFindings.filter((f) => f.severity === "clear");
+  // Group by confidence tier
+  const primaryFindings   = findings.filter((f) => f.confidence >= 65);
+  const secondaryFindings = findings.filter((f) => f.confidence >= 50 && f.confidence < 65);
+  const borderline        = findings.filter((f) => f.confidence < 50);
   const agent = scan.agent_synthesis;
   const lowConf = findings.some((f) => f.confidence < 60);
+
+  const downloadBlob = (blob: Blob, filename: string) => {
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = filename;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  };
+
+  const onDownloadPdf = async () => {
+    setExporting("pdf");
+    try {
+      const blob = await scansApi.downloadPdf(scanId);
+      downloadBlob(blob, `xrayvision-report-${scanId}.pdf`);
+    } catch (err: unknown) {
+      alert(`PDF generation failed: ${err instanceof Error ? err.message : "Unknown error"}. Please try again.`);
+    } finally {
+      setExporting(null);
+    }
+  };
+
+  const onExportJson = async () => {
+    setExporting("json");
+    try {
+      const data = await scansApi.exportJson(scanId);
+      const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+      downloadBlob(blob, `xrayvision-report-${scanId}.json`);
+    } finally {
+      setExporting(null);
+    }
+  };
 
   return (
     <AppShell title="Diagnostic Results">
@@ -137,15 +180,45 @@ function ResultsPage() {
             </div>
           )}
 
+          {/* Primary findings ≥ 65% */}
           <h3 className="mt-6 text-sm font-semibold text-muted-foreground">Primary Findings</h3>
           <div className="mt-3 space-y-3">
-            {findings.map((f, i) => (
+            {primaryFindings.map((f, i) => (
               <FindingCard key={f.name + i} f={f} delay={i * 80} />
             ))}
-            {findings.length === 0 && (
-              <p className="text-sm text-muted-foreground">No significant findings detected.</p>
+            {primaryFindings.length === 0 && (
+              <p className="text-sm text-muted-foreground italic">No high-confidence findings detected.</p>
             )}
           </div>
+
+          {/* Secondary findings 50–65% */}
+          {secondaryFindings.length > 0 && (
+            <>
+              <h3 className="mt-5 text-sm font-semibold text-muted-foreground">
+                Secondary Findings
+                <span className="ml-2 font-mono text-[10px] text-muted-foreground/60 normal-case">50–65% confidence</span>
+              </h3>
+              <div className="mt-3 space-y-2">
+                {secondaryFindings.map((f, i) => (
+                  <FindingCard key={f.name + i} f={f} delay={i * 60} compact />
+                ))}
+              </div>
+            </>
+          )}
+
+          {/* Borderline / low confidence < 50% */}
+          {borderline.length > 0 && (
+            <details className="mt-4">
+              <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
+                {borderline.length} borderline finding{borderline.length > 1 ? "s" : ""} below 50% — click to expand
+              </summary>
+              <div className="mt-2 space-y-2 opacity-70">
+                {borderline.map((f, i) => (
+                  <FindingCard key={f.name + i} f={f} delay={0} compact />
+                ))}
+              </div>
+            </details>
+          )}
 
           <div className="mt-6 rounded-lg border border-primary/30 bg-primary/5 p-4">
             <div className="flex items-center gap-2">
@@ -196,7 +269,7 @@ function ResultsPage() {
                 </tr>
               </thead>
               <tbody>
-                {findings.map((f, i) => (
+                {allFindings.map((f, i) => (
                   <tr key={f.name + i} className="border-t border-border">
                     <td className="px-3 py-2 font-mono text-muted-foreground">{f.model}</td>
                     <td className="px-3 py-2">{f.name}</td>
@@ -209,11 +282,19 @@ function ResultsPage() {
           </div>
 
           <div className="mt-6 flex flex-wrap gap-3">
-            <button className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:shadow-[var(--glow-cyan)]">
-              <Download size={14} /> Download PDF Report
+            <button
+              onClick={onDownloadPdf}
+              disabled={exporting !== null}
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:shadow-[var(--glow-cyan)] disabled:opacity-60"
+            >
+              <Download size={14} /> {exporting === "pdf" ? "Preparing..." : "Download PDF Report"}
             </button>
-            <button className="inline-flex items-center gap-2 rounded-lg border border-border bg-background/60 px-4 py-2.5 text-sm font-medium hover:border-primary/60">
-              <Share2 size={14} /> Share / Export
+            <button
+              onClick={onExportJson}
+              disabled={exporting !== null}
+              className="inline-flex items-center gap-2 rounded-lg border border-border bg-background/60 px-4 py-2.5 text-sm font-medium hover:border-primary/60 disabled:opacity-60"
+            >
+              <Share2 size={14} /> {exporting === "json" ? "Preparing..." : "Export JSON"}
             </button>
             <Link to="/history" className="ml-auto self-center text-xs text-muted-foreground hover:text-foreground">Back to history →</Link>
           </div>
@@ -242,7 +323,7 @@ function ToolbarBtn({ active, onClick, icon, label }: { active: boolean; onClick
   );
 }
 
-function FindingCard({ f, delay }: { f: FindingType; delay: number }) {
+function FindingCard({ f, delay, compact = false }: { f: FindingType; delay: number; compact?: boolean }) {
   const [val, setVal] = useState(0);
   useEffect(() => {
     const start = performance.now();
@@ -258,6 +339,20 @@ function FindingCard({ f, delay }: { f: FindingType; delay: number }) {
 
   const sevDot = f.color === "destructive" ? "bg-destructive" : f.color === "warning" ? "bg-warning" : "bg-info";
   const sevText = f.color === "destructive" ? "text-destructive" : f.color === "warning" ? "text-warning" : "text-info";
+
+  if (compact) {
+    return (
+      <div className="flex items-center gap-3 rounded-md border border-border/60 bg-background/40 px-3 py-2 animate-fade-up" style={{ animationDelay: `${delay}ms` }}>
+        <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${sevDot}`} />
+        <span className="flex-1 text-xs text-foreground">{f.name}</span>
+        <div className="w-24 h-1 overflow-hidden rounded-full bg-border">
+          <div className="h-full rounded-full bg-primary/60" style={{ width: `${val}%` }} />
+        </div>
+        <span className="font-mono text-[11px] text-muted-foreground w-10 text-right">{val.toFixed(1)}%</span>
+        <span className={`font-mono text-[9px] uppercase ${sevText}`}>{f.severity}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="rounded-lg border border-border bg-background/60 p-4 animate-fade-up" style={{ animationDelay: `${delay}ms` }}>

@@ -32,7 +32,18 @@ class UserProfile(BaseModel):
     full_name: str
     role: str
     avatar_url: Optional[str] = None
+    settings: dict = {}
     created_at: Optional[str] = None
+
+
+class ProfileUpdateRequest(BaseModel):
+    full_name: Optional[str] = None
+    role: Optional[str] = None
+    avatar_url: Optional[str] = None
+
+
+class SettingsUpdateRequest(BaseModel):
+    settings: dict
 
 
 # ── Analysis ──────────────────────────────────────────────────────────
@@ -171,3 +182,21 @@ class DashboardStats(BaseModel):
     recent_scans: list[ScanListItem]
     finding_distribution: dict[str, int]
     model_performance: list[ModelPerformance]
+
+
+# ── Clinic Locator ───────────────────────────────────────────────────
+
+class ClinicResult(BaseModel):
+    name: str
+    type: str
+    address: str
+    lat: float
+    lon: float
+    distance_km: float
+    maps_url: str
+
+
+class ClinicSearchResponse(BaseModel):
+    clinics: list[ClinicResult]
+    total: int
+    search_location: dict

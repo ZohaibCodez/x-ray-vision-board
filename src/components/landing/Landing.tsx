@@ -1,52 +1,63 @@
-import { Activity, Bone, Brain, Sparkles, ArrowRight, Play, Upload, Cpu, FileText, ShieldCheck, ScanLine, Stethoscope } from "lucide-react";
+import {
+  Activity,
+  ArrowRight,
+  Bone,
+  Brain,
+  Check,
+  Cpu,
+  FileText,
+  MapPin,
+  MessageSquare,
+  Play,
+  Salad,
+  ScanLine,
+  ShieldCheck,
+  Stethoscope,
+  Upload,
+} from "lucide-react";
 import { Logo } from "./Logo";
-import { XrayViewer } from "./XrayViewer";
+import { Hero3D } from "./Hero3D";
+import { Reveal } from "./Reveal";
 
 export function Landing() {
   return (
-    <div className="relative min-h-screen overflow-hidden bg-background text-foreground">
-      {/* Ambient background */}
-      <div className="pointer-events-none absolute inset-0" style={{ background: "var(--gradient-hero)" }} />
-      <div className="pointer-events-none absolute inset-0" style={{ background: "var(--gradient-accent-glow)" }} />
-      <div className="pointer-events-none absolute inset-0 grid-bg opacity-40" />
-
-      <div className="relative">
-        <Nav />
-        <Hero />
-        <CapabilitiesBar />
-        <HowItWorks />
-        <SampleReport />
-        <TrustSection />
-        <CTAFooter />
-        <Footer />
-      </div>
+    <div className="clinical-page relative min-h-dvh overflow-hidden text-foreground">
+      <div className="pointer-events-none fixed inset-0 -z-10 grid-bg opacity-45" />
+      <Nav />
+      <Hero />
+      <Capabilities />
+      <Workflow />
+      <ReportPreview />
+      <TrustBand />
+      <CTA />
+      <Footer />
     </div>
   );
 }
 
 function Nav() {
   return (
-    <header className="relative z-10">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-5">
-        <a href="/" className="flex items-center gap-2.5">
-          <Logo size={28} />
-          <span className="font-display text-lg font-bold tracking-tight">
-            XRayVision <span className="text-primary">AI</span>
+    <header className="sticky top-0 z-50 border-b border-border bg-white/84 backdrop-blur-xl dark:bg-background/84">
+      <div className="mx-auto flex min-h-18 max-w-7xl items-center justify-between px-4 sm:px-6">
+        <a href="/" className="flex min-h-11 items-center gap-3">
+          <Logo size={30} />
+          <span className="font-display text-lg font-extrabold">
+            XRayVision <span className="text-gradient-medical">AI</span>
           </span>
         </a>
-        <nav className="hidden items-center gap-8 text-sm text-muted-foreground md:flex">
-          <a href="#capabilities" className="hover:text-foreground transition-colors">Capabilities</a>
-          <a href="#how" className="hover:text-foreground transition-colors">How it works</a>
-          <a href="#report" className="hover:text-foreground transition-colors">Sample report</a>
-          <a href="#trust" className="hover:text-foreground transition-colors">Technology</a>
+        <nav className="hidden items-center gap-7 text-sm font-semibold text-muted-foreground md:flex">
+          <a href="#capabilities" className="hover:text-foreground">Capabilities</a>
+          <a href="#workflow" className="hover:text-foreground">Workflow</a>
+          <a href="#report" className="hover:text-foreground">Report</a>
+          <a href="#trust" className="hover:text-foreground">Stack</a>
         </nav>
-        <div className="flex items-center gap-3">
-          <a href="/auth/login" className="hidden text-sm text-muted-foreground hover:text-foreground sm:inline-block">Sign in</a>
-          <a
-            href="/auth/register"
-            className="rounded-md border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition-all hover:border-primary/60 hover:text-primary"
-          >
+        <div className="flex items-center gap-2">
+          <a href="/auth/login" className="clinical-button-secondary hidden px-4 sm:inline-flex">
+            Sign in
+          </a>
+          <a href="/auth/register" className="clinical-button px-4">
             Get started
+            <ArrowRight size={16} />
           </a>
         </div>
       </div>
@@ -56,57 +67,63 @@ function Nav() {
 
 function Hero() {
   return (
-    <section className="relative mx-auto max-w-7xl px-6 pt-12 pb-24 lg:pt-20">
-      <div className="grid items-center gap-16 lg:grid-cols-2">
-        <div className="animate-fade-up">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-primary/5 px-3 py-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-primary glow-pulse" />
-            <span className="font-mono text-[10px] uppercase tracking-[0.18em] text-primary">
-              AI-Powered Radiology Assistant
-            </span>
-          </div>
-
-          <h1 className="mt-6 font-display text-5xl font-extrabold leading-[1.05] tracking-tight sm:text-6xl lg:text-[4.5rem]">
-            See What Others Miss.
-            <br />
-            <span className="text-gradient-cyan">Diagnose With Precision.</span>
-          </h1>
-
-          <p className="mt-6 max-w-xl text-lg leading-relaxed text-muted-foreground">
-            XRayVision AI uses a multi-model ensemble — chest pathology, fracture detection,
-            wound classification — synthesized by an intelligent agent into actionable clinical insights.
-          </p>
-
-          <div className="mt-8 flex flex-wrap items-center gap-4">
-            <a
-              href="/analyze"
-              className="group inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3.5 text-sm font-semibold text-primary-foreground transition-all hover:shadow-[var(--glow-cyan)]"
-            >
-              <ScanLine size={18} />
-              Start Free Analysis
-              <ArrowRight size={16} className="transition-transform group-hover:translate-x-0.5" />
-            </a>
-            <a
-              href="#how"
-              className="inline-flex items-center gap-2 rounded-lg border border-border bg-card/60 px-6 py-3.5 text-sm font-semibold text-foreground backdrop-blur hover:border-primary/50"
-            >
-              <Play size={16} />
-              Watch Demo
-            </a>
-          </div>
-
-          <div className="mt-10 flex flex-wrap items-center gap-x-5 gap-y-2 font-mono text-[11px] uppercase tracking-wider text-muted-foreground">
-            {["DenseNet121", "YOLOv8", "ViT", "GLM 4.5 Air"].map((t, i) => (
-              <span key={t} className="flex items-center gap-2">
-                {i > 0 && <span className="h-1 w-1 rounded-full bg-border" />}
-                <span>{t}</span>
-              </span>
-            ))}
-          </div>
+    <section className="relative mx-auto grid max-w-7xl items-center gap-10 px-4 pb-16 pt-10 sm:px-6 lg:grid-cols-[0.98fr_1.02fr] lg:pb-24 lg:pt-16">
+      <div className="animate-fade-up">
+        <div className="inline-flex items-center gap-2 rounded-lg border border-primary/25 bg-white/85 px-3 py-2 shadow-[var(--shadow-sm)] dark:bg-card/85">
+          <span className="h-2 w-2 rounded-full bg-success glow-pulse" />
+          <span className="font-mono text-[11px] font-semibold uppercase tracking-[0.12em] text-primary">
+            AI radiology assistant
+          </span>
         </div>
 
-        <div className="lg:pl-8">
-          <XrayViewer />
+        <h1 className="mt-6 max-w-4xl font-display text-5xl font-extrabold leading-[1.02] text-foreground sm:text-6xl lg:text-7xl">
+          XRayVision AI for faster, clearer diagnostic review.
+        </h1>
+        <p className="mt-6 max-w-2xl text-lg leading-8 text-muted-foreground">
+          Upload medical images, route them through specialized AI models, and receive a
+          confidence-tiered report with findings, urgency, specialist guidance, and exportable records.
+        </p>
+
+        <div className="mt-8 flex flex-wrap items-center gap-3">
+          <a href="/auth/register" className="clinical-button px-6">
+            <ScanLine size={18} />
+            Start analysis
+            <ArrowRight size={16} />
+          </a>
+          <a href="#workflow" className="clinical-button-secondary px-6">
+            <Play size={16} />
+            See workflow
+          </a>
+        </div>
+
+        <div className="mt-9 grid max-w-2xl gap-3 sm:grid-cols-3">
+          {[
+            ["Chest", "DenseNet121"],
+            ["Fracture", "YOLOv8"],
+            ["Wound", "ViT classifier"],
+          ].map(([label, value]) => (
+            <div key={label} className="clinical-panel p-4">
+              <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{label}</p>
+              <p className="mt-1 text-sm font-bold text-foreground">{value}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      <div className="relative">
+        <div className="clinical-panel-strong overflow-hidden p-3">
+          <div className="relative aspect-[1.03] overflow-hidden rounded-lg bg-slate-950">
+            <Hero3D />
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,transparent,rgba(5,11,20,0.35))]" />
+            <div className="absolute left-4 top-4 rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-white backdrop-blur-md">
+              <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-cyan-100">Active scan</p>
+              <p className="mt-1 text-sm font-bold">Fracture localization</p>
+            </div>
+            <div className="absolute bottom-4 right-4 rounded-lg border border-white/15 bg-white/10 px-3 py-2 text-white backdrop-blur-md">
+              <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-cyan-100">Confidence</p>
+              <p className="mt-1 text-2xl font-extrabold">94.2%</p>
+            </div>
+          </div>
         </div>
       </div>
     </section>
@@ -114,26 +131,34 @@ function Hero() {
 }
 
 const capabilities = [
-  { icon: Stethoscope, title: "Chest Pathology", sub: "DenseNet121 · AUC 0.83+" },
-  { icon: Bone, title: "Fracture Detection", sub: "YOLOv8 · Real-time Localization" },
-  { icon: Activity, title: "Wound Classification", sub: "Vision Transformer (ViT)" },
-  { icon: Brain, title: "Agentic Synthesis", sub: "OpenRouter GLM 4.5 Air" },
+  { icon: Bone, title: "Fracture detection", text: "Detect and localize suspected bone fractures with bounding boxes and severity tiers." },
+  { icon: Stethoscope, title: "Chest pathology", text: "Screen chest X-rays for high-signal findings across common pathology classes." },
+  { icon: MessageSquare, title: "Health chat", text: "Ask symptom questions in a guided assistant with home-care and specialist suggestions." },
+  { icon: Salad, title: "Diet planner", text: "Generate condition-aware meal plans using goals, preferences, and restrictions." },
+  { icon: MapPin, title: "Clinic locator", text: "Find hospitals, doctors, clinics, and pharmacies near the user's current location." },
+  { icon: ShieldCheck, title: "Safety framing", text: "Every flow reinforces educational use and radiologist confirmation." },
 ];
 
-function CapabilitiesBar() {
+function Capabilities() {
   return (
-    <section id="capabilities" className="relative border-y border-border bg-surface/40 backdrop-blur">
-      <div className="mx-auto grid max-w-7xl grid-cols-2 gap-px bg-border/50 md:grid-cols-4">
-        {capabilities.map(({ icon: Icon, title, sub }) => (
-          <div key={title} className="group flex items-center gap-4 bg-background/60 p-6 transition-colors hover:bg-card/60">
-            <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-primary/30 bg-primary/10 text-primary transition-all group-hover:shadow-[var(--glow-cyan)]">
-              <Icon size={20} />
-            </div>
-            <div>
-              <div className="text-sm font-semibold">{title}</div>
-              <div className="font-mono text-[11px] uppercase tracking-wider text-muted-foreground">{sub}</div>
-            </div>
-          </div>
+    <section id="capabilities" className="mx-auto max-w-7xl px-4 py-18 sm:px-6">
+      <Reveal className="max-w-2xl">
+        <p className="clinical-kicker">Capabilities</p>
+        <h2 className="mt-3 font-display text-4xl font-extrabold sm:text-5xl">
+          Designed around the full diagnostic support journey.
+        </h2>
+      </Reveal>
+      <div className="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        {capabilities.map(({ icon: Icon, title, text }, index) => (
+          <Reveal key={title} delay={index * 55}>
+            <article className="clinical-panel h-full p-5 transition-all hover:-translate-y-1 hover:shadow-[var(--shadow-md)]">
+              <span className="flex h-11 w-11 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                <Icon size={21} />
+              </span>
+              <h3 className="mt-5 text-base font-extrabold">{title}</h3>
+              <p className="mt-2 text-sm leading-6 text-muted-foreground">{text}</p>
+            </article>
+          </Reveal>
         ))}
       </div>
     </section>
@@ -141,38 +166,132 @@ function CapabilitiesBar() {
 }
 
 const steps = [
-  { n: "01", title: "Upload X-Ray Image", desc: "DICOM, PNG or JPG. Drag-and-drop or browse.", icon: Upload },
-  { n: "02", title: "Select Analysis Type", desc: "Chest, fracture, or external wound.", icon: ScanLine },
-  { n: "03", title: "Parallel Model Inference", desc: "DenseNet121 · YOLOv8 · ViT run in parallel.", icon: Cpu },
-  { n: "04", title: "Agentic Synthesis", desc: "GLM 4.5 Air prioritizes findings and recommends next steps.", icon: Brain },
-  { n: "05", title: "Structured Clinical Report", desc: "Confidence, severity, ICD-10, urgency, downloadable PDF.", icon: FileText },
+  { icon: Upload, title: "Upload", text: "DICOM, PNG, or JPG." },
+  { icon: ScanLine, title: "Route", text: "Choose chest, fracture, or wound." },
+  { icon: Cpu, title: "Infer", text: "Run the matching model." },
+  { icon: Brain, title: "Synthesize", text: "Generate clinical summary." },
+  { icon: FileText, title: "Export", text: "Download PDF or JSON." },
 ];
 
-function HowItWorks() {
+function Workflow() {
   return (
-    <section id="how" className="relative mx-auto max-w-7xl px-6 py-24">
-      <div className="mx-auto max-w-2xl text-center">
-        <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">The Pipeline</span>
-        <h2 className="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">
-          Three Models. <span className="text-gradient-cyan">One Intelligent Report.</span>
-        </h2>
-        <p className="mt-4 text-muted-foreground">
-          A radiology pipeline engineered for transparency at every step — from raw pixels to prioritized recommendations.
-        </p>
+    <section id="workflow" className="border-y border-border bg-white/72 dark:bg-background/46">
+      <div className="mx-auto max-w-7xl px-4 py-18 sm:px-6">
+        <Reveal className="mx-auto max-w-2xl text-center">
+          <p className="clinical-kicker">Workflow</p>
+          <h2 className="mt-3 font-display text-4xl font-extrabold sm:text-5xl">
+            A transparent path from image to report.
+          </h2>
+        </Reveal>
+        <div className="mt-12 grid gap-4 md:grid-cols-5">
+          {steps.map(({ icon: Icon, title, text }, index) => (
+            <Reveal key={title} delay={index * 65}>
+              <div className="clinical-panel relative h-full p-5">
+                <span className="font-mono text-[11px] font-semibold text-muted-foreground">0{index + 1}</span>
+                <div className="mt-4 flex h-11 w-11 items-center justify-center rounded-lg bg-surface text-primary">
+                  <Icon size={20} />
+                </div>
+                <h3 className="mt-5 text-sm font-extrabold">{title}</h3>
+                <p className="mt-2 text-sm leading-6 text-muted-foreground">{text}</p>
+              </div>
+            </Reveal>
+          ))}
+        </div>
       </div>
+    </section>
+  );
+}
 
-      <div className="mt-16 grid gap-px overflow-hidden rounded-2xl border border-border bg-border/60 md:grid-cols-5">
-        {steps.map(({ n, title, desc, icon: Icon }, i) => (
-          <div key={n} className="relative bg-card p-6">
-            <div className="flex items-center justify-between">
-              <span className="font-mono text-[11px] tracking-widest text-muted-foreground">{n}</span>
-              <Icon size={18} className="text-primary" />
+function ReportPreview() {
+  return (
+    <section id="report" className="mx-auto grid max-w-7xl items-center gap-8 px-4 py-18 sm:px-6 lg:grid-cols-[0.9fr_1.1fr]">
+      <Reveal>
+        <p className="clinical-kicker">Report experience</p>
+        <h2 className="mt-3 font-display text-4xl font-extrabold sm:text-5xl">
+          Findings stay inspectable, not hidden behind a black box.
+        </h2>
+        <p className="mt-4 max-w-xl text-base leading-7 text-muted-foreground">
+          The results page separates primary, secondary, and borderline findings,
+          keeps confidence visible, and links urgency to practical next steps.
+        </p>
+        <ul className="mt-7 space-y-3">
+          {[
+            "Model, confidence, region, and ICD-10 metadata",
+            "Optional heatmap and bounding-box overlays",
+            "Specialist recommendation and nearby-care path",
+            "Watermarked PDF export for review",
+          ].map((item) => (
+            <li key={item} className="flex items-start gap-3 text-sm font-medium text-foreground">
+              <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-md bg-success/12 text-success">
+                <Check size={13} />
+              </span>
+              {item}
+            </li>
+          ))}
+        </ul>
+      </Reveal>
+
+      <Reveal delay={110}>
+        <div className="clinical-panel-strong p-4">
+          <div className="rounded-lg border border-warning/30 bg-warning/10 p-4">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="font-mono text-[10px] uppercase tracking-[0.12em] text-warning">Urgency</p>
+                <p className="mt-1 text-2xl font-extrabold text-warning">HIGH</p>
+              </div>
+              <span className="font-mono text-[11px] text-muted-foreground">scan_8F23A9</span>
             </div>
-            <h3 className="mt-6 text-base font-semibold leading-snug">{title}</h3>
-            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
-            {i < steps.length - 1 && (
-              <div className="absolute right-0 top-1/2 hidden h-px w-6 -translate-y-1/2 translate-x-3 bg-gradient-to-r from-primary/60 to-transparent md:block" />
-            )}
+          </div>
+          <div className="mt-4 grid gap-3">
+            <FindingRow name="Distal radius fracture" confidence={94.2} severity="high" />
+            <FindingRow name="Soft tissue swelling" confidence={67.8} severity="moderate" />
+            <FindingRow name="Cortical irregularity" confidence={54.1} severity="low" />
+          </div>
+          <div className="mt-4 rounded-lg border border-primary/25 bg-primary/5 p-4">
+            <div className="flex items-center gap-2">
+              <Brain size={15} className="text-primary" />
+              <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-primary">Agent synthesis</span>
+            </div>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">
+              Findings suggest a high-confidence fracture pattern. Orthopedic review,
+              immobilization, and correlation with clinical history are recommended.
+            </p>
+          </div>
+        </div>
+      </Reveal>
+    </section>
+  );
+}
+
+function FindingRow({ name, confidence, severity }: { name: string; confidence: number; severity: string }) {
+  const color = severity === "high" ? "bg-destructive" : severity === "moderate" ? "bg-warning" : "bg-info";
+  return (
+    <div className="rounded-lg border border-border bg-white/85 p-3 dark:bg-card/85">
+      <div className="flex items-center justify-between gap-3">
+        <span className="text-sm font-bold">{name}</span>
+        <span className="font-mono text-xs">{confidence.toFixed(1)}%</span>
+      </div>
+      <div className="mt-2 h-1.5 overflow-hidden rounded-full bg-surface">
+        <div className={`h-full rounded-full ${color}`} style={{ width: `${confidence}%` }} />
+      </div>
+      <p className="mt-2 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">{severity}</p>
+    </div>
+  );
+}
+
+function TrustBand() {
+  return (
+    <section id="trust" className="border-y border-border bg-white/72 dark:bg-background/46">
+      <div className="mx-auto grid max-w-7xl gap-6 px-4 py-12 sm:px-6 md:grid-cols-4">
+        {[
+          ["700K+", "clinical images behind chest model"],
+          ["3", "specialized image routes"],
+          ["4", "report fields for action"],
+          ["v2.1", "current platform version"],
+        ].map(([value, label]) => (
+          <div key={label} className="border-l-2 border-primary pl-4">
+            <p className="font-display text-4xl font-extrabold text-gradient-medical">{value}</p>
+            <p className="mt-2 text-sm leading-6 text-muted-foreground">{label}</p>
           </div>
         ))}
       </div>
@@ -180,178 +299,43 @@ function HowItWorks() {
   );
 }
 
-function SampleReport() {
+function CTA() {
   return (
-    <section id="report" className="relative mx-auto max-w-7xl px-6 py-24">
-      <div className="grid items-start gap-10 lg:grid-cols-2">
-        <div>
-          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-primary">Sample Output</span>
-          <h2 className="mt-3 font-display text-4xl font-bold tracking-tight sm:text-5xl">
-            What a finished report actually looks like.
-          </h2>
-          <p className="mt-4 text-muted-foreground">
-            Each finding includes the model that detected it, the confidence interval,
-            severity, anatomical region, and the relevant ICD-10 code.
-          </p>
-          <div className="mt-8">
-            <XrayViewer />
-          </div>
-        </div>
-
-        <div className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-md)]">
-          {/* Urgency banner */}
-          <div className="flex items-center justify-between rounded-lg border-l-4 border-warning bg-warning/10 px-4 py-3">
-            <div className="flex items-center gap-3">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-warning">Urgency</span>
-              <span className="font-display text-lg font-bold text-warning">HIGH</span>
-            </div>
-            <span className="font-mono text-[10px] text-muted-foreground">scan_2026_05_21_01</span>
-          </div>
-
-          <div className="mt-6">
-            <h4 className="text-sm font-semibold text-muted-foreground">Primary Findings</h4>
-            <div className="mt-3 space-y-3">
-              <FindingRow name="Cardiomegaly" conf={87.3} sev="destructive" model="DenseNet121" icd="I51.7" />
-              <FindingRow name="Right Pleural Effusion" conf={72.1} sev="warning" model="DenseNet121" icd="J90" />
-            </div>
-          </div>
-
-          <div className="mt-6">
-            <h4 className="text-sm font-semibold text-muted-foreground">Secondary Findings</h4>
-            <div className="mt-3 space-y-3">
-              <FindingRow name="Mild Pulmonary Congestion" conf={61.4} sev="info" model="DenseNet121" icd="J81" />
-            </div>
-          </div>
-
-          <div className="mt-6 rounded-lg border border-primary/30 bg-primary/5 p-4">
-            <div className="flex items-center gap-2">
-              <Sparkles size={14} className="text-primary" />
-              <span className="font-mono text-[10px] uppercase tracking-widest text-primary">Agent Recommendation</span>
-            </div>
-            <p className="mt-2 text-sm leading-relaxed text-foreground">
-              Findings suggest cardiac decompensation with secondary pleural effusion.
-              Immediate cardiology referral and echocardiogram advised.
+    <section className="mx-auto max-w-7xl px-4 py-18 sm:px-6">
+      <Reveal>
+        <div className="clinical-panel-strong grid items-center gap-6 p-6 sm:p-8 lg:grid-cols-[1fr_auto]">
+          <div>
+            <p className="clinical-kicker">Ready when you are</p>
+            <h2 className="mt-2 font-display text-3xl font-extrabold sm:text-4xl">
+              Start with an image, finish with a structured report.
+            </h2>
+            <p className="mt-3 max-w-2xl text-sm leading-6 text-muted-foreground">
+              Built for educational diagnostic assistance and guided review workflows.
             </p>
           </div>
-
-          <p className="mt-6 border-t border-border pt-4 text-xs leading-relaxed text-muted-foreground">
-            This is an AI-assisted analysis only. Always confirm with a qualified radiologist.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function FindingRow({
-  name, conf, sev, model, icd,
-}: { name: string; conf: number; sev: "destructive" | "warning" | "info"; model: string; icd: string }) {
-  const sevColor =
-    sev === "destructive" ? "bg-destructive text-destructive" :
-    sev === "warning" ? "bg-warning text-warning" : "bg-info text-info";
-  return (
-    <div className="rounded-lg border border-border bg-background/60 p-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className={`h-1.5 w-1.5 rounded-full ${sevColor.split(" ")[0]}`} />
-          <span className="text-sm font-medium text-foreground">{name}</span>
-        </div>
-        <span className="font-mono text-xs text-foreground">{conf.toFixed(1)}%</span>
-      </div>
-      <div className="mt-2 h-1 overflow-hidden rounded-full bg-border">
-        <div
-          className="h-full rounded-full bg-primary"
-          style={{ width: `${conf}%`, boxShadow: "0 0 8px rgba(0,200,224,0.6)" }}
-        />
-      </div>
-      <div className="mt-2 flex items-center gap-3 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-        <span>{model}</span>
-        <span className="h-1 w-1 rounded-full bg-border" />
-        <span>ICD-10 · {icd}</span>
-      </div>
-    </div>
-  );
-}
-
-const stats = [
-  { value: "700K+", label: "Clinical Images in Training Data" },
-  { value: "0.83+", label: "Mean AUC on NIH / Stanford Datasets" },
-  { value: "3 → 1", label: "Specialized Models, Unified Report" },
-];
-
-function TrustSection() {
-  return (
-    <section id="trust" className="relative border-t border-border bg-surface/40">
-      <div className="mx-auto max-w-7xl px-6 py-20">
-        <div className="grid gap-12 md:grid-cols-3">
-          {stats.map((s) => (
-            <div key={s.label} className="border-l border-primary/40 pl-6">
-              <div className="font-display text-5xl font-extrabold text-gradient-cyan">{s.value}</div>
-              <div className="mt-3 text-sm text-muted-foreground">{s.label}</div>
-            </div>
-          ))}
-        </div>
-
-        <div className="mt-16 flex flex-wrap items-center justify-center gap-x-10 gap-y-4 font-mono text-xs uppercase tracking-[0.25em] text-muted-foreground">
-          <span>PyTorch</span>
-          <span className="text-border">/</span>
-          <span>Hugging Face</span>
-          <span className="text-border">/</span>
-          <span>OpenRouter</span>
-          <span className="text-border">/</span>
-          <span>Supabase</span>
-          <span className="text-border">/</span>
-          <span>FastAPI</span>
-          <span className="text-border">/</span>
-          <span>Vercel</span>
-        </div>
-      </div>
-    </section>
-  );
-}
-
-function CTAFooter() {
-  return (
-    <section className="relative mx-auto max-w-7xl px-6 py-24">
-      <div className="relative overflow-hidden rounded-3xl border border-primary/30 bg-card p-12 text-center sm:p-16" style={{ background: "var(--gradient-card)" }}>
-        <div className="pointer-events-none absolute inset-0" style={{ background: "var(--gradient-accent-glow)" }} />
-        <div className="relative">
-          <h2 className="font-display text-4xl font-extrabold tracking-tight sm:text-5xl">
-            Ready to analyze your <span className="text-gradient-cyan">first image?</span>
-          </h2>
-          <p className="mx-auto mt-4 max-w-xl text-muted-foreground">
-            Free to use for educational purposes. No credit card required.
-          </p>
-          <a
-            href="/auth/register"
-            className="mt-8 inline-flex items-center gap-2 rounded-lg bg-primary px-7 py-3.5 text-sm font-semibold text-primary-foreground hover:shadow-[var(--glow-cyan)]"
-          >
-            Create Free Account
+          <a href="/auth/register" className="clinical-button px-6">
+            Create account
             <ArrowRight size={16} />
           </a>
-          <p className="mx-auto mt-8 flex max-w-xl items-center justify-center gap-2 text-xs text-muted-foreground">
-            <ShieldCheck size={14} className="text-primary" />
-            XRayVision AI is for educational and diagnostic assistance only. Not a substitute for a licensed radiologist.
-          </p>
         </div>
-      </div>
+      </Reveal>
     </section>
   );
 }
 
 function Footer() {
   return (
-    <footer className="border-t border-border">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-8">
+    <footer className="border-t border-border bg-white/80 dark:bg-background/80">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-7 sm:px-6">
         <div className="flex items-center gap-2.5">
-          <Logo size={20} />
-          <span className="font-display text-sm font-bold">XRayVision AI</span>
-          <span className="font-mono text-[10px] uppercase tracking-widest text-muted-foreground">v2.1</span>
+          <Logo size={22} />
+          <span className="font-display text-sm font-extrabold">XRayVision AI</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.12em] text-muted-foreground">v2.1</span>
         </div>
-        <span className="rounded-full border border-warning/30 bg-warning/10 px-3 py-1 font-mono text-[10px] uppercase tracking-widest text-warning">
-          Educational Use Only
+        <span className="flex items-center gap-2 text-xs text-muted-foreground">
+          <Activity size={14} className="text-primary" />
+          2026 XRayVision AI. Educational use only.
         </span>
-        <span className="text-xs text-muted-foreground">© 2026 XRayVision AI</span>
       </div>
     </footer>
   );

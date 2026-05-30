@@ -45,6 +45,11 @@ def synthesize_report(
                 "radiologist review is recommended."
             )
 
+        # The LLM doesn't always honor the >70% cardiac rule — validate its choice.
+        parsed["specialist"] = _validate_specialist(
+            parsed.get("specialist"), scan_type, findings
+        )
+
         return parsed
 
     except Exception as e:
@@ -97,18 +102,27 @@ Based on these findings, provide a clinical synthesis report. You MUST respond i
 }}
 
 IMPORTANT RULES:
-1. Be clinically precise. Reference actual finding names and confidence levels.
+1. Be clinically precise. Reference the TOP 2-3 findings by confidence only. Ignore findings below 55% in your narrative.
 2. If any finding has severity "high" or confidence > 80%, urgency should be at minimum "high".
 3. If no significant pathology is detected, set urgency to "clear" and recommend routine follow-up.
 4. Always include a recommendation to consult a qualified radiologist.
-5. recommended_actions should be specific, actionable medical steps.
-6. This is for educational use — include appropriate disclaimers in your synthesis.
+5. recommended_actions should be specific, actionable medical steps — max 4 actions.
+6. For fracture scans: if "Fracture suspected" or "Fracture Detected" is present, do NOT call the scan clear.
+   Explain whether localization came from YOLO boxes or image-level classifier evidence.
+7. "No fracture box localized" means YOLO did not find a box; it is not proof of no fracture.
+8. For specialist: choose based ONLY on the highest-confidence finding (>60%).
+   - Lung Opacity / Infiltration / Pneumonia / Atelectasis / Consolidation / Edema → Pulmonologist
+   - Cardiomegaly / Enlarged Cardiomediastinum (only if >70% confidence) → Cardiologist
+   - Fracture / Bone anomaly → Orthopedic Surgeon
+   - Effusion / Pneumothorax → Pulmonologist or Thoracic Surgeon
+   - Wound / Laceration → General Surgeon
+   - If unclear, default to Pulmonologist for chest scans.
+7. This is for educational use — include appropriate disclaimers in your synthesis.
 """
 
 
 def _parse_synthesis_response(response_text: str) -> dict:
     """Parse the model response into a structured dict."""
-    # Try to extract JSON from the response
     text = response_text.strip()
 
     # Remove markdown code fences if present
@@ -117,27 +131,42 @@ def _parse_synthesis_response(response_text: str) -> dict:
         text = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:])
         text = text.strip()
 
-    try:
-        parsed = json.loads(text)
+    parsed = _try_json_parse(text)
+    if parsed is None:
+        start = text.find("{")
+        end = text.rfind("}")
+        if start != -1 and end != -1 and end > start:
+            parsed = _try_json_parse(text[start:end + 1])
+
+    if isinstance(parsed, str):
+        parsed = _try_json_parse(parsed)
+
+    if isinstance(parsed, dict):
         return {
             "urgency": parsed.get("urgency", "medium"),
             "synthesis_text": parsed.get("synthesis_text", ""),
             "recommended_actions": parsed.get("recommended_actions", []),
             "specialist": parsed.get("specialist"),
         }
+
+    logger.warning("Failed to parse OpenRouter JSON response, using raw text.")
+    return {
+        "urgency": "medium",
+        "synthesis_text": text[:500],
+        "recommended_actions": [
+            "Consult a qualified radiologist for definitive interpretation",
+            "Correlate with clinical symptoms and patient history",
+            "Consider additional imaging if findings are inconclusive",
+        ],
+        "specialist": None,
+    }
+
+
+def _try_json_parse(text: str):
+    try:
+        return json.loads(text)
     except json.JSONDecodeError:
-        # If JSON parsing fails, extract what we can
-        logger.warning("Failed to parse OpenRouter JSON response, using raw text.")
-        return {
-            "urgency": "medium",
-            "synthesis_text": text[:500],
-            "recommended_actions": [
-                "Consult a qualified radiologist for definitive interpretation",
-                "Correlate with clinical symptoms and patient history",
-                "Consider additional imaging if findings are inconclusive",
-            ],
-            "specialist": None,
-        }
+        return None
 
 
 def _fallback_synthesis(findings: list[dict], scan_type: str) -> dict:
@@ -184,15 +213,50 @@ def _fallback_synthesis(findings: list[dict], scan_type: str) -> dict:
     }
 
 
+def _validate_specialist(
+    specialist: str | None, scan_type: str, findings: list[dict]
+) -> str | None:
+    """Override an unjustified specialist recommendation from the LLM.
+
+    Cardiologist is only appropriate for a chest scan when a cardiac finding
+    (Cardiomegaly / Enlarged Cardiomediastinum) exceeds 70% confidence — the
+    same rule given in the prompt. The LLM doesn't always follow it, so we
+    fall back to the deterministic suggestion when it doesn't.
+    """
+    if not specialist:
+        return specialist
+
+    if scan_type == "chest" and "cardiolog" in specialist.lower():
+        cardiac = {"Cardiomegaly", "Enlarged Cardiomediastinum"}
+        has_cardiac = any(
+            f.get("name") in cardiac and f.get("confidence", 0) >= 70
+            for f in findings
+        )
+        if not has_cardiac:
+            return _suggest_specialist(scan_type, findings)
+
+    return specialist
+
+
 def _suggest_specialist(scan_type: str, findings: list[dict]) -> str | None:
-    """Suggest a specialist based on scan type and findings."""
-    if scan_type == "chest":
-        cardiac_findings = {"Cardiomegaly", "Enlarged Cardiomediastinum"}
-        if any(f["name"] in cardiac_findings for f in findings):
-            return "Cardiologist"
-        return "Pulmonologist"
-    elif scan_type == "fracture":
-        return "Orthopedic Surgeon"
-    elif scan_type == "wound":
+    """Suggest a specialist based on the highest-confidence finding."""
+    if scan_type == "fracture":
+        has_positive = any(
+            "fracture" in f.get("name", "").lower()
+            and "no fracture" not in f.get("name", "").lower()
+            for f in findings
+        )
+        return "Orthopedic Surgeon" if has_positive else None
+    if scan_type == "wound":
         return "General Surgeon"
+
+    if scan_type == "chest":
+        # Only recommend Cardiologist if cardiac findings are high-confidence
+        cardiac = {"Cardiomegaly", "Enlarged Cardiomediastinum"}
+        for f in findings:
+            if f["name"] in cardiac and f.get("confidence", 0) >= 70:
+                return "Cardiologist"
+        # Default to Pulmonologist for all other chest pathologies
+        return "Pulmonologist"
+
     return None

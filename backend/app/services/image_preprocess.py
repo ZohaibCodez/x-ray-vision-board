@@ -9,12 +9,45 @@ import torch
 
 
 def load_image_from_bytes(file_bytes: bytes) -> np.ndarray:
-    """Load an image from raw bytes into a numpy array (BGR)."""
+    """Load an image from raw bytes into a numpy array (BGR).
+
+    Supports common image formats through OpenCV and DICOM through pydicom.
+    """
     nparr = np.frombuffer(file_bytes, np.uint8)
     img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
-    if img is None:
-        raise ValueError("Could not decode the uploaded image.")
-    return img
+    if img is not None:
+        return img
+
+    return load_dicom_from_bytes(file_bytes)
+
+
+def load_dicom_from_bytes(file_bytes: bytes) -> np.ndarray:
+    """Decode DICOM pixel data into an 8-bit BGR image."""
+    try:
+        import pydicom
+    except ImportError as exc:
+        raise ValueError("DICOM support requires pydicom to be installed.") from exc
+
+    try:
+        ds = pydicom.dcmread(io.BytesIO(file_bytes), force=True)
+        arr = ds.pixel_array.astype(np.float32)
+    except Exception as exc:
+        raise ValueError("Could not decode the uploaded image or DICOM file.") from exc
+
+    slope = float(getattr(ds, "RescaleSlope", 1.0))
+    intercept = float(getattr(ds, "RescaleIntercept", 0.0))
+    arr = arr * slope + intercept
+
+    photo = str(getattr(ds, "PhotometricInterpretation", "")).upper()
+    if photo == "MONOCHROME1":
+        arr = arr.max() - arr
+
+    arr = arr - arr.min()
+    max_val = arr.max()
+    if max_val > 0:
+        arr = arr / max_val
+    img8 = (arr * 255).clip(0, 255).astype(np.uint8)
+    return cv2.cvtColor(img8, cv2.COLOR_GRAY2BGR)
 
 
 def preprocess_for_chest(file_bytes: bytes) -> np.ndarray:
@@ -69,8 +102,12 @@ def preprocess_for_vit(file_bytes: bytes) -> Image.Image:
 
     Returns a PIL Image (RGB) — the ViT processor handles resizing/normalization.
     """
-    img = Image.open(io.BytesIO(file_bytes)).convert("RGB")
-    return img
+    try:
+        return Image.open(io.BytesIO(file_bytes)).convert("RGB")
+    except Exception:
+        bgr = load_dicom_from_bytes(file_bytes)
+        rgb = cv2.cvtColor(bgr, cv2.COLOR_BGR2RGB)
+        return Image.fromarray(rgb)
 
 
 def image_to_base64(file_bytes: bytes) -> str:

@@ -234,3 +234,4 @@ coverage/
 *.temp
 tmp/
 temp/
+.claude

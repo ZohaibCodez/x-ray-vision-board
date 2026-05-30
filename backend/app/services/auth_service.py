@@ -63,3 +63,17 @@ def get_current_user_id(
             detail="Token missing user identifier.",
         )
     return user_id
+
+
+def get_current_user(
+    credentials: HTTPAuthorizationCredentials = Depends(security),
+) -> dict:
+    """FastAPI dependency — extract user_id and email from the JWT."""
+    payload = decode_token(credentials.credentials)
+    user_id = payload.get("sub")
+    if not user_id:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token missing user identifier.",
+        )
+    return {"id": user_id, "email": payload.get("email", "")}

@@ -27,7 +27,11 @@ class Settings(BaseSettings):
     jwt_expiry_hours: int = 24
 
     # Model Config
-    yolo_weights_path: str = "yolov8n.pt"
+    yolo_weights_path: str = "models/fracture_yolov8.pt"
+    allow_generic_yolo_weights: bool = False
+    fracture_classifier_enabled: bool = True
+    fracture_classifier_model_name: str = "prithivMLmods/Bone-Fracture-Detection"
+    wound_model_name: str = "PayamFard123/dermaintel-wound-classifier"
     confidence_threshold: float = 0.40
 
     # CORS

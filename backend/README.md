@@ -32,9 +32,15 @@ Once running, visit:
 | Model | Task | Input | Output |
 |-------|------|-------|--------|
 | TorchXRayVision DenseNet121 | Chest Pathology | 224×224 grayscale | 18 pathology probabilities |
-| YOLOv8 | Fracture Detection | Any size RGB | Bounding boxes + confidence |
-| ViT (google/vit-base-patch16-224) | Wound Classification | 224×224 RGB | Classification labels |
+| YOLOv8 | Fracture Localization | Any size RGB | Positive fracture boxes only |
+| HF fracture classifier | Fracture Screening | 224x224 RGB | Image-level fracture/normal probability |
+| Wound-specific HF classifier | Wound Classification | 224×224 RGB | Classification labels |
 | OpenRouter GLM 4.5 Air | Agentic Synthesis | Model outputs + notes | Structured diagnostic report |
+
+Fracture scans use a safer two-stage workflow:
+- YOLO localizes visible fracture boxes when it can.
+- The pretrained classifier provides image-level fracture suspicion.
+- Detector `Not_Fracture` boxes are ignored because they do not prove the whole scan is normal.
 
 ## Database Setup
 

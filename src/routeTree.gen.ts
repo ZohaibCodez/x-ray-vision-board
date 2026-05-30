@@ -14,6 +14,7 @@ import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as HistoryRouteImport } from './routes/history'
 import { Route as DietRouteImport } from './routes/diet'
 import { Route as DashboardRouteImport } from './routes/dashboard'
+import { Route as ClinicsRouteImport } from './routes/clinics'
 import { Route as ChatRouteImport } from './routes/chat'
 import { Route as AnalyzeRouteImport } from './routes/analyze'
 import { Route as IndexRouteImport } from './routes/index'
@@ -45,6 +46,11 @@ const DietRoute = DietRouteImport.update({
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClinicsRoute = ClinicsRouteImport.update({
+  id: '/clinics',
+  path: '/clinics',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ChatRoute = ChatRouteImport.update({
@@ -87,6 +93,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/analyze': typeof AnalyzeRoute
   '/chat': typeof ChatRoute
+  '/clinics': typeof ClinicsRoute
   '/dashboard': typeof DashboardRoute
   '/diet': typeof DietRoute
   '/history': typeof HistoryRoute
@@ -101,6 +108,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/analyze': typeof AnalyzeRoute
   '/chat': typeof ChatRoute
+  '/clinics': typeof ClinicsRoute
   '/dashboard': typeof DashboardRoute
   '/diet': typeof DietRoute
   '/history': typeof HistoryRoute
@@ -116,6 +124,7 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/analyze': typeof AnalyzeRoute
   '/chat': typeof ChatRoute
+  '/clinics': typeof ClinicsRoute
   '/dashboard': typeof DashboardRoute
   '/diet': typeof DietRoute
   '/history': typeof HistoryRoute
@@ -132,6 +141,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analyze'
     | '/chat'
+    | '/clinics'
     | '/dashboard'
     | '/diet'
     | '/history'
@@ -146,6 +156,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analyze'
     | '/chat'
+    | '/clinics'
     | '/dashboard'
     | '/diet'
     | '/history'
@@ -160,6 +171,7 @@ export interface FileRouteTypes {
     | '/'
     | '/analyze'
     | '/chat'
+    | '/clinics'
     | '/dashboard'
     | '/diet'
     | '/history'
@@ -175,6 +187,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AnalyzeRoute: typeof AnalyzeRoute
   ChatRoute: typeof ChatRoute
+  ClinicsRoute: typeof ClinicsRoute
   DashboardRoute: typeof DashboardRoute
   DietRoute: typeof DietRoute
   HistoryRoute: typeof HistoryRoute
@@ -221,6 +234,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof DashboardRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/clinics': {
+      id: '/clinics'
+      path: '/clinics'
+      fullPath: '/clinics'
+      preLoaderRoute: typeof ClinicsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/chat': {
@@ -279,6 +299,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AnalyzeRoute: AnalyzeRoute,
   ChatRoute: ChatRoute,
+  ClinicsRoute: ClinicsRoute,
   DashboardRoute: DashboardRoute,
   DietRoute: DietRoute,
   HistoryRoute: HistoryRoute,

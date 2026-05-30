@@ -39,7 +39,13 @@ def complete_text(
         },
         timeout=settings.openrouter_timeout_seconds,
     )
-    response.raise_for_status()
+    try:
+        response.raise_for_status()
+    except httpx.HTTPStatusError as exc:
+        detail = response.text[:500]
+        raise RuntimeError(
+            f"OpenRouter request failed with HTTP {response.status_code}: {detail}"
+        ) from exc
 
     data = response.json()
     choices = data.get("choices") or []

@@ -37,6 +37,14 @@ def _preload_models_background():
         logger.warning(f"⚠️ YOLOv8 failed to preload: {e}")
 
     try:
+        if get_settings().fracture_classifier_enabled:
+            from app.services.fracture_classifier import _get_model as load_fracture_classifier
+            load_fracture_classifier()
+            logger.info("HF Fracture Classifier loaded")
+    except Exception as e:
+        logger.warning(f"HF Fracture Classifier failed to preload: {e}")
+
+    try:
         from app.services.wound_model import _get_model as load_wound
         load_wound()
         logger.info("✅ ViT (Wound Classification) loaded")
@@ -98,7 +106,7 @@ def create_app() -> FastAPI:
     )
 
     # Register routers
-    from app.routers import auth, analyze, scans, chat, diet, stats
+    from app.routers import auth, analyze, scans, chat, diet, stats, clinics
 
     app.include_router(auth.router)
     app.include_router(analyze.router)
@@ -106,6 +114,7 @@ def create_app() -> FastAPI:
     app.include_router(chat.router)
     app.include_router(diet.router)
     app.include_router(stats.router)
+    app.include_router(clinics.router)
 
     @app.get("/", tags=["health"])
     async def health():

@@ -125,10 +125,21 @@ def get_user_stats(user_id: str) -> dict:
 
 # ── Storage Helpers ──────────────────────────────────────────────────
 
+def _ensure_bucket(client, bucket: str = "xray-images") -> None:
+    """Create the storage bucket if it doesn't exist yet."""
+    try:
+        buckets = [b.name for b in client.storage.list_buckets()]
+        if bucket not in buckets:
+            client.storage.create_bucket(bucket, options={"public": True})
+    except Exception:
+        pass  # best-effort — upload will surface the real error if it fails
+
+
 def upload_image(user_id: str, scan_id: str, file_bytes: bytes,
                  content_type: str = "image/png") -> str:
     """Upload an X-ray image to Supabase Storage and return the public URL."""
     client = get_supabase_client()
+    _ensure_bucket(client)
     path = f"{user_id}/{scan_id}.png"
     client.storage.from_("xray-images").upload(
         path, file_bytes, {"content-type": content_type}
@@ -162,8 +173,24 @@ def get_chat_sessions(user_id: str) -> list[dict]:
     return result.data or []
 
 
-def get_chat_messages(session_id: str) -> list[dict]:
-    """Get all messages for a chat session."""
+def user_owns_chat_session(session_id: str, user_id: str) -> bool:
+    """Return whether a chat session belongs to a user."""
+    client = get_supabase_client()
+    result = (
+        client.table("chat_sessions")
+        .select("id")
+        .eq("id", session_id)
+        .eq("user_id", user_id)
+        .limit(1)
+        .execute()
+    )
+    return bool(result.data)
+
+
+def get_chat_messages(session_id: str, user_id: str) -> list[dict]:
+    """Get all messages for a chat session scoped to the authenticated user."""
+    if not user_owns_chat_session(session_id, user_id):
+        return []
     client = get_supabase_client()
     result = (
         client.table("chat_messages")

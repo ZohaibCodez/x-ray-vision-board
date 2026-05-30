@@ -13,6 +13,7 @@ import type {
   ChatSession,
   ChatMessage,
   DietPlanResponse,
+  ClinicSearchResponse,
 } from "./types";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
@@ -86,6 +87,28 @@ export const authApi = {
     return request<AuthResponse["user"]>("/auth/me");
   },
 
+  async updateProfile(params: {
+    full_name?: string;
+    role?: string;
+    avatar_url?: string | null;
+  }) {
+    const user = await request<AuthResponse["user"]>("/auth/profile", {
+      method: "PATCH",
+      body: JSON.stringify(params),
+    });
+    localStorage.setItem("xray_user", JSON.stringify(user));
+    return user;
+  },
+
+  async updateSettings(settings: Record<string, unknown>) {
+    const user = await request<AuthResponse["user"]>("/auth/settings", {
+      method: "PATCH",
+      body: JSON.stringify({ settings }),
+    });
+    localStorage.setItem("xray_user", JSON.stringify(user));
+    return user;
+  },
+
   logout() {
     localStorage.removeItem("xray_token");
     localStorage.removeItem("xray_user");
@@ -151,6 +174,22 @@ export const scansApi = {
   async delete(scanId: string): Promise<void> {
     await request(`/scans/${scanId}`, { method: "DELETE" });
   },
+
+  async downloadPdf(scanId: string): Promise<Blob> {
+    const token = getToken();
+    const res = await fetch(`${API_URL}/scans/${scanId}/report.pdf`, {
+      headers: token ? { Authorization: `Bearer ${token}` } : {},
+    });
+    if (!res.ok) {
+      const errorBody = await res.json().catch(() => ({ detail: res.statusText }));
+      throw new Error(errorBody.detail || `Request failed: ${res.status}`);
+    }
+    return res.blob();
+  },
+
+  async exportJson(scanId: string): Promise<unknown> {
+    return request(`/scans/${scanId}/export.json`);
+  },
 };
 
 // ── Stats API ─────────────────────────────────────────────────────
@@ -202,5 +241,22 @@ export const dietApi = {
       method: "POST",
       body: JSON.stringify(params),
     });
+  },
+};
+
+// ── Clinics API ───────────────────────────────────────────────────
+
+export const clinicApi = {
+  async search(params: {
+    lat: number;
+    lon: number;
+    radius_km?: number;
+  }): Promise<ClinicSearchResponse> {
+    const query = new URLSearchParams({
+      lat: String(params.lat),
+      lon: String(params.lon),
+      ...(params.radius_km ? { radius_km: String(params.radius_km) } : {}),
+    });
+    return request<ClinicSearchResponse>(`/clinics?${query}`);
   },
 };

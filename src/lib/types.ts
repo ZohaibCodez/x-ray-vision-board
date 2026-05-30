@@ -9,6 +9,7 @@ export interface UserProfile {
   full_name: string;
   role: string;
   avatar_url?: string | null;
+  settings?: Record<string, unknown>;
   created_at?: string | null;
 }
 
@@ -113,6 +114,23 @@ export interface DietPlanResponse {
   summary: string;
   plan: DayPlan[];
   tips: string[];
+}
+
+// ── Clinics ───────────────────────────────────────────────────────
+export interface ClinicResult {
+  name: string;
+  type: string;
+  address: string;
+  lat: number;
+  lon: number;
+  distance_km: number;
+  maps_url: string;
+}
+
+export interface ClinicSearchResponse {
+  clinics: ClinicResult[];
+  total: number;
+  search_location: { lat: number; lon: number; radius_km: number };
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────

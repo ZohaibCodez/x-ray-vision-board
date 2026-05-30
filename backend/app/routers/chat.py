@@ -1,12 +1,16 @@
 """Health chatbot endpoints — FYP requirement."""
 
 from __future__ import annotations
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, HTTPException, status
 from app.models.schemas import ChatRequest, ChatResponse, ChatSession
 from app.services.auth_service import get_current_user_id
 from app.services.chatbot_service import chat_with_health_bot
 from app.utils.supabase_client import (
-    create_chat_session, get_chat_sessions, get_chat_messages, insert_chat_message,
+    create_chat_session,
+    get_chat_sessions,
+    get_chat_messages,
+    insert_chat_message,
+    user_owns_chat_session,
 )
 
 router = APIRouter(prefix="/chat", tags=["chat"])
@@ -23,9 +27,11 @@ async def send_message(
     if not session_id:
         session = create_chat_session(user_id, title=req.message[:50])
         session_id = session["id"]
+    elif not user_owns_chat_session(session_id, user_id):
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Chat session not found.")
 
     # Get conversation history for context
-    history = get_chat_messages(session_id)
+    history = get_chat_messages(session_id, user_id)
 
     # Save user message
     insert_chat_message(session_id, "user", req.message)
@@ -68,5 +74,5 @@ async def get_messages(
     user_id: str = Depends(get_current_user_id),
 ):
     """Get all messages in a chat session."""
-    messages = get_chat_messages(session_id)
+    messages = get_chat_messages(session_id, user_id)
     return messages

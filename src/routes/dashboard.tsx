@@ -1,211 +1,244 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { ScanLine, AlertTriangle, Target, Clock, ArrowUpRight, ArrowDownRight, TrendingUp, Bone, Stethoscope, Activity, Loader2 } from "lucide-react";
+import {
+  Activity,
+  AlertTriangle,
+  ArrowRight,
+  Bone,
+  Clock,
+  FileText,
+  ScanLine,
+  Stethoscope,
+  Target,
+  TrendingUp,
+} from "lucide-react";
 import { AppShell } from "@/components/app/AppShell";
 import { useStats } from "@/hooks/use-scans";
 import { useAuth } from "@/lib/auth-context";
 
 export const Route = createFileRoute("/dashboard")({
-  head: () => ({ meta: [{ title: "Dashboard — XRayVision AI" }] }),
+  head: () => ({ meta: [{ title: "Dashboard - XRayVision AI" }] }),
   component: Dashboard,
 });
 
 const urgencyStyle: Record<string, string> = {
-  critical: "bg-destructive/15 text-destructive",
-  high: "bg-warning/15 text-warning",
-  medium: "bg-info/15 text-info",
-  low: "bg-success/15 text-success",
-  clear: "bg-muted text-muted-foreground",
+  critical: "bg-destructive/12 text-destructive border-destructive/25",
+  high: "bg-destructive/12 text-destructive border-destructive/25",
+  medium: "bg-warning/14 text-warning border-warning/30",
+  low: "bg-info/12 text-info border-info/25",
+  clear: "bg-success/12 text-success border-success/25",
 };
 
 function Dashboard() {
   const { user } = useAuth();
   const { data: stats, isLoading } = useStats();
 
-  const displayName = user?.full_name || "Doctor";
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-
   if (isLoading) {
     return (
       <AppShell title="Dashboard">
-        <div className="flex items-center justify-center py-32">
-          <Loader2 size={32} className="animate-spin text-primary" />
+        <div className="space-y-5">
+          <div className="clinical-panel-strong p-6">
+            <div className="premium-skeleton h-3 w-36" />
+            <div className="premium-skeleton mt-4 h-10 w-full max-w-xl" />
+            <div className="premium-skeleton mt-4 h-4 w-full max-w-2xl" />
+          </div>
+          <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+            {[0, 1, 2, 3].map((item) => (
+              <div key={item} className="clinical-panel p-5">
+                <div className="premium-skeleton h-3 w-28" />
+                <div className="premium-skeleton mt-4 h-9 w-24" />
+                <div className="premium-skeleton mt-4 h-3 w-36" />
+              </div>
+            ))}
+          </div>
+          <div className="grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
+            <div className="clinical-panel p-5">
+              <div className="premium-skeleton h-6 w-48" />
+              <div className="mt-5 space-y-3">
+                {[0, 1, 2, 3, 4].map((item) => <div key={item} className="premium-skeleton h-10 w-full" />)}
+              </div>
+            </div>
+            <div className="clinical-panel p-5">
+              <div className="premium-skeleton h-6 w-44" />
+              <div className="mt-5 space-y-4">
+                {[0, 1, 2, 3].map((item) => <div key={item} className="premium-skeleton h-8 w-full" />)}
+              </div>
+            </div>
+          </div>
         </div>
       </AppShell>
     );
   }
 
+  const displayName = user?.full_name || "Doctor";
+  const hour = new Date().getHours();
+  const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
   const totalScans = stats?.total_scans ?? 0;
   const criticalFindings = stats?.critical_findings ?? 0;
   const avgConfidence = stats?.avg_confidence ?? 0;
   const avgTime = stats?.avg_report_time ?? 0;
   const recentScans = stats?.recent_scans ?? [];
-  const dist = stats?.finding_distribution ?? {};
+  const distEntries = Object.entries(stats?.finding_distribution ?? {}).slice(0, 5);
   const models = stats?.model_performance ?? [];
 
   const statCards = [
-    { label: "Total Scans", value: totalScans.toLocaleString(), delta: "+new", up: true, icon: ScanLine, color: "text-primary" },
-    { label: "Critical Findings", value: String(criticalFindings), delta: "", up: true, icon: AlertTriangle, color: "text-destructive" },
-    { label: "Avg. Confidence", value: `${avgConfidence}%`, delta: "", up: true, icon: Target, color: "text-success" },
-    { label: "Avg. Report Time", value: `${avgTime}s`, delta: "", up: false, icon: Clock, color: "text-info" },
+    { label: "Total scans", value: totalScans.toLocaleString(), icon: ScanLine, color: "text-primary", helper: "Across all modalities" },
+    { label: "Urgent reports", value: String(criticalFindings), icon: AlertTriangle, color: "text-destructive", helper: "High or critical urgency" },
+    { label: "Avg confidence", value: `${avgConfidence}%`, icon: Target, color: "text-success", helper: "Mean finding confidence" },
+    { label: "Report time", value: `${avgTime}s`, icon: Clock, color: "text-info", helper: "Estimated average" },
   ];
-
-  // Build donut data from finding distribution
-  const distColors = ["#00C8E0", "#0080FF", "#7B9CFF", "#FFB547", "#3D4F6B"];
-  const distEntries = Object.entries(dist).slice(0, 5);
-  const distTotal = distEntries.reduce((sum, [, v]) => sum + v, 0) || 1;
-  const donutData = distEntries.map(([label, count], i) => ({
-    label,
-    pct: Math.round((count / distTotal) * 100),
-    color: distColors[i % distColors.length],
-  }));
 
   return (
     <AppShell title="Dashboard">
-      {/* Row 1 */}
-      <section className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <p className="font-mono text-[11px] uppercase tracking-widest text-primary">Welcome back</p>
-          <h2 className="mt-1 font-display text-3xl font-bold">{greeting}, {displayName}</h2>
-          {recentScans.length > 0 && (
-            <p className="mt-1 text-sm text-muted-foreground">
-              <span className="text-warning">{recentScans.length} recent analyses</span> · {criticalFindings} critical findings
-            </p>
-          )}
+      <section className="grid gap-4 lg:grid-cols-[1fr_auto]">
+        <div className="clinical-panel-strong premium-card p-6">
+          <p className="clinical-kicker">Diagnostic command center</p>
+          <h2 className="mt-2 font-display text-3xl font-extrabold sm:text-4xl">
+            {greeting}, {displayName}
+          </h2>
+          <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+            Review model activity, urgent findings, scan history, and reporting performance from one focused workspace.
+          </p>
         </div>
-        <Link
-          to="/analyze"
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 text-sm font-semibold text-primary-foreground transition-all hover:shadow-[var(--glow-cyan)]"
-        >
-          <ScanLine size={16} /> New Analysis
+        <Link to="/analyze" className="clinical-button min-w-52 px-5 self-stretch lg:self-center">
+          <ScanLine size={17} />
+          New analysis
+          <ArrowRight size={16} />
         </Link>
       </section>
 
-      {/* Row 2 - Stats */}
-      <section className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {statCards.map((s, i) => (
-          <div
-            key={s.label}
-            className="group relative overflow-hidden rounded-xl border border-border bg-card p-5 transition-all hover:border-primary/40 hover:shadow-[var(--shadow-md)] animate-fade-up"
-            style={{ animationDelay: `${i * 60}ms`, background: "var(--gradient-card)" }}
-          >
-            <div className="flex items-start justify-between">
+      <section className="mt-5 grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+        {statCards.map((card, index) => (
+          <div key={card.label} className="clinical-panel premium-card p-5 animate-fade-up" style={{ animationDelay: `${index * 45}ms` }}>
+            <div className="flex items-start justify-between gap-4">
               <div>
-                <p className="text-xs font-medium uppercase tracking-wider text-muted-foreground">{s.label}</p>
-                <p className="mt-2 font-display text-3xl font-bold tracking-tight">{s.value}</p>
+                <p className="text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">{card.label}</p>
+                <p className="mt-2 font-display text-3xl font-extrabold">{card.value}</p>
               </div>
-              <div className={`flex h-9 w-9 items-center justify-center rounded-lg border border-border bg-background/60 ${s.color}`}>
-                <s.icon size={16} />
-              </div>
+              <span className={`flex h-11 w-11 items-center justify-center rounded-lg bg-surface ${card.color}`}>
+                <card.icon size={19} />
+              </span>
             </div>
+            <p className="mt-3 text-xs text-muted-foreground">{card.helper}</p>
           </div>
         ))}
       </section>
 
-      {/* Row 3 - Recent + Donut */}
-      <section className="mt-8 grid gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card p-6 lg:col-span-2" style={{ background: "var(--gradient-card)" }}>
-          <div className="flex items-center justify-between">
+      <section className="mt-5 grid gap-5 xl:grid-cols-[1.35fr_0.65fr]">
+        <div className="clinical-panel premium-card p-5">
+          <div className="flex items-center justify-between gap-4">
             <div>
-              <h3 className="text-base font-semibold">Recent Analyses</h3>
-              <p className="text-xs text-muted-foreground">{recentScans.length > 0 ? "Latest scans" : "No scans yet"}</p>
+              <h3 className="text-lg font-extrabold">Recent analyses</h3>
+              <p className="text-sm text-muted-foreground">Latest stored scan reports</p>
             </div>
-            <Link to="/history" className="text-xs text-primary hover:underline">View all →</Link>
+            <Link to="/history" className="clinical-button-secondary px-3">
+              View all
+              <ArrowRight size={14} />
+            </Link>
           </div>
+
           <div className="mt-4 overflow-x-auto">
             {recentScans.length > 0 ? (
-              <table className="w-full text-sm">
+              <table className="w-full min-w-[680px] text-sm">
                 <thead>
-                  <tr className="border-b border-border text-left font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-                    <th className="py-3">Scan ID</th>
-                    <th className="py-3">Type</th>
-                    <th className="py-3">Findings</th>
-                    <th className="py-3">Urgency</th>
-                    <th className="py-3">Date</th>
+                  <tr className="border-b border-border text-left text-[11px] font-semibold uppercase tracking-[0.08em] text-muted-foreground">
+                    <th className="py-3 pr-4">Scan</th>
+                    <th className="py-3 pr-4">Type</th>
+                    <th className="py-3 pr-4">Findings</th>
+                    <th className="py-3 pr-4">Urgency</th>
+                    <th className="py-3 pr-4">Date</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {recentScans.map((r) => (
-                    <tr key={r.id} className="border-b border-border/60 transition-colors hover:bg-background/40">
-                      <td className="py-3">
-                        <Link to="/results/$scanId" params={{ scanId: r.id }} className="font-mono text-xs text-primary hover:underline">
-                          {r.id.slice(0, 8)}…
+                  {recentScans.map((scan) => (
+                    <tr key={scan.id} className="border-b border-border/70 transition-colors hover:bg-surface/70 last:border-0">
+                      <td className="py-3 pr-4">
+                        <Link to="/results/$scanId" params={{ scanId: scan.id }} className="font-mono text-xs font-semibold text-primary hover:underline">
+                          {scan.id.slice(0, 10)}
                         </Link>
                       </td>
-                      <td className="py-3 capitalize">{r.scan_type}</td>
-                      <td className="py-3">{r.findings_count}</td>
-                      <td className="py-3">
-                        <span className={`rounded-full px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${urgencyStyle[r.urgency] || urgencyStyle.clear}`}>
-                          {r.urgency}
+                      <td className="py-3 pr-4 capitalize">{scan.scan_type}</td>
+                      <td className="py-3 pr-4">{scan.findings_count}</td>
+                      <td className="py-3 pr-4">
+                        <span className={`rounded-md border px-2 py-1 font-mono text-[10px] uppercase tracking-[0.08em] ${urgencyStyle[scan.urgency] || urgencyStyle.clear}`}>
+                          {scan.urgency}
                         </span>
                       </td>
-                      <td className="py-3 text-xs text-muted-foreground">{new Date(r.created_at).toLocaleDateString()}</td>
+                      <td className="py-3 pr-4 text-xs text-muted-foreground">{new Date(scan.created_at).toLocaleDateString()}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             ) : (
-              <div className="py-8 text-center text-sm text-muted-foreground">
-                No analyses yet. <Link to="/analyze" className="text-primary hover:underline">Start your first analysis →</Link>
+              <div className="rounded-lg border border-dashed border-border bg-surface/60 px-6 py-12 text-center">
+                <FileText size={28} className="mx-auto text-muted-foreground" />
+                <p className="mt-3 text-sm font-bold">No reports yet</p>
+                <p className="mt-1 text-sm text-muted-foreground">Upload your first image to populate this dashboard.</p>
               </div>
             )}
           </div>
         </div>
 
-        <div className="rounded-xl border border-border bg-card p-6" style={{ background: "var(--gradient-card)" }}>
-          <h3 className="text-base font-semibold">Finding Distribution</h3>
-          <p className="text-xs text-muted-foreground">All time</p>
-          {donutData.length > 0 ? (
-            <>
-              <Donut data={donutData} total={totalScans} />
-              <ul className="mt-4 space-y-2">
-                {donutData.map((d) => (
-                  <li key={d.label} className="flex items-center justify-between text-xs">
-                    <span className="flex items-center gap-2">
-                      <span className="h-2 w-2 rounded-full" style={{ backgroundColor: d.color }} />
-                      <span className="text-foreground">{d.label}</span>
-                    </span>
-                    <span className="font-mono text-muted-foreground">{d.pct}%</span>
-                  </li>
-                ))}
-              </ul>
-            </>
+        <div className="clinical-panel premium-card p-5">
+          <h3 className="text-lg font-extrabold">Finding distribution</h3>
+          <p className="text-sm text-muted-foreground">Top labels across all scans</p>
+          {distEntries.length > 0 ? (
+            <div className="mt-5 space-y-3">
+              {distEntries.map(([label, count], index) => {
+                const max = Math.max(...distEntries.map(([, value]) => value), 1);
+                return (
+                  <div key={label}>
+                    <div className="mb-1.5 flex justify-between gap-3 text-xs">
+                      <span className="font-semibold">{label}</span>
+                      <span className="font-mono text-muted-foreground">{count}</span>
+                    </div>
+                    <div className="h-2 overflow-hidden rounded-full bg-surface">
+                      <div
+                        className="h-full rounded-full bg-primary"
+                        style={{ width: `${Math.max(8, (count / max) * 100)}%`, opacity: 1 - index * 0.08 }}
+                      />
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           ) : (
-            <div className="mt-8 text-center text-sm text-muted-foreground">No data yet</div>
+            <div className="mt-5 rounded-lg border border-dashed border-border bg-surface/60 px-6 py-10 text-center text-sm text-muted-foreground">
+              No finding data yet
+            </div>
           )}
         </div>
       </section>
 
-      {/* Row 4 - Model performance */}
-      <section className="mt-8 rounded-xl border border-border bg-card p-6" style={{ background: "var(--gradient-card)" }}>
-        <div className="flex items-center justify-between">
+      <section className="mt-5 clinical-panel premium-card p-5">
+        <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h3 className="text-base font-semibold">Model Performance</h3>
-            <p className="text-xs text-muted-foreground">Benchmark AUC on validation sets</p>
+            <h3 className="text-lg font-extrabold">Model performance</h3>
+            <p className="text-sm text-muted-foreground">Benchmark references used in dashboard reporting</p>
           </div>
-          <span className="inline-flex items-center gap-1.5 rounded-md bg-success/10 px-2.5 py-1 font-mono text-[10px] uppercase tracking-wider text-success">
-            <TrendingUp size={11} /> All operational
+          <span className="inline-flex min-h-8 items-center gap-2 rounded-lg border border-success/25 bg-success/10 px-3 text-xs font-bold text-success">
+            <TrendingUp size={14} />
+            Operational
           </span>
         </div>
-        <div className="mt-6 grid gap-4 md:grid-cols-3">
+        <div className="mt-5 grid gap-4 md:grid-cols-3">
           {(models.length > 0 ? models : [
-            { name: "DenseNet121", task: "Chest Pathology", auc: 0.847, color: "bg-primary" },
-            { name: "YOLOv8", task: "Fracture Detection", auc: 0.891, color: "bg-secondary" },
-            { name: "ViT", task: "Wound Classification", auc: 0.823, color: "bg-info" },
-          ]).map((m) => {
-            const Icon = m.name === "DenseNet121" ? Stethoscope : m.name === "YOLOv8" ? Bone : Activity;
+            { name: "DenseNet121", task: "Chest pathology", auc: 0.847, color: "bg-primary" },
+            { name: "YOLOv8", task: "Fracture detection", auc: 0.891, color: "bg-secondary" },
+            { name: "ViT", task: "Wound classification", auc: 0.823, color: "bg-info" },
+          ]).map((model) => {
+            const Icon = model.name === "DenseNet121" ? Stethoscope : model.name === "YOLOv8" ? Bone : Activity;
             return (
-              <div key={m.name} className="rounded-lg border border-border bg-background/60 p-4">
-                <div className="flex items-center justify-between">
+              <div key={model.name} className="rounded-lg border border-border bg-white/72 p-4 interaction-lift">
+                <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
-                    <Icon size={14} className="text-primary" />
-                    <span className="text-sm font-semibold">{m.name}</span>
+                    <Icon size={16} className="text-primary" />
+                    <span className="text-sm font-extrabold">{model.name}</span>
                   </div>
-                  <span className="font-mono text-xs text-foreground">{m.auc.toFixed(3)}</span>
+                  <span className="font-mono text-xs">{model.auc.toFixed(3)}</span>
                 </div>
-                <p className="mt-1 text-[11px] text-muted-foreground">{m.task}</p>
-                <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-border">
-                  <div className={`h-full ${m.color}`} style={{ width: `${m.auc * 100}%`, boxShadow: "0 0 8px rgba(0,200,224,0.5)" }} />
+                <p className="mt-1 text-xs text-muted-foreground">{model.task}</p>
+                <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface">
+                  <div className={`h-full ${model.color}`} style={{ width: `${model.auc * 100}%` }} />
                 </div>
               </div>
             );
@@ -213,34 +246,5 @@ function Dashboard() {
         </div>
       </section>
     </AppShell>
-  );
-}
-
-function Donut({ data, total }: { data: { pct: number; color: string }[]; total: number }) {
-  const r = 50, c = 2 * Math.PI * r;
-  let acc = 0;
-  return (
-    <div className="relative mx-auto mt-6 h-44 w-44">
-      <svg viewBox="0 0 120 120" className="-rotate-90">
-        <circle cx="60" cy="60" r={r} fill="none" stroke="var(--color-border)" strokeWidth="14" />
-        {data.map((d, i) => {
-          const len = (d.pct / 100) * c;
-          const dash = `${len} ${c - len}`;
-          const offset = -((acc / 100) * c);
-          acc += d.pct;
-          return (
-            <circle key={i} cx="60" cy="60" r={r} fill="none"
-              stroke={d.color} strokeWidth="14"
-              strokeDasharray={dash} strokeDashoffset={offset}
-              style={{ transition: "stroke-dasharray 0.6s ease" }}
-            />
-          );
-        })}
-      </svg>
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <span className="font-display text-2xl font-bold">{total.toLocaleString()}</span>
-        <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">scans</span>
-      </div>
-    </div>
   );
 }

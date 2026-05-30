@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState, useRef, useEffect } from "react";
-import { Send, Mic, MicOff, Loader2, MessageSquare, Plus, Sparkles, Stethoscope, Pill, UserRound } from "lucide-react";
+import { Home, Send, Mic, MicOff, Loader2, MessageSquare, Plus, Sparkles, Stethoscope, UserRound } from "lucide-react";
 import { AppShell } from "@/components/app/AppShell";
 import { useChatSessions, useSendMessage } from "@/hooks/use-chat";
 import type { ChatMessage } from "@/lib/types";
@@ -39,10 +39,10 @@ function ChatPage() {
           setSessionId(res.session_id);
           let reply = res.reply;
           if (res.doctor_type) {
-            reply += `\n\n🩺 Recommended specialist: **${res.doctor_type}**`;
+            reply += `\n\nRecommended specialist: **${res.doctor_type}**`;
           }
           if (res.home_remedies.length > 0) {
-            reply += `\n\n🏠 Home remedies:\n${res.home_remedies.map(r => `• ${r}`).join("\n")}`;
+            reply += `\n\nHome remedies:\n${res.home_remedies.map(r => `- ${r}`).join("\n")}`;
           }
           setMessages((prev) => [...prev, { role: "assistant", content: reply }]);
         },
@@ -114,7 +114,7 @@ function ChatPage() {
               <div className="mt-6 grid grid-cols-2 gap-2">
                 {[
                   { icon: Stethoscope, text: "I have a headache and fever" },
-                  { icon: Pill, text: "Home remedies for sore throat" },
+                  { icon: Home, text: "Home remedies for sore throat" },
                   { icon: UserRound, text: "Which doctor for back pain?" },
                   { icon: Sparkles, text: "Diet plan for diabetes" },
                 ].map(({ icon: Icon, text }) => (
