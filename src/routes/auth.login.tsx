@@ -1,6 +1,6 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { useState } from "react";
-import { Mail, Loader2 } from "lucide-react";
+import { Mail, Loader2, Sparkles } from "lucide-react";
 import { AuthShell } from "@/components/app/AuthShell";
 import { Field } from "@/components/ui-x/Field";
 import { useAuth } from "@/lib/auth-context";
@@ -10,15 +10,25 @@ export const Route = createFileRoute("/auth/login")({
   component: LoginPage,
 });
 
+// Shared demo account so reviewers can explore without registering.
+const DEMO_EMAIL = "ahmad123@gmail.com";
+const DEMO_PASSWORD = "12345678";
+
 function LoginPage() {
   const navigate = useNavigate();
   const { login } = useAuth();
   const [loading, setLoading] = useState(false);
+  const [demoLoading, setDemoLoading] = useState(false);
   const [error, setError] = useState("");
+
+  const signIn = async (email: string, password: string) => {
+    setError("");
+    await login(email, password);
+    navigate({ to: "/dashboard" });
+  };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
     setLoading(true);
 
     const form = e.target as HTMLFormElement;
@@ -26,12 +36,22 @@ function LoginPage() {
     const password = (form.elements.namedItem("password") as HTMLInputElement).value;
 
     try {
-      await login(email, password);
-      navigate({ to: "/dashboard" });
+      await signIn(email, password);
     } catch (err: any) {
       setError(err.message || "Invalid email or password.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const onDemoLogin = async () => {
+    setDemoLoading(true);
+    try {
+      await signIn(DEMO_EMAIL, DEMO_PASSWORD);
+    } catch (err: any) {
+      setError(err.message || "Demo login failed. Please try again.");
+    } finally {
+      setDemoLoading(false);
     }
   };
 
@@ -59,13 +79,26 @@ function LoginPage() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || demoLoading}
           className="flex w-full items-center justify-center gap-2 rounded-md bg-primary py-3 text-sm font-semibold text-primary-foreground transition-all hover:shadow-[var(--glow-cyan)] disabled:opacity-70"
         >
           {loading ? (<><Loader2 size={16} className="animate-spin" /> Signing in...</>) : "Sign In"}
         </button>
 
+        <div className="flex items-center gap-3 py-1">
+          <span className="h-px flex-1 bg-border" />
+          <span className="text-xs text-muted-foreground">or</span>
+          <span className="h-px flex-1 bg-border" />
+        </div>
 
+        <button
+          type="button"
+          onClick={onDemoLogin}
+          disabled={loading || demoLoading}
+          className="flex w-full items-center justify-center gap-2 rounded-md border border-primary/40 bg-primary/5 py-3 text-sm font-semibold text-primary transition-all hover:bg-primary/10 disabled:opacity-70"
+        >
+          {demoLoading ? (<><Loader2 size={16} className="animate-spin" /> Loading demo...</>) : (<><Sparkles size={16} /> Try demo account</>)}
+        </button>
 
         <p className="pt-2 text-center text-sm text-muted-foreground">
           New here?{" "}
