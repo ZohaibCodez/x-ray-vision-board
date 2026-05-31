@@ -1,5 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { AlertTriangle, Camera, Check, Loader2, Mail, Save, ScanLine, ShieldCheck, Target, User, type LucideIcon } from "lucide-react";
 import { AppShell } from "@/components/app/AppShell";
 import { useAuth } from "@/lib/auth-context";
@@ -13,14 +13,16 @@ export const Route = createFileRoute("/profile")({
 const roles = ["Medical Student", "Healthcare Professional", "Researcher", "Educator", "Other"];
 
 function ProfilePage() {
-  const { user, updateProfile, logout } = useAuth();
+  const { user, updateProfile, updateAvatar, logout } = useAuth();
   const { data: stats, isLoading: statsLoading } = useStats();
   const [name, setName] = useState(user?.full_name || "");
   const [role, setRole] = useState(user?.role || "Medical Student");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || "");
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [uploadingAvatar, setUploadingAvatar] = useState(false);
   const [error, setError] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     setName(user?.full_name || "");
@@ -38,7 +40,22 @@ function ProfilePage() {
       .toUpperCase();
   }, [name, user?.full_name]);
 
-  const hasChanges = name !== (user?.full_name || "") || role !== (user?.role || "Medical Student") || avatarUrl !== (user?.avatar_url || "");
+  const hasChanges = name !== (user?.full_name || "") || role !== (user?.role || "Medical Student");
+
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploadingAvatar(true);
+    setError("");
+    try {
+      await updateAvatar(file);
+    } catch (err: any) {
+      setError(err.message || "Failed to upload avatar.");
+    } finally {
+      setUploadingAvatar(false);
+    }
+  };
 
   const onSave = async () => {
     setError("");
@@ -46,14 +63,10 @@ function ProfilePage() {
       setError("Full name must be at least 2 characters.");
       return;
     }
-    if (avatarUrl && !/^https?:\/\/.+/i.test(avatarUrl)) {
-      setError("Avatar URL must start with http:// or https://.");
-      return;
-    }
 
     setSaving(true);
     try {
-      await updateProfile({ full_name: name.trim(), role, avatar_url: avatarUrl.trim() || null });
+      await updateProfile({ full_name: name.trim(), role });
       setSaved(true);
       setTimeout(() => setSaved(false), 2200);
     } finally {
@@ -67,16 +80,33 @@ function ProfilePage() {
         <section className="clinical-panel-strong premium-card overflow-hidden p-6">
           <div className="grid gap-6 lg:grid-cols-[1fr_0.72fr]">
             <div className="flex flex-col gap-5 sm:flex-row sm:items-center">
-              <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-[var(--shadow-sm)]">
-                {avatarUrl ? (
+              <button 
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl border border-primary/20 bg-primary/10 text-primary shadow-[var(--shadow-sm)] hover:opacity-90 transition-opacity"
+              >
+                {uploadingAvatar ? (
+                  <div className="flex h-full w-full items-center justify-center bg-background/50 backdrop-blur-sm">
+                    <Loader2 size={24} className="animate-spin" />
+                  </div>
+                ) : avatarUrl ? (
                   <img src={avatarUrl} alt="" className="h-full w-full object-cover" />
                 ) : (
                   <div className="flex h-full w-full items-center justify-center font-display text-3xl font-extrabold">{initials}</div>
                 )}
-                <span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-lg bg-background/90 text-primary shadow">
-                  <Camera size={15} />
-                </span>
-              </div>
+                {!uploadingAvatar && (
+                  <span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-lg bg-background/90 text-primary shadow">
+                    <Camera size={15} />
+                  </span>
+                )}
+                <input 
+                  type="file" 
+                  ref={fileInputRef} 
+                  onChange={handleAvatarChange} 
+                  accept="image/*" 
+                  className="hidden" 
+                />
+              </button>
               <div>
                 <p className="clinical-kicker">Account profile</p>
                 <h2 className="mt-2 font-display text-3xl font-extrabold">{user?.full_name || "User"}</h2>
@@ -136,14 +166,7 @@ function ProfilePage() {
               </select>
             </div>
 
-            <Field label="Avatar URL" icon={Camera}>
-              <input
-                value={avatarUrl}
-                onChange={(event) => setAvatarUrl(event.target.value)}
-                placeholder="https://..."
-                className="premium-input w-full rounded-md border border-border bg-background/60 py-3 pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:outline-none"
-              />
-            </Field>
+
 
             <button onClick={onSave} disabled={saving || !hasChanges} className="clinical-button px-6 disabled:opacity-50">
               {saving ? <Loader2 size={15} className="animate-spin" /> : saved ? <Check size={15} /> : <Save size={15} />}
@@ -161,10 +184,10 @@ function ProfilePage() {
               </div>
             </div>
 
-            <div className="rounded-lg border border-warning/30 bg-warning/10 p-5">
-              <h3 className="font-display text-base font-bold text-warning">Account Safety</h3>
-              <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                Account deletion requires backend identity-provider support. For now, sign out when using a shared machine.
+            <div className="rounded-lg border border-border bg-background/60 p-5">
+              <h3 className="font-display text-base font-bold">Session</h3>
+              <p className="mt-1.5 text-sm text-muted-foreground">
+                Sign out of your account on this device.
               </p>
               <button onClick={logout} className="clinical-button-secondary mt-4 px-4">
                 Sign out

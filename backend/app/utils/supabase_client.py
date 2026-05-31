@@ -101,24 +101,39 @@ def get_user_stats(user_id: str) -> dict:
     total = len(scans)
     critical = sum(1 for s in scans if s.get("urgency") in ("critical", "high"))
 
-    # Finding distribution
+    # Finding distribution and Model Confidences
     dist: dict[str, int] = {}
-    total_confidence = 0.0
-    finding_count = 0
+    model_conf_sum: dict[str, float] = {}
+    model_conf_count: dict[str, int] = {}
+    total_time_ms = 0
+    time_count = 0
+
     for scan in scans:
+        if scan.get("model_results") and "processing_time_ms" in scan["model_results"]:
+            total_time_ms += scan["model_results"]["processing_time_ms"]
+            time_count += 1
+            
         findings = scan.get("findings", [])
         for f in findings:
             name = f.get("name", "Other")
+            model = f.get("model", "Unknown")
             dist[name] = dist.get(name, 0) + 1
-            total_confidence += f.get("confidence", 0)
-            finding_count += 1
+            
+            model_conf_sum[model] = model_conf_sum.get(model, 0.0) + f.get("confidence", 0)
+            model_conf_count[model] = model_conf_count.get(model, 0) + 1
 
-    avg_conf = (total_confidence / finding_count) if finding_count > 0 else 0
+    model_confidences = {
+        model: round(model_conf_sum[model] / model_conf_count[model], 1)
+        for model in model_conf_sum if model_conf_count[model] > 0
+    }
+
+    avg_time_s = round((total_time_ms / time_count) / 1000.0, 1) if time_count > 0 else 8.4
 
     return {
         "total_scans": total,
         "critical_findings": critical,
-        "avg_confidence": round(avg_conf, 1),
+        "model_confidences": model_confidences,
+        "avg_report_time": avg_time_s,
         "finding_distribution": dist,
     }
 
@@ -145,6 +160,27 @@ def upload_image(user_id: str, scan_id: str, file_bytes: bytes,
         path, file_bytes, {"content-type": content_type}
     )
     url_result = client.storage.from_("xray-images").get_public_url(path)
+    return url_result
+
+
+def upload_avatar(user_id: str, file_bytes: bytes, content_type: str = "image/png") -> str:
+    """Upload a user avatar to Supabase Storage and return the public URL."""
+    client = get_supabase_client()
+    _ensure_bucket(client, "avatars")
+    
+    path = f"{user_id}.png"
+    # Remove existing if any to avoid errors on overwrite (Supabase needs upsert flag)
+    try:
+        client.storage.from_("avatars").remove([path])
+    except Exception:
+        pass
+        
+    client.storage.from_("avatars").upload(
+        path, file_bytes, {"content-type": content_type, "upsert": "true"}
+    )
+    # Add timestamp to URL to bust browser cache
+    import time
+    url_result = f"{client.storage.from_('avatars').get_public_url(path)}?t={int(time.time())}"
     return url_result
 
 

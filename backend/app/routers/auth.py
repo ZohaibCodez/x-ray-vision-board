@@ -1,7 +1,8 @@
-"""Authentication endpoints — register, login, get current user."""
+"""Authentication endpoints — register, login, forgot password, get current user."""
 
-from __future__ import annotations
-from fastapi import APIRouter, HTTPException, status, Depends
+import logging
+from fastapi import APIRouter, HTTPException, status, Depends, File, UploadFile
+from pydantic import BaseModel
 from app.models.schemas import (
     AuthResponse,
     LoginRequest,
@@ -11,9 +12,28 @@ from app.models.schemas import (
     UserProfile,
 )
 from app.services.auth_service import hash_password, verify_password, create_access_token, get_current_user_id, get_current_user
-from app.utils.supabase_client import get_anon_client, get_profile, insert_profile, update_profile
+from app.utils.supabase_client import get_anon_client, get_profile, insert_profile, update_profile, upload_avatar
 
+logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+class ForgotPasswordRequest(BaseModel):
+    email: str
+
+
+@router.post("/forgot-password")
+async def forgot_password(req: ForgotPasswordRequest):
+    """Send a password reset email via Supabase Auth."""
+    client = get_anon_client()
+    try:
+        client.auth.reset_password_email(req.email)
+    except Exception as exc:
+        # Log the error but don't reveal whether the email exists
+        logger.warning(f"Password reset request failed: {exc}")
+
+    # Always return success to prevent email enumeration
+    return {"message": "If an account with that email exists, a reset link has been sent."}
 
 
 @router.post("/register", response_model=AuthResponse)
@@ -121,6 +141,30 @@ async def get_me(current_user: dict = Depends(get_current_user)):
     return UserProfile(
         id=profile["id"],
         email=current_user["email"],  # email comes from JWT, not profiles table
+        full_name=profile.get("full_name", "User"),
+        role=profile.get("role", "Medical Student"),
+        avatar_url=profile.get("avatar_url"),
+        settings=profile.get("settings", {}),
+        created_at=profile.get("created_at"),
+    )
+
+
+@router.post("/avatar", response_model=UserProfile)
+async def update_avatar(file: UploadFile = File(...), current_user: dict = Depends(get_current_user)):
+    """Upload a new avatar and update the user profile."""
+    file_bytes = await file.read()
+    if not file_bytes:
+        raise HTTPException(status_code=400, detail="Empty file uploaded.")
+    
+    try:
+        url = upload_avatar(current_user["id"], file_bytes, file.content_type or "image/png")
+        profile = update_profile(current_user["id"], {"avatar_url": url})
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=f"Failed to upload avatar: {str(exc)}")
+
+    return UserProfile(
+        id=profile["id"],
+        email=current_user["email"],
         full_name=profile.get("full_name", "User"),
         role=profile.get("role", "Medical Student"),
         avatar_url=profile.get("avatar_url"),

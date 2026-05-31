@@ -212,8 +212,8 @@ function Dashboard() {
       <section className="mt-5 clinical-panel premium-card p-5">
         <div className="flex flex-wrap items-center justify-between gap-4">
           <div>
-            <h3 className="text-lg font-extrabold">Model performance</h3>
-            <p className="text-sm text-muted-foreground">Benchmark references used in dashboard reporting</p>
+            <h3 className="text-lg font-extrabold">Avg. model confidence</h3>
+            <p className="text-sm text-muted-foreground">Average confidence scoring across your scan history</p>
           </div>
           <span className="inline-flex min-h-8 items-center gap-2 rounded-lg border border-success/25 bg-success/10 px-3 text-xs font-bold text-success">
             <TrendingUp size={14} />
@@ -228,13 +228,13 @@ function Dashboard() {
           ]).map((model) => {
             const Icon = model.name === "DenseNet121" ? Stethoscope : model.name === "YOLOv8" ? Bone : Activity;
             return (
-              <div key={model.name} className="rounded-lg border border-border bg-white/72 p-4 interaction-lift">
+              <div key={model.name} className="rounded-lg border border-border bg-card p-4 interaction-lift">
                 <div className="flex items-center justify-between gap-3">
                   <div className="flex items-center gap-2">
                     <Icon size={16} className="text-primary" />
                     <span className="text-sm font-extrabold">{model.name}</span>
                   </div>
-                  <span className="font-mono text-xs">{model.auc.toFixed(3)}</span>
+                  <span className="font-mono text-xs">{(model.auc * 100).toFixed(1)}%</span>
                 </div>
                 <p className="mt-1 text-xs text-muted-foreground">{model.task}</p>
                 <div className="mt-3 h-2 overflow-hidden rounded-full bg-surface">

@@ -102,6 +102,17 @@ export const authApi = {
     return user;
   },
 
+  async updateAvatar(file: File) {
+    const formData = new FormData();
+    formData.append("file", file);
+    const user = await request<AuthResponse["user"]>("/auth/avatar", {
+      method: "POST",
+      body: formData,
+    });
+    localStorage.setItem("xray_user", JSON.stringify(user));
+    return user;
+  },
+
   async updateSettings(settings: Record<string, unknown>) {
     const user = await request<AuthResponse["user"]>("/auth/settings", {
       method: "PATCH",

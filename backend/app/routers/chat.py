@@ -1,7 +1,8 @@
 """Health chatbot endpoints — FYP requirement."""
 
 from __future__ import annotations
-from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi import APIRouter, Depends, HTTPException, Request, status
+from app.main import limiter
 from app.models.schemas import ChatRequest, ChatResponse, ChatSession
 from app.services.auth_service import get_current_user_id
 from app.services.chatbot_service import chat_with_health_bot
@@ -17,7 +18,9 @@ router = APIRouter(prefix="/chat", tags=["chat"])
 
 
 @router.post("", response_model=ChatResponse)
+@limiter.limit("20/minute")
 async def send_message(
+    request: Request,
     req: ChatRequest,
     user_id: str = Depends(get_current_user_id),
 ):

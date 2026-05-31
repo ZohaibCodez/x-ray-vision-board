@@ -7,9 +7,16 @@ from __future__ import annotations
 import logging
 import threading
 from contextlib import asynccontextmanager
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+from slowapi.errors import RateLimitExceeded
 from app.config import get_settings
+
+# Rate limiter — keyed by client IP address
+limiter = Limiter(key_func=get_remote_address, default_limits=["200/minute"])
 
 logging.basicConfig(
     level=logging.INFO,
@@ -91,11 +98,30 @@ def create_app() -> FastAPI:
         redoc_url="/redoc",
     )
 
-    # CORS — allow common dev origins
-    app.add_middleware(
-        CORSMiddleware,
-        allow_origins=[
-            settings.frontend_url,
+    # Rate limiter
+    app.state.limiter = limiter
+    app.add_exception_handler(
+        RateLimitExceeded,
+        lambda request, exc: JSONResponse(
+            status_code=429,
+            content={"detail": "Rate limit exceeded. Please slow down."},
+        ),
+    )
+
+    # CORS — strict in production, relaxed in development
+    allowed_origins: list[str] = [settings.frontend_url]
+
+    # Add any extra production origins from ALLOWED_ORIGINS env var
+    if settings.allowed_origins:
+        allowed_origins.extend(
+            origin.strip()
+            for origin in settings.allowed_origins.split(",")
+            if origin.strip()
+        )
+
+    # Only add localhost origins if frontend_url is also localhost (i.e. dev mode)
+    if "localhost" in settings.frontend_url or "127.0.0.1" in settings.frontend_url:
+        dev_origins = [
             "http://localhost:5173",
             "http://localhost:5174",
             "http://localhost:3000",
@@ -104,10 +130,17 @@ def create_app() -> FastAPI:
             "http://localhost:8081",
             "http://127.0.0.1:5173",
             "http://127.0.0.1:3000",
-        ],
+        ]
+        for origin in dev_origins:
+            if origin not in allowed_origins:
+                allowed_origins.append(origin)
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=allowed_origins,
         allow_credentials=True,
-        allow_methods=["*"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+        allow_headers=["Authorization", "Content-Type", "Accept"],
     )
 
     # Register routers

@@ -1,14 +1,15 @@
 """Image analysis endpoint: the core AI inference pipeline."""
 
-from __future__ import annotations
-
 import asyncio
 import logging
+import time
 import uuid
+from datetime import datetime, timezone
 
-from fastapi import APIRouter, Depends, File, Form, HTTPException, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 
 from app.config import get_settings
+from app.main import limiter
 from app.models.schemas import AgentSynthesis, BoundingBox, Finding, ScanResult
 from app.services import image_preprocess
 from app.services.auth_service import get_current_user_id
@@ -20,7 +21,9 @@ router = APIRouter(tags=["analyze"])
 
 
 @router.post("/analyze", response_model=ScanResult)
+@limiter.limit("10/minute")
 async def analyze_image(
+    request: Request,
     file: UploadFile = File(...),
     scan_type: str = Form(...),
     session_label: str = Form(default=""),
@@ -42,6 +45,7 @@ async def analyze_image(
 
     scan_id = str(uuid.uuid4())
     logger.info(f"Starting analysis {scan_id} | type={scan_type} | user={user_id}")
+    start_time = time.perf_counter()
 
     try:
         raw_findings, model_errors, model_names = await _run_routed_ensemble(
@@ -98,12 +102,15 @@ async def analyze_image(
         specialist=agent_result.get("specialist"),
     )
 
+    processing_time_ms = int((time.perf_counter() - start_time) * 1000)
+
     model_results = {
         "scan_type": scan_type,
         "ensemble_mode": "routed",
         "models_run": model_names,
         "model_errors": model_errors,
         "specialist": synthesis.specialist,  # persisted here since scans table has no specialist column
+        "processing_time_ms": processing_time_ms,
     }
 
     try:
@@ -133,7 +140,7 @@ async def analyze_image(
         findings=findings,
         agent_synthesis=synthesis,
         model_results=model_results,
-        created_at="just now",
+        created_at=datetime.now(timezone.utc).isoformat(),
     )
 
     logger.info(f"Analysis {scan_id} complete | findings={len(findings)} | urgency={synthesis.urgency}")

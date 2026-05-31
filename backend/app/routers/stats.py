@@ -28,18 +28,21 @@ async def dashboard_stats(user_id: str = Depends(get_current_user_id)):
         for s in recent_raw
     ]
 
-    # Static model performance (from benchmarks)
+    confs = stats.get("model_confidences", {})
     model_perf = [
-        ModelPerformance(name="DenseNet121", task="Chest Pathology", auc=0.847, color="bg-primary"),
-        ModelPerformance(name="YOLOv8", task="Fracture Detection", auc=0.891, color="bg-secondary"),
-        ModelPerformance(name="ViT", task="Wound Classification", auc=0.823, color="bg-info"),
+        ModelPerformance(name="DenseNet121", task="Chest Pathology", auc=confs.get("DenseNet121", 0.0) / 100.0, color="bg-primary"),
+        ModelPerformance(name="YOLOv8", task="Fracture Detection", auc=confs.get("YOLOv8-Fracture", 0.0) / 100.0, color="bg-secondary"),
+        ModelPerformance(name="ViT", task="Wound Classification", auc=confs.get("WoundClassifier", 0.0) / 100.0, color="bg-info"),
     ]
+
+    total_confidences = sum(confs.values())
+    avg_conf = (total_confidences / len(confs)) if confs else 0.0
 
     return DashboardStats(
         total_scans=stats["total_scans"],
         critical_findings=stats["critical_findings"],
-        avg_confidence=stats["avg_confidence"],
-        avg_report_time=8.4,  # Estimated average
+        avg_confidence=round(avg_conf, 1),
+        avg_report_time=stats["avg_report_time"],
         recent_scans=recent,
         finding_distribution=stats["finding_distribution"],
         model_performance=model_perf,

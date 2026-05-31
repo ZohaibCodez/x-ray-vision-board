@@ -16,6 +16,7 @@ interface AuthContextValue {
   login: (email: string, password: string) => Promise<void>;
   register: (email: string, password: string, fullName: string, role: string) => Promise<void>;
   updateProfile: (params: { full_name?: string; role?: string; avatar_url?: string | null }) => Promise<void>;
+  updateAvatar: (file: File) => Promise<void>;
   updateSettings: (settings: Record<string, unknown>) => Promise<void>;
   logout: () => void;
 }
@@ -80,6 +81,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(res);
   }, []);
 
+  const updateAvatar = useCallback(async (file: File) => {
+    const res = await authApi.updateAvatar(file);
+    setUser(res);
+  }, []);
+
   const updateSettings = useCallback(async (settings: Record<string, unknown>) => {
     const res = await authApi.updateSettings(settings);
     setUser(res);
@@ -101,6 +107,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         updateProfile,
+        updateAvatar,
         updateSettings,
         logout,
       }}

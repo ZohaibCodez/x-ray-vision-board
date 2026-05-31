@@ -1,7 +1,8 @@
 """Diet plan generator endpoint — FYP requirement."""
 
 from __future__ import annotations
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Request
+from app.main import limiter
 from app.models.schemas import DietRequest, DietPlanResponse, DayPlan, MealItem
 from app.services.auth_service import get_current_user_id
 from app.services.diet_service import generate_diet_plan
@@ -10,7 +11,9 @@ router = APIRouter(prefix="/diet", tags=["diet"])
 
 
 @router.post("", response_model=DietPlanResponse)
+@limiter.limit("10/minute")
 async def create_diet_plan(
+    request: Request,
     req: DietRequest,
     user_id: str = Depends(get_current_user_id),
 ):

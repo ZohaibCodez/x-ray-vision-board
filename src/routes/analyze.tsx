@@ -133,7 +133,7 @@ function AnalyzePage() {
               onDragLeave={() => setDrag(false)}
               onDrop={onDrop}
               className={`mt-4 flex min-h-[260px] w-full flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 text-center transition-all ${
-                drag ? "border-primary bg-primary/6 shadow-[var(--glow-cyan)]" : "border-border bg-surface/55 hover:border-primary/45 hover:bg-white/75"
+                drag ? "border-primary bg-primary/6 shadow-[var(--glow-cyan)]" : "border-border bg-surface/55 hover:border-primary/45 hover:bg-card"
               }`}
             >
               <span className="flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10 text-primary">
@@ -148,7 +148,7 @@ function AnalyzePage() {
           ) : (
             <div className="mt-4 flex items-center justify-between gap-4 rounded-lg border border-primary/30 bg-primary/6 p-4">
               <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-white text-primary">
+                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-card text-primary">
                   <FileImage size={22} />
                 </span>
                 <div className="min-w-0">
@@ -158,7 +158,7 @@ function AnalyzePage() {
                   </p>
                 </div>
               </div>
-              <button type="button" onClick={() => setFile(null)} aria-label="Remove file" className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-white hover:text-destructive">
+              <button type="button" onClick={() => setFile(null)} aria-label="Remove file" className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-surface hover:text-destructive">
                 <X size={18} />
               </button>
             </div>
@@ -177,7 +177,7 @@ function AnalyzePage() {
                     key={item.id}
                     onClick={() => setType(item.id)}
                     className={`min-h-[150px] rounded-lg border p-4 text-left transition-all ${
-                      active ? "border-primary bg-primary text-primary-foreground shadow-[var(--glow-cyan)]" : "border-border bg-white/70 hover:border-primary/40"
+                      active ? "border-primary bg-primary text-primary-foreground shadow-[var(--glow-cyan)]" : "border-border bg-card text-card-foreground hover:border-primary/40 hover:bg-accent/30"
                     }`}
                   >
                     <Icon size={20} />
@@ -202,7 +202,7 @@ function AnalyzePage() {
 
           <div className="mt-7 flex flex-col gap-3 rounded-lg border border-border bg-surface/55 p-4 sm:flex-row sm:items-center sm:justify-between">
             <div className="flex items-center gap-3">
-              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-white text-primary">
+              <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-card text-primary">
                 <activeType.icon size={18} />
               </span>
               <div>

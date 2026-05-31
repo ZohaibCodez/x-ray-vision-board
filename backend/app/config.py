@@ -1,10 +1,14 @@
 """Centralized application settings loaded from environment variables."""
 
-from pydantic_settings import BaseSettings, SettingsConfigDict
+import logging
+import os
+from functools import lru_cache
+
 from pydantic import Field
 from pydantic.aliases import AliasChoices
-from functools import lru_cache
-import os
+from pydantic_settings import BaseSettings, SettingsConfigDict
+
+logger = logging.getLogger(__name__)
 
 
 class Settings(BaseSettings):
@@ -33,6 +37,10 @@ class Settings(BaseSettings):
     jwt_algorithm: str = "HS256"
     jwt_expiry_hours: int = 24
 
+    # Additional allowed CORS origins for production (comma-separated)
+    # Example: ALLOWED_ORIGINS=https://myapp.vercel.app,https://myapp.com
+    allowed_origins: str = ""
+
     # Model Config
     yolo_weights_path: str = "models/fracture_yolov8.pt"
     allow_generic_yolo_weights: bool = False
@@ -57,9 +65,25 @@ class Settings(BaseSettings):
     )
 
 
+_INSECURE_JWT_DEFAULT = "change-this-to-a-random-secret-string"
+
+
 @lru_cache()
 def get_settings() -> Settings:
     settings = Settings()
+
+    # Block startup if the JWT secret was never changed from the insecure default
+    if settings.jwt_secret == _INSECURE_JWT_DEFAULT:
+        logger.critical(
+            "\n\n"
+            "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+            "  🔴  FATAL: JWT_SECRET is still the insecure default!\n"
+            "  Generate a real secret and set it in your .env file:\n"
+            "    python -c \"import secrets; print(secrets.token_hex(32))\"\n"
+            "  ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+        )
+        raise SystemExit("JWT_SECRET must be changed from the default value.")
+
     if settings.hf_token:
         os.environ.setdefault("HF_TOKEN", settings.hf_token)
         os.environ.setdefault("HUGGINGFACE_HUB_TOKEN", settings.hf_token)
