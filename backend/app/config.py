@@ -1,14 +1,21 @@
 """Centralized application settings loaded from environment variables."""
 
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic import Field
+from pydantic.aliases import AliasChoices
 from functools import lru_cache
 import os
 
 
 class Settings(BaseSettings):
     # Supabase
+    # Accepts both SUPABASE_KEY and SUPABASE_SERVICE_ROLE_KEY so either
+    # naming convention works in Render / HuggingFace Spaces env vars.
     supabase_url: str = "https://your-project.supabase.co"
-    supabase_key: str = "your-supabase-service-role-key"
+    supabase_key: str = Field(
+        "your-supabase-service-role-key",
+        validation_alias=AliasChoices("SUPABASE_KEY", "SUPABASE_SERVICE_ROLE_KEY"),
+    )
     supabase_anon_key: str = "your-supabase-anon-key"
 
     # OpenRouter
@@ -29,6 +36,7 @@ class Settings(BaseSettings):
     # Model Config
     yolo_weights_path: str = "models/fracture_yolov8.pt"
     allow_generic_yolo_weights: bool = False
+    # Set FRACTURE_CLASSIFIER_ENABLED=false on low-RAM hosts (saves ~400 MB).
     fracture_classifier_enabled: bool = True
     fracture_classifier_model_name: str = "prithivMLmods/Bone-Fracture-Detection"
     wound_model_name: str = "PayamFard123/dermaintel-wound-classifier"
@@ -37,11 +45,16 @@ class Settings(BaseSettings):
     # CORS
     frontend_url: str = "http://localhost:5173"
 
-    model_config = {
-        "env_file": ".env",
-        "env_file_encoding": "utf-8",
-        "extra": "ignore",
-    }
+    # Performance — set DISABLE_PRELOAD=true on free-tier hosts (<=512 MB RAM)
+    # to avoid OOM on startup. Models will lazy-load on first use instead.
+    disable_preload: bool = False
+
+    model_config = SettingsConfigDict(
+        env_file=".env",
+        env_file_encoding="utf-8",
+        extra="ignore",
+        populate_by_name=True,
+    )
 
 
 @lru_cache()

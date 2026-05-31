@@ -1,3 +1,13 @@
+---
+title: XRayVision AI Backend
+emoji: 🩻
+colorFrom: blue
+colorTo: blue
+sdk: docker
+app_port: 7860
+pinned: false
+---
+
 # XRayVision AI — Backend
 
 Advanced medical diagnostic API using a Hybrid Multi-Model Ensemble.

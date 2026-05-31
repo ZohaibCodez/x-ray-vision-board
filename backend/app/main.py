@@ -59,10 +59,15 @@ async def lifespan(app: FastAPI):
     """Start model loading in background — server is ready immediately."""
     logger.info("🚀 XRayVision AI backend starting...")
 
-    # Start model preloading in a background thread so the server
-    # can accept auth/chat/diet requests immediately while models download
-    thread = threading.Thread(target=_preload_models_background, daemon=True)
-    thread.start()
+    settings = get_settings()
+    if settings.disable_preload:
+        # On free-tier hosts (<=512 MB RAM) skip preloading entirely.
+        # Models will lazy-load on first use so auth/chat/diet work immediately.
+        logger.info("⏭️  DISABLE_PRELOAD=true — models will load on first use")
+    else:
+        # Full preload on capable hosts (HuggingFace Spaces, Render Standard+)
+        thread = threading.Thread(target=_preload_models_background, daemon=True)
+        thread.start()
 
     logger.info("🟢 XRayVision AI is accepting requests! (models loading in background)")
     yield
