@@ -16,7 +16,9 @@ import type {
   ClinicSearchResponse,
 } from "./types";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
+// Strip any trailing slash so `${API_URL}${path}` never produces a double
+// slash (e.g. ".hf.space//auth/register"), which 404s on HF Spaces routing.
+const API_URL = (import.meta.env.VITE_API_URL || "http://localhost:8000").replace(/\/+$/, "");
 
 // ── Helpers ───────────────────────────────────────────────────────
 
