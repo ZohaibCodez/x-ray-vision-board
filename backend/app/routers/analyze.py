@@ -43,6 +43,15 @@ async def analyze_image(
     if not file_bytes:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Empty file uploaded.")
 
+    try:
+        image_preprocess.validate_image_file(
+            file_bytes,
+            filename=file.filename or "",
+            content_type=file.content_type or "",
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail=str(exc)) from exc
+
     scan_id = str(uuid.uuid4())
     logger.info(f"Starting analysis {scan_id} | type={scan_type} | user={user_id}")
     start_time = time.perf_counter()

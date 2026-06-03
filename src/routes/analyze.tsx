@@ -6,6 +6,7 @@ import {
   Bone,
   CheckCircle2,
   FileImage,
+  Info,
   Loader2,
   ScanLine,
   Stethoscope,
@@ -21,6 +22,58 @@ export const Route = createFileRoute("/analyze")({
   component: AnalyzePage,
 });
 
+const MIN_FILE_SIZE = 100 * 1024; // 100 KB — smaller images lack enough pixel data for reliable inference
+const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
+const MIN_DIMENSION = 200; // px per side
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_EXTENSIONS = [".jpg", ".jpeg", ".png", ".webp", ".dcm"];
+
+function getImageDimensions(file: File): Promise<{ width: number; height: number }> {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      resolve({ width: img.naturalWidth, height: img.naturalHeight });
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Cannot read image dimensions."));
+    };
+    img.src = url;
+  });
+}
+
+async function validateImageFile(file: File): Promise<string | null> {
+  const ext = "." + (file.name.split(".").pop()?.toLowerCase() ?? "");
+  const isDicom = ext === ".dcm";
+
+  if (!isDicom && !ALLOWED_TYPES.includes(file.type) && !ALLOWED_EXTENSIONS.includes(ext)) {
+    return "Unsupported format. Upload a JPEG, PNG, or DICOM (.dcm) file.";
+  }
+
+  if (file.size < MIN_FILE_SIZE) {
+    return `File is too small (${(file.size / 1024).toFixed(0)} KB). Minimum is 100 KB — very small files lack enough pixel data for accurate inference.`;
+  }
+
+  if (file.size > MAX_FILE_SIZE) {
+    return `File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is 20 MB.`;
+  }
+
+  if (!isDicom) {
+    try {
+      const { width, height } = await getImageDimensions(file);
+      if (width < MIN_DIMENSION || height < MIN_DIMENSION) {
+        return `Image resolution is too low (${width}×${height} px). Minimum is ${MIN_DIMENSION}×${MIN_DIMENSION} px — low-resolution images produce unreliable results.`;
+      }
+    } catch {
+      return "Could not verify image dimensions. Make sure the file is a valid image.";
+    }
+  }
+
+  return null;
+}
+
 const types = [
   { id: "chest", label: "Chest pathology", icon: Stethoscope, model: "DenseNet121", text: "Chest X-ray screening for common pathology signals." },
   { id: "fracture", label: "Fracture detection", icon: Bone, model: "YOLOv8", text: "Bone X-ray localization with bounding boxes." },
@@ -29,6 +82,7 @@ const types = [
 
 function AnalyzePage() {
   const [file, setFile] = useState<File | null>(null);
+  const [fileError, setFileError] = useState<string | null>(null);
   const [drag, setDrag] = useState(false);
   const [type, setType] = useState<(typeof types)[number]["id"]>("chest");
   const [label, setLabel] = useState("");
@@ -37,15 +91,26 @@ function AnalyzePage() {
   const inputRef = useRef<HTMLInputElement>(null);
   const analyzeMutation = useAnalyze();
 
+  const acceptFile = useCallback(async (candidate: File) => {
+    setFileError(null);
+    const error = await validateImageFile(candidate);
+    if (error) {
+      setFileError(error);
+      setFile(null);
+      return;
+    }
+    setFile(candidate);
+  }, []);
+
   const onDrop = useCallback((event: React.DragEvent) => {
     event.preventDefault();
     setDrag(false);
     const droppedFile = event.dataTransfer.files?.[0];
-    if (droppedFile) setFile(droppedFile);
-  }, []);
+    if (droppedFile) acceptFile(droppedFile);
+  }, [acceptFile]);
 
   const onPick = (pickedFile: File | undefined | null) => {
-    if (pickedFile) setFile(pickedFile);
+    if (pickedFile) acceptFile(pickedFile);
   };
 
   const onSubmit = (event: React.FormEvent) => {
@@ -123,44 +188,70 @@ function AnalyzePage() {
           </div>
 
           {!file ? (
-            <button
-              type="button"
-              onClick={() => inputRef.current?.click()}
-              onDragOver={(event) => {
-                event.preventDefault();
-                setDrag(true);
-              }}
-              onDragLeave={() => setDrag(false)}
-              onDrop={onDrop}
-              className={`mt-4 flex min-h-[260px] w-full flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 text-center transition-all ${
-                drag ? "border-primary bg-primary/6 shadow-[var(--glow-cyan)]" : "border-border bg-surface/55 hover:border-primary/45 hover:bg-card"
-              }`}
-            >
-              <span className="flex h-16 w-16 items-center justify-center rounded-lg bg-primary/10 text-primary">
-                <UploadCloud size={30} />
-              </span>
-              <span className="mt-5 text-lg font-extrabold">{drag ? "Drop image to upload" : "Drag and drop your medical image"}</span>
-              <span className="mt-1 text-sm text-muted-foreground">or browse files from your device</span>
-              <span className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                DICOM / PNG / JPG - Max 20MB
-              </span>
-            </button>
-          ) : (
-            <div className="mt-4 flex items-center justify-between gap-4 rounded-lg border border-primary/30 bg-primary/6 p-4">
-              <div className="flex min-w-0 items-center gap-3">
-                <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-card text-primary">
-                  <FileImage size={22} />
+            <div className="mt-4 space-y-3">
+              <button
+                type="button"
+                onClick={() => inputRef.current?.click()}
+                onDragOver={(event) => {
+                  event.preventDefault();
+                  setDrag(true);
+                }}
+                onDragLeave={() => setDrag(false)}
+                onDrop={onDrop}
+                className={`flex min-h-[220px] w-full flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 text-center transition-all ${
+                  fileError
+                    ? "border-destructive/60 bg-destructive/4"
+                    : drag
+                    ? "border-primary bg-primary/6 shadow-[var(--glow-cyan)]"
+                    : "border-border bg-surface/55 hover:border-primary/45 hover:bg-card"
+                }`}
+              >
+                <span className={`flex h-16 w-16 items-center justify-center rounded-lg ${fileError ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
+                  <UploadCloud size={30} />
                 </span>
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-bold">{file.name}</p>
-                  <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-                    {(file.size / 1024 / 1024).toFixed(2)} MB - ready
-                  </p>
+                <span className="mt-5 text-lg font-extrabold">{drag ? "Drop image to upload" : "Drag and drop your medical image"}</span>
+                <span className="mt-1 text-sm text-muted-foreground">or browse files from your device</span>
+                <span className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
+                  DICOM / PNG / JPG &nbsp;·&nbsp; Min 200×200 px &nbsp;·&nbsp; 100 KB – 20 MB
+                </span>
+              </button>
+
+              {fileError && (
+                <div className="flex items-start gap-3 rounded-lg border border-destructive/40 bg-destructive/8 px-4 py-3 text-sm text-destructive">
+                  <AlertTriangle size={16} className="mt-0.5 shrink-0" />
+                  <span>{fileError}</span>
+                </div>
+              )}
+
+              <div className="flex items-start gap-3 rounded-lg border border-border bg-surface/55 px-4 py-3 text-xs text-muted-foreground">
+                <Info size={14} className="mt-0.5 shrink-0 text-primary/70" />
+                <span>
+                  <strong className="text-foreground">Image quality matters.</strong> Use clear, well-lit, non-blurry images at least 512×512 px for best accuracy.
+                  Very small or low-quality images can cause incorrect predictions.
+                </span>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-4 space-y-3">
+              <div className="flex items-center justify-between gap-4 rounded-lg border border-primary/30 bg-primary/6 p-4">
+                <div className="flex min-w-0 items-center gap-3">
+                  <span className="flex h-12 w-12 shrink-0 items-center justify-center rounded-lg bg-card text-primary">
+                    <FileImage size={22} />
+                  </span>
+                  <div className="min-w-0">
+                    <p className="truncate text-sm font-bold">{file.name}</p>
+                    <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB &nbsp;·&nbsp; ready
+                    </p>
+                  </div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 size={16} className="text-emerald-500" />
+                  <button type="button" onClick={() => { setFile(null); setFileError(null); }} aria-label="Remove file" className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-surface hover:text-destructive">
+                    <X size={18} />
+                  </button>
                 </div>
               </div>
-              <button type="button" onClick={() => setFile(null)} aria-label="Remove file" className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-surface hover:text-destructive">
-                <X size={18} />
-              </button>
             </div>
           )}
 

@@ -7,6 +7,50 @@ from PIL import Image
 import io
 import torch
 
+_MIN_FILE_SIZE = 100 * 1024       # 100 KB
+_MAX_FILE_SIZE = 20 * 1024 * 1024 # 20 MB
+_MIN_DIMENSION = 200               # px per side
+
+
+def validate_image_file(file_bytes: bytes, filename: str = "", content_type: str = "") -> None:
+    """Raise ValueError with a user-readable message if the image fails quality checks.
+
+    Checks: file size bounds, decodability, and minimum pixel dimensions.
+    DICOM files (.dcm) skip the PIL dimension check since pydicom handles them separately.
+    """
+    size = len(file_bytes)
+    if size < _MIN_FILE_SIZE:
+        raise ValueError(
+            f"File is too small ({size // 1024} KB). "
+            "Minimum is 100 KB — very small images lack sufficient pixel data for reliable inference."
+        )
+    if size > _MAX_FILE_SIZE:
+        raise ValueError(
+            f"File is too large ({size / 1024 / 1024:.1f} MB). Maximum allowed size is 20 MB."
+        )
+
+    is_dicom = filename.lower().endswith(".dcm") or content_type in ("application/dicom", "application/octet-stream")
+
+    if not is_dicom:
+        try:
+            img = Image.open(io.BytesIO(file_bytes))
+            img.verify()
+        except Exception:
+            raise ValueError("File could not be decoded as a valid image. Upload a JPEG, PNG, or DICOM file.")
+
+        try:
+            img = Image.open(io.BytesIO(file_bytes))
+            w, h = img.size
+        except Exception:
+            raise ValueError("Could not determine image dimensions.")
+
+        if w < _MIN_DIMENSION or h < _MIN_DIMENSION:
+            raise ValueError(
+                f"Image resolution is too low ({w}×{h} px). "
+                f"Minimum is {_MIN_DIMENSION}×{_MIN_DIMENSION} px. "
+                "Low-resolution images produce unreliable diagnostic results."
+            )
+
 
 def load_image_from_bytes(file_bytes: bytes) -> np.ndarray:
     """Load an image from raw bytes into a numpy array (BGR).
