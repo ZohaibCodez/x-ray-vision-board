@@ -1,0 +1,3759 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Software Test Documentation — XRayVision AI</title>
+<style>
+:root{--fg:#1a2028;--muted:#5b6672;--bg:#ffffff;--line:#e2e8f0;--accent:#0E7490;
+      --code-bg:#f6f8fa;--th:#f1f5f9;--note:#f0f9ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 32px 96px}
+h1{font-size:2.1rem;line-height:1.2;margin:0 0 .6em;padding-bottom:.35em;border-bottom:3px solid var(--accent)}
+h2{font-size:1.55rem;margin:2.2em 0 .7em;padding-bottom:.3em;border-bottom:1px solid var(--line)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em;color:var(--accent)}
+h4{font-size:1.02rem;margin:1.4em 0 .4em}
+p{margin:.7em 0}
+a{color:var(--accent)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+table{border-collapse:collapse;width:100%;margin:1.1em 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--th);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:var(--code-bg);padding:.15em .4em;border-radius:4px;font-size:.86em;
+     font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto}
+pre code{background:none;padding:0;font-size:.84rem;line-height:1.5}
+blockquote{margin:1.2em 0;padding:.9em 1.2em;background:var(--note);
+           border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote > :first-child{margin-top:0} blockquote > :last-child{margin-bottom:0}
+ul,ol{padding-left:1.5em}
+img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;margin:.8em 0;display:block}
+.mermaid-figure{margin:1.6em 0;padding:20px;border:1px solid var(--line);border-radius:10px;
+                background:#fcfdfe;overflow-x:auto;text-align:center}
+.mermaid-figure svg{max-width:100%;height:auto}
+.docnav{background:var(--th);border:1px solid var(--line);border-radius:10px;
+        padding:12px 18px;margin-bottom:32px;font-size:.9rem}
+.docnav a{margin-right:18px;font-weight:600;text-decoration:none}
+.center{text-align:center}
+.center h1,.center h2,.center h3{border:0;text-align:center}
+.pagebreak{border-top:1px dashed var(--line);margin:44px 0}
+.toc-note{background:var(--note);border:1px solid var(--line);border-radius:8px;padding:14px 18px;font-size:.92rem}
+@media print{
+  .pagebreak{page-break-after:always;border:0;margin:0}
+  .docnav{display:none}
+  body{font-size:11pt}
+  .wrap{max-width:none;padding:0}
+  h1,h2,h3{page-break-after:avoid}
+  table,pre,.mermaid-figure,img{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="docnav"><strong>XRayVision AI docs:</strong> <a href="README.html">Index</a><a href="01-SRS.html">SRS</a><a href="02-SDD.html">SDD</a><a href="03-Test-Cases.html">Tests</a><a href="04-User-Manual.html">User Manual</a><a href="05-Thesis.html">Thesis</a></div><div class="wrap"><h1>Software Test Documentation</h1>
+<h2>XRayVision AI — Test Plan and Test Case Specification</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Document</strong></td>
+<td>Software Test Documentation (Test Plan + Test Case Specification)</td>
+</tr>
+<tr>
+<td><strong>Version</strong></td>
+<td>1.0</td>
+</tr>
+<tr>
+<td><strong>Standard</strong></td>
+<td>IEEE Std 829 (adapted)</td>
+</tr>
+<tr>
+<td><strong>Companion documents</strong></td>
+<td><a href="01-SRS.html">SRS</a> · <a href="02-SDD.html">SDD</a> · <a href="04-User-Manual.html">User Manual</a></td>
+</tr>
+<tr>
+<td><strong>Institution</strong></td>
+<td>Minhaj University Lahore — School of Software Engineering</td>
+</tr>
+<tr>
+<td><strong>Students</strong></td>
+<td>Muhammad Ali Raza (2022F-MUL-BSSWE-017), Hamza Afzal (2022F-MUL-BSSWE-027)</td>
+</tr>
+<tr>
+<td><strong>Supervisor</strong></td>
+<td>Maam Misbah — Lecturer, School of Software Engineering</td>
+</tr>
+</tbody></table>
+<hr>
+<blockquote>
+<h3>⚠️ Read this before using the results columns</h3>
+<p>This document specifies <strong>93 test cases</strong> derived from the SRS. The <strong>Status</strong> column records
+execution state honestly:</p>
+<table>
+<thead>
+<tr>
+<th>Marker</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>✅ Pass</strong></td>
+<td>Executed against the live deployment and verified. Evidence is referenced.</td>
+</tr>
+<tr>
+<td><strong>⬜ Pending</strong></td>
+<td>Specified but <strong>not yet executed</strong>. The tester must run it and fill in the Actual Result.</td>
+</tr>
+</tbody></table>
+<p>Seventeen cases were verified during documentation by driving the live deployment at
+<code>https://x-ray-vision-board.vercel.app</code> with an automated browser session; their evidence is the
+screenshot set in <a href="screenshots/"><code>docs/screenshots/</code></a>. The remaining cases — chiefly those needing
+real medical images, negative-path inputs, timing instrumentation and multi-account setups — are
+specified in full and are ready to execute. <strong>Do not present a Pending row as a passing result.</strong></p>
+</blockquote>
+<hr>
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#1-test-plan">Test Plan</a></li>
+<li><a href="#2-test-environment">Test Environment</a></li>
+<li><a href="#3-test-data">Test Data</a></li>
+<li><a href="#4-test-cases--authentication-tc-auth">Test Cases — Authentication</a></li>
+<li><a href="#5-test-cases--image-analysis-tc-anlz">Test Cases — Image Analysis</a></li>
+<li><a href="#6-test-cases--scans-and-records-tc-scan">Test Cases — Scans and Records</a></li>
+<li><a href="#7-test-cases--dashboard-tc-dash">Test Cases — Dashboard</a></li>
+<li><a href="#8-test-cases--chatbot-tc-chat">Test Cases — Chatbot</a></li>
+<li><a href="#9-test-cases--diet-planner-tc-diet">Test Cases — Diet Planner</a></li>
+<li><a href="#10-test-cases--clinic-locator-tc-clin">Test Cases — Clinic Locator</a></li>
+<li><a href="#11-test-cases--settings-and-profile-tc-set">Test Cases — Settings and Profile</a></li>
+<li><a href="#12-test-cases--system-and-infrastructure-tc-sys">Test Cases — System and Infrastructure</a></li>
+<li><a href="#13-test-cases--security-tc-sec">Test Cases — Security</a></li>
+<li><a href="#14-test-cases--performance-tc-perf">Test Cases — Performance</a></li>
+<li><a href="#15-test-cases--usability-and-compatibility-tc-ui">Test Cases — Usability and Compatibility</a></li>
+<li><a href="#16-test-summary-report">Test Summary Report</a></li>
+<li><a href="#17-defect-log">Defect Log</a></li>
+</ol>
+<hr>
+<h2>1. Test Plan</h2>
+<h3>1.1 Objectives</h3>
+<ol>
+<li>Verify that every functional requirement in the SRS is implemented as specified.</li>
+<li>Verify that invalid and hostile inputs are rejected with correct status codes and readable messages.</li>
+<li>Verify that the documented degradation paths behave as designed — a failing dependency must downgrade the result, not destroy it.</li>
+<li>Verify that a user can never read or modify another user's data.</li>
+<li>Verify that measurable non-functional targets are met.</li>
+</ol>
+<h3>1.2 Scope</h3>
+<p><strong>In scope:</strong> all API endpoints, all UI pages, authentication, authorisation, validation, degradation paths, and the documented performance targets.</p>
+<p><strong>Out of scope:</strong> clinical accuracy of the AI models (the models are pretrained third-party artefacts and are not being validated as medical devices), third-party service internals, and load testing beyond the documented concurrency target.</p>
+<h3>1.3 Test Levels</h3>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Purpose</th>
+<th>Technique</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Unit</strong></td>
+<td>Individual service functions — validation, Haversine, plan validation</td>
+<td>Manual invocation / pytest (to be added)</td>
+</tr>
+<tr>
+<td><strong>Integration</strong></td>
+<td>Router → service → repository chains</td>
+<td>Swagger UI at <code>/docs</code>, <code>curl</code></td>
+</tr>
+<tr>
+<td><strong>System</strong></td>
+<td>End-to-end user journeys through the browser</td>
+<td>Manual and automated browser sessions</td>
+</tr>
+<tr>
+<td><strong>Security</strong></td>
+<td>Authentication, authorisation, rate limiting, isolation</td>
+<td>Crafted requests with <code>curl</code></td>
+</tr>
+<tr>
+<td><strong>Acceptance</strong></td>
+<td>The supervisor's evaluation scenarios</td>
+<td>Demo walkthrough</td>
+</tr>
+</tbody></table>
+<h3>1.4 Entry and Exit Criteria</h3>
+<table>
+<thead>
+<tr>
+<th>Criterion</th>
+<th>Definition</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Entry</strong></td>
+<td>Backend responds <code>200</code> on <code>GET /health</code>; frontend loads; Supabase reachable; a valid <code>OPENROUTER_API_KEY</code> is configured.</td>
+</tr>
+<tr>
+<td><strong>Exit</strong></td>
+<td>100 % of Must-have (M) cases executed and passing; no open Critical or High defect; all Should-have (S) cases executed.</td>
+</tr>
+</tbody></table>
+<h3>1.5 Pass / Fail Criteria</h3>
+<p>A case <strong>passes</strong> only when the observed status code, response body, persisted state and rendered UI all match the Expected Result. A partial match is a <strong>fail</strong> and must be logged in <a href="#17-defect-log">§17</a>.</p>
+<h3>1.6 Risks</h3>
+<table>
+<thead>
+<tr>
+<th>Risk</th>
+<th>Mitigation</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Free-tier cold start distorts timing measurements</td>
+<td>Warm the backend with three requests before running TC-PERF cases</td>
+</tr>
+<tr>
+<td>OpenRouter free-tier quota exhausted mid-run</td>
+<td>Schedule LLM-dependent cases first; TC-ANLZ-13 deliberately exercises the fallback</td>
+</tr>
+<tr>
+<td>Overpass public mirrors rate-limit</td>
+<td>Retry TC-CLIN cases after a pause; the mirror fallback is itself under test</td>
+</tr>
+<tr>
+<td>No real DICOM samples available</td>
+<td>Obtain a public sample study before executing TC-ANLZ-05</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>2. Test Environment</h2>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Configuration</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Frontend under test</strong></td>
+<td><code>https://x-ray-vision-board.vercel.app</code></td>
+</tr>
+<tr>
+<td><strong>Backend under test</strong></td>
+<td>Hugging Face Spaces deployment (<code>*.hf.space</code>)</td>
+</tr>
+<tr>
+<td><strong>Database</strong></td>
+<td>Supabase PostgreSQL (project instance)</td>
+</tr>
+<tr>
+<td><strong>Browsers</strong></td>
+<td>Chrome 143, Edge 120+, Firefox 120+, Safari 17+</td>
+</tr>
+<tr>
+<td><strong>Viewports</strong></td>
+<td>1440×900 desktop, 390×844 mobile</td>
+</tr>
+<tr>
+<td><strong>API tools</strong></td>
+<td>Swagger UI (<code>/docs</code>), <code>curl</code></td>
+</tr>
+<tr>
+<td><strong>Local backend</strong></td>
+<td><code>uvicorn app.main:app --reload --port 8000</code></td>
+</tr>
+<tr>
+<td><strong>Automation</strong></td>
+<td>Playwright (Chromium) for browser-driven cases</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>3. Test Data</h2>
+<h3>3.1 Accounts</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Email</th>
+<th>Password</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>U1</strong></td>
+<td><code>ahmad123@gmail.com</code></td>
+<td><code>12345678</code></td>
+<td>Demo account, pre-populated with 31 scans</td>
+</tr>
+<tr>
+<td><strong>U2</strong></td>
+<td><em>(tester creates)</em></td>
+<td>≥ 8 chars</td>
+<td>Fresh registration and isolation testing</td>
+</tr>
+<tr>
+<td><strong>U3</strong></td>
+<td><em>(tester creates)</em></td>
+<td>≥ 8 chars</td>
+<td>Second account for cross-account isolation (TC-SEC-04)</td>
+</tr>
+</tbody></table>
+<h3>3.2 Image Fixtures</h3>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>File</th>
+<th>Properties</th>
+<th>Used by</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>IMG-1</strong></td>
+<td><code>chest_valid.jpg</code></td>
+<td>Chest X-ray, ~800×800 px, ~400 KB</td>
+<td>TC-ANLZ-01, TC-PERF-01</td>
+</tr>
+<tr>
+<td><strong>IMG-2</strong></td>
+<td><code>wrist_fracture.jpg</code></td>
+<td>Bone X-ray with a visible fracture</td>
+<td>TC-ANLZ-02</td>
+</tr>
+<tr>
+<td><strong>IMG-3</strong></td>
+<td><code>wound_photo.jpg</code></td>
+<td>External wound photograph</td>
+<td>TC-ANLZ-03</td>
+</tr>
+<tr>
+<td><strong>IMG-4</strong></td>
+<td><code>tiny.png</code></td>
+<td>150×150 px, ~120 KB</td>
+<td>TC-ANLZ-07 (resolution floor)</td>
+</tr>
+<tr>
+<td><strong>IMG-5</strong></td>
+<td><code>small.jpg</code></td>
+<td>~40 KB</td>
+<td>TC-ANLZ-06 (size floor)</td>
+</tr>
+<tr>
+<td><strong>IMG-6</strong></td>
+<td><code>huge.jpg</code></td>
+<td>~25 MB</td>
+<td>TC-ANLZ-08 (size ceiling)</td>
+</tr>
+<tr>
+<td><strong>IMG-7</strong></td>
+<td><code>document.pdf</code> renamed <code>fake.jpg</code></td>
+<td>Not a decodable image</td>
+<td>TC-ANLZ-09</td>
+</tr>
+<tr>
+<td><strong>IMG-8</strong></td>
+<td><code>study.dcm</code></td>
+<td>Valid DICOM</td>
+<td>TC-ANLZ-05</td>
+</tr>
+<tr>
+<td><strong>IMG-9</strong></td>
+<td><code>empty.jpg</code></td>
+<td>0 bytes</td>
+<td>TC-ANLZ-10</td>
+</tr>
+<tr>
+<td><strong>IMG-10</strong></td>
+<td><code>clear_chest.jpg</code></td>
+<td>Chest X-ray with no pathology</td>
+<td>TC-ANLZ-12</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>4. Test Cases — Authentication (TC-AUTH)</h2>
+<h3>TC-AUTH-01 — Register with valid data</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-001, FR-004</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Precondition</strong></td>
+<td>Email not already registered</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>Name <code>Test User</code>, email <code>newuser@test.com</code>, password <code>Test@1234</code></td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Open <code>/auth/register</code>.</li>
+<li>Enter full name, email, password and matching confirmation.</li>
+<li>Click <strong>Create account</strong>.</li>
+</ol>
+<p><strong>Expected result</strong></p>
+<ul>
+<li>HTTP 200; <code>AuthResponse</code> with <code>access_token</code> and <code>user</code>.</li>
+<li>A <code>profiles</code> row exists with <code>full_name = "Test User"</code> and <code>role = "Medical Student"</code>.</li>
+<li>Browser redirects to <code>/dashboard</code>; the header shows the user's name.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-AUTH-02 — Register with a password shorter than 8 characters</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-002</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>Password <code>abc123</code> (6 chars)</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Open <code>/auth/register</code>, enter a valid name and email, enter <code>abc123</code> in both password fields, submit.</p>
+<p><strong>Expected result</strong> — Client-side validation blocks submission with a message referencing the 8-character minimum. If sent directly to the API, HTTP 422 from Pydantic (<code>min_length=8</code>).</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-AUTH-03 — Register with mismatched password confirmation</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-001 (UC-01 A1)</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>Password <code>Test@1234</code>, confirmation <code>Test@5678</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Inline error "passwords do not match"; no API call is made; the user remains on the form.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-AUTH-04 — Register with an already-registered email</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-003</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>Email <code>ahmad123@gmail.com</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP 400; a readable "email already registered" message is displayed; no duplicate <code>profiles</code> row is created.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-AUTH-05 — Login with valid credentials</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-005, FR-006</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>U1 — <code>ahmad123@gmail.com</code> / <code>12345678</code></td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Open <code>/auth/login</code>, enter the credentials, click <strong>Sign In</strong>.</p>
+<p><strong>Expected result</strong> — HTTP 200 with a JWT; the browser redirects to <code>/dashboard</code>; the greeting shows the user's name.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Redirected to <code>/dashboard</code>; header shows "ahmad · Researcher"; greeting "Good afternoon, ahmad"; dashboard populated with 31 scans. Evidence: <code>screenshots/05-dashboard.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-AUTH-06 — Login with an invalid password</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-005 (UC-02 E1)</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td><code>ahmad123@gmail.com</code> / <code>wrongpassword</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP 401; "Invalid email or password" displayed; no token is stored; the user stays on <code>/auth/login</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-AUTH-07 — Login with an unregistered email</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-005</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td><code>doesnotexist@test.com</code> / <code>Test@1234</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP 401 with a generic message that does not reveal whether the email exists.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-AUTH-08 — Demo account one-click login</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-010a</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Open <code>/auth/login</code>, click <strong>Try demo account</strong>.</p>
+<p><strong>Expected result</strong> — A loading state appears, then the user is signed in and redirected to <code>/dashboard</code> without typing credentials.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Button present and labelled "Try demo account" on <code>/auth/login</code>. Evidence: <code>screenshots/02-login.png</code>. Click-through not exercised.</td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-AUTH-09 — Access a protected page without a token</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-007</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Clear local storage, navigate directly to <code>/dashboard</code>.</p>
+<p><strong>Expected result</strong> — The user is redirected to <code>/auth/login</code>; no scan data is rendered at any point.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-AUTH-10 — Logout clears the session</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-010</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Sign in, click the logout control, then press the browser Back button.</p>
+<p><strong>Expected result</strong> — <code>xray_token</code> and <code>xray_user</code> are removed from local storage; the user lands on <code>/</code>; Back does not restore an authenticated view.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-AUTH-11 — Forgot-password request</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-008</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>A registered email</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Open <code>/auth/forgot-password</code>, enter the email, click <strong>Send reset link</strong>.</p>
+<p><strong>Expected result</strong> — HTTP 200 with a confirmation message; a Supabase password-reset email arrives.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Page renders with heading "Reset your password", one email input and a <strong>Send reset link</strong> button. Evidence: <code>screenshots/04-forgot-password.png</code>. Email delivery not verified.</td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>5. Test Cases — Image Analysis (TC-ANLZ)</h2>
+<h3>TC-ANLZ-01 — Chest analysis, happy path</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-011, FR-012, FR-019, FR-020, FR-021, FR-023, FR-026</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+<tr>
+<td><strong>Precondition</strong></td>
+<td>Signed in as U1</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>IMG-1, route <code>Chest pathology</code>, label <code>PT-1001</code>, notes <code>Cough for 5 days</code></td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong></p>
+<ol>
+<li>Open <code>/analyze</code>.</li>
+<li>Upload IMG-1 (Step 1).</li>
+<li>Select <strong>Chest pathology</strong> (Step 2).</li>
+<li>Enter the label and notes (Step 3).</li>
+<li>Click <strong>Analyze image</strong>.</li>
+</ol>
+<p><strong>Expected result</strong></p>
+<ul>
+<li>A processing overlay is shown while the request runs.</li>
+<li>HTTP 200; navigation to <code>/results/{scanId}</code>.</li>
+<li>Findings originate from <code>DenseNet121</code>; <strong>at most 6</strong> are returned.</li>
+<li>Each finding shows name, confidence %, severity, model and an ICD-10 code where mapped.</li>
+<li>An <code>AgentSynthesis</code> paragraph, recommended actions and a specialist are displayed.</li>
+<li><code>urgency</code> is one of <code>critical|high|medium|low|clear</code>.</li>
+<li>A new row appears at the top of <code>/history</code>.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-02 — Fracture analysis returns bounding boxes</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-020, FR-022, FR-027</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>IMG-2, route <code>Fracture detection</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong></p>
+<ul>
+<li>Models run include <code>YOLOv8</code> and <code>FractureClassifier</code>.</li>
+<li>Bounding boxes are drawn over the image, aligned to the finding regions.</li>
+<li><strong>No</strong> finding named <code>Not_Fracture</code> appears anywhere in the response or the UI.</li>
+<li>A confidence summary table lists every finding with model, confidence and severity.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Stored fracture scan <code>a078d05a</code> renders dashed bounding boxes on the image; findings list <code>FractureClassifier — Fracture suspected 96.7% (ICD-10 S02-S92)</code> and four <code>YOLOv8 — Vase</code> rows; confidence summary table present; no <code>Not_Fracture</code> entry. Evidence: <code>screenshots/13-results.png</code>. New upload not exercised.</td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-03 — Wound analysis</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-020</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>IMG-3, route <code>External wound</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Findings originate from the <code>ViT</code> model with a wound-category label and a confidence score; a synthesis paragraph is produced.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-04 — Analysis without a label or notes</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-018</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>IMG-1, no label, no notes</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Analysis completes normally; <code>session_label</code> and <code>notes</code> are stored as empty/null; the results page renders without gaps.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-05 — DICOM file upload</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-012</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>IMG-8 (<code>study.dcm</code>)</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — The PIL dimension check is skipped; <code>pydicom</code> decodes the file; analysis completes and a result is returned.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-06 — Reject a file below the size floor</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-013</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>IMG-5 (~40 KB)</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP <strong>422</strong>; message states the actual size in KB and the 100 KB minimum; no <code>scans</code> row is created.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-07 — Reject a low-resolution image</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-015</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>IMG-4 (150×150 px, ≥ 100 KB)</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP <strong>422</strong>; message states the actual dimensions and the 200×200 px minimum.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-08 — Reject a file above the size ceiling</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-014</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>IMG-6 (~25 MB)</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP <strong>422</strong>; message states the actual size in MB and the 20 MB maximum.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-09 — Reject an undecodable file</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-012</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>IMG-7 (a PDF renamed <code>.jpg</code>, &gt; 100 KB)</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP <strong>422</strong>; message directs the user to upload a JPEG, PNG or DICOM file. No unhandled exception is logged.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-10 — Reject an empty upload</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-016</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>IMG-9 (0 bytes)</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP <strong>400</strong> "Empty file uploaded."</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-11 — Reject an invalid scan type</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-017</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td><code>scan_type=brain</code> submitted via <code>curl</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP <strong>400</strong> "scan_type must be one of: chest, fracture, wound".</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-12 — Clear scan produces an empty findings state</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-023 (UC-03 A1)</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>IMG-10, route <code>Chest pathology</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — <code>findings</code> is an empty array; <code>urgency</code> is <code>clear</code>; the results page shows a "no significant findings" state rather than an error.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Dashboard history shows a stored chest scan (<code>dc4bad5e</code>) with <strong>0 findings</strong> and urgency <strong>CLEAR</strong>, confirming the state is reachable and rendered. Evidence: <code>screenshots/05-dashboard.png</code>. Fresh upload not exercised.</td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-13 — LLM failure falls back instead of failing</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-024, NFR-Q1</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+<tr>
+<td><strong>Setup</strong></td>
+<td>Temporarily set <code>OPENROUTER_API_KEY</code> to an invalid value and restart the backend</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong></p>
+<ul>
+<li>The analysis still returns HTTP <strong>200</strong>.</li>
+<li><code>agent_synthesis.synthesis_text</code> reads "AI synthesis temporarily unavailable. Please review findings manually."</li>
+<li><code>urgency</code> is <code>medium</code>.</li>
+<li><code>recommended_actions</code> contains "Consult a radiologist for interpretation".</li>
+<li>Model findings are present and correct.</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-14 — Storage failure does not block the result</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-025, NFR-Q1</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Setup</strong></td>
+<td>Temporarily rename the <code>xray-images</code> bucket or revoke storage permission</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP <strong>200</strong>; <code>image_url</code> is an empty string; a warning is logged; the <code>scans</code> row is still inserted; the results page renders findings without the image.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-15 — Analyze rate limit</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-SEC5</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Submit 11 analysis requests from the same IP within 60 seconds.</p>
+<p><strong>Expected result</strong> — Requests 1–10 succeed; request 11 returns HTTP <strong>429</strong> with "Rate limit exceeded. Please slow down."</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-ANLZ-16 — Processing diagnostics are returned</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-025a</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — <code>model_results</code> contains <code>scan_type</code>, <code>ensemble_mode: "routed"</code>, <code>models_run</code>, <code>model_errors</code> and a numeric <code>processing_time_ms</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>6. Test Cases — Scans and Records (TC-SCAN)</h2>
+<h3>TC-SCAN-01 — History lists scans newest first</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-029</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — <code>/history</code> lists the signed-in user's scans in descending <code>created_at</code> order, each showing type, findings count, urgency and date.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>/history</code> renders the demo account's scan list; dashboard "Recent analyses" shows descending dates (6/3/2026 … 5/31/2026). Evidence: <code>screenshots/07-history.png</code>, <code>screenshots/05-dashboard.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SCAN-02 — Filter history by scan type</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-030</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — On <code>/history</code>, apply the <code>fracture</code> filter.</p>
+<p><strong>Expected result</strong> — Only fracture scans are listed; the count matches a direct <code>GET /scans?scan_type=fracture</code> call.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SCAN-03 — Open a scan result from history</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-027, FR-028</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Clicking a row opens <code>/results/{scanId}</code> showing the image, overlays, findings and synthesis for that exact scan.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Navigating to <code>/results/a078d05a-…</code> renders the wrist X-ray with overlays, urgency <strong>HIGH</strong>, findings, GLM agent analysis, immediate actions and specialist recommendation. Evidence: <code>screenshots/13-results.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SCAN-04 — Findings are grouped into confidence tiers</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-028a</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Findings ≥ 65 % under <strong>Primary Findings</strong>; 50–65 % under <strong>Secondary Findings</strong> labelled "50–65% confidence"; &lt; 50 % collapsed behind an expandable "borderline findings" control.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Results page shows "Primary Findings" (Fracture suspected, 96.7 %), "Secondary Findings 50–65% confidence" (Vase, 52.7 %) and a collapsed "3 borderline findings below 50% — click to expand". Evidence: <code>screenshots/13-results.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SCAN-05 — Low-confidence review banner</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-028b, NFR-S7</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — When any finding is below 60 % confidence, a banner reading "One or more findings have confidence below 60% — radiologist review recommended" is displayed.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Banner present verbatim on scan <code>a078d05a</code> (lowest finding 16.8 %). Evidence: <code>screenshots/13-results.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SCAN-06 — Image overlay controls</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-028c</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — On a result with boxes, toggle <strong>AI Findings</strong>, <strong>Heatmap</strong> and <strong>Labels</strong>; zoom in, zoom out, reset.</p>
+<p><strong>Expected result</strong> — Each toggle shows/hides its layer; zoom is clamped between 0.5× and 2.5×; reset returns to 1×.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Controls <strong>AI Findings</strong>, <strong>Heatmap</strong>, <strong>Labels</strong> plus zoom-in / zoom-out / reset buttons are rendered. Evidence: <code>screenshots/13-results.png</code>. Interaction not exercised.</td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SCAN-07 — Download PDF report</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-031</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — On a result page, click <strong>Download PDF Report</strong>.</p>
+<p><strong>Expected result</strong> — HTTP 200 with <code>Content-Type: application/pdf</code>; the file opens and contains the findings, synthesis, urgency and the educational-use disclaimer.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Download PDF Report</strong> button is present on the result page. Evidence: <code>screenshots/13-results.png</code>. Download and file contents not verified.</td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SCAN-08 — Export JSON</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-032</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Valid JSON is returned containing the raw findings array with confidence, model, severity and bbox fields.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Export JSON</strong> button is present. Evidence: <code>screenshots/13-results.png</code>. Payload not verified.</td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SCAN-09 — Delete a scan</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-033, BR-5</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Delete a scan from history, then reload and attempt to open its old URL.</p>
+<p><strong>Expected result</strong> — HTTP 200; the row disappears from <code>/history</code>; the <code>scans</code> row is gone; the stored image is removed; the old result URL returns 404.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SCAN-10 — Fetch a non-existent scan</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>UC-05 E1</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>A random UUID</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP <strong>404</strong>; the UI shows a "not found" state rather than a blank page.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SCAN-11 — Empty history state</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-029</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Low</td>
+</tr>
+<tr>
+<td><strong>Precondition</strong></td>
+<td>Signed in as freshly registered U2</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — <code>/history</code> shows an empty-state message inviting the user to run their first analysis; no error is shown.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SCAN-12 — PDF export for another user's scan</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>BR-1, NFR-SEC4</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — As U2, request <code>GET /scans/{U1_scan_id}/report.pdf</code>.</p>
+<p><strong>Expected result</strong> — HTTP <strong>404</strong>; no PDF bytes are returned.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>7. Test Cases — Dashboard (TC-DASH)</h2>
+<h3>TC-DASH-01 — Headline statistics render</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-034</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Total scans, urgent reports, average confidence and average report time are displayed as numeric tiles.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tiles render: <strong>Total scans 31</strong>, <strong>Urgent reports 15</strong>, <strong>Avg confidence 63.2 %</strong>, <strong>Report time 8.4 s</strong>. Evidence: <code>screenshots/05-dashboard.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-DASH-02 — Finding distribution</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-035</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — A ranked list of finding names with frequency counts and proportional bars.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>"Finding distribution" panel lists Lung Opacity 10, Lung Lesion 8, Nodule 3, Mass 3, Enlarged Cardiomediastinum 3 with bars. Evidence: <code>screenshots/05-dashboard.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-DASH-03 — Recent analyses link through</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-036</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Up to five recent scans are listed with type, findings count, urgency badge and date; each links to its result page.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Five rows rendered with linked scan ids, type, findings count and urgency badges (HIGH / CLEAR / MEDIUM). Evidence: <code>screenshots/05-dashboard.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-DASH-04 — Per-model confidence bars</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-036a</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Average confidence is shown per model with a labelled progress bar.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>"Avg. model confidence" shows DenseNet121 84.7 %, YOLOv8 89.1 %, ViT 82.3 % with bars. Evidence: <code>screenshots/05-dashboard.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-DASH-05 — Statistics are scoped to the signed-in user</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-037, BR-1</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Note U1's totals, sign in as U2 (no scans), open <code>/dashboard</code>.</p>
+<p><strong>Expected result</strong> — U2 sees zeros and an empty recent list — never U1's figures.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>8. Test Cases — Chatbot (TC-CHAT)</h2>
+<h3>TC-CHAT-01 — English question and reply</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-038, FR-039</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>"I have had a headache for three days, what should I do?"</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP 200; a relevant English reply; a <code>session_id</code> is returned; both messages are persisted.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-CHAT-02 — Urdu question and RTL rendering</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-039</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>Language <code>اردو</code>; message <code>مجھے تین دن سے سر درد ہے</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — The reply is in Urdu; the input and message bubbles render right-to-left; the placeholder changes to <code>اپنی علامات بتائیں...</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Language toggle offers <strong>EN</strong> and <strong>اردو</strong> on <code>/chat</code>. Evidence: <code>screenshots/08-chat.png</code>. Round-trip not exercised.</td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-CHAT-03 — Structured fields are extracted</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-042</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>"I have chest pain and shortness of breath"</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — <code>doctor_type</code> is populated (e.g. Cardiologist) and <code>home_remedies</code> is a non-empty array; both render as styled cards, not as raw <code>DOCTOR_TYPE:</code> text inside the reply.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-CHAT-04 — Conversation context is retained</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-040</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Ask "I have a fever", then follow up with "how long should it last?" in the same session.</p>
+<p><strong>Expected result</strong> — The second reply refers to the fever, demonstrating that prior messages were supplied as context.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-CHAT-05 — Sessions persist across visits</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-043</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Hold a conversation, navigate away, return to <code>/chat</code>.</p>
+<p><strong>Expected result</strong> — The session appears in the session list and its messages are restored in order.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-CHAT-06 — Safety framing in replies</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-041, NFR-S2</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>"Do I have cancer? Just tell me yes or no."</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — The bot does <strong>not</strong> assert a definitive diagnosis; it directs the user to a qualified medical professional.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-CHAT-07 — Chat rate limit</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-SEC5</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Send 21 messages within 60 seconds.</p>
+<p><strong>Expected result</strong> — The 21st returns HTTP <strong>429</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-CHAT-08 — Voice input</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-043a</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Low</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Click the microphone control, grant permission, dictate a question in each language.</p>
+<p><strong>Expected result</strong> — Recognition uses <code>en-US</code> or <code>ur-PK</code> to match the selected language; the transcript populates the input. If permission is denied, text input still works.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>9. Test Cases — Diet Planner (TC-DIET)</h2>
+<h3>TC-DIET-01 — Generate a plan for a stated condition</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-044, FR-045, FR-048</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>Condition <code>diabetes</code>, preference <code>balanced</code>, restrictions <code>nut allergy</code>, goal <code>weight loss</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Exactly <strong>7</strong> day entries, each with breakfast, lunch and dinner; meals carry names and descriptions; the plan has a title and summary.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-DIET-02 — Hypertension applies DASH guidance</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-046, NFR-S3</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>Condition <code>high blood pressure</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — The plan reflects DASH principles (reduced sodium, emphasis on fruit, vegetables and low-fat dairy) and says so in the summary or tips.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-DIET-03 — Diabetes applies low-GI guidance</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-046</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Low-glycaemic-index choices dominate and the rationale is stated.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-DIET-04 — Kidney disease adds a renal-dietitian note</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-046, NFR-S3</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td>Condition <code>kidney disease</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — The response includes an explicit recommendation to consult a renal dietitian.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-DIET-05 — Malformed LLM output triggers the fallback plan</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-047</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+<tr>
+<td><strong>Setup</strong></td>
+<td>Force an invalid LLM response (invalid key, or a stub returning 5 days)</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — The validated hard-coded 7-day fallback plan is returned. A partial or malformed plan is <strong>never</strong> displayed.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-DIET-06 — Diet rate limit</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-SEC5</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Submit 11 diet requests within 60 seconds.</p>
+<p><strong>Expected result</strong> — The 11th returns HTTP <strong>429</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>10. Test Cases — Clinic Locator (TC-CLIN)</h2>
+<h3>TC-CLIN-01 — Find clinics with permission granted</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-049, FR-050, FR-051, FR-052</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Open <code>/clinics</code>, set the radius to 5 km, click <strong>Use My Location</strong>, grant permission.</p>
+<p><strong>Expected result</strong> — Facilities are listed with name, type, address, distance in km and a Maps link, sorted by ascending distance; every result is within the radius.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-CLIN-02 — Radius slider bounds</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-049</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — The slider spans <strong>1 km to 20 km</strong> and defaults to <strong>5 km</strong>; the chosen value is sent as <code>radius_km</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Slider labelled 1 km – 20 km, default reading <strong>5 km</strong>. Evidence: <code>screenshots/10-clinics.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-CLIN-03 — Geolocation permission denied</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-052a</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Block location permission, click <strong>Use My Location</strong>.</p>
+<p><strong>Expected result</strong> — An explanatory message is shown; no API call is made; the page does not crash.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-CLIN-04 — Initial empty state</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>UI-5</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Low</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Before any search, the page shows "Find clinics near you — Click 'Use My Location' to search for nearby healthcare facilities."</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Empty state renders verbatim, with the OpenStreetMap attribution line "Powered by OpenStreetMap | Data may not reflect all facilities". Evidence: <code>screenshots/10-clinics.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-CLIN-05 — Out-of-range radius is rejected</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-049</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Test data</strong></td>
+<td><code>GET /clinics?lat=31.5&amp;lon=74.3&amp;radius_km=100</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP <strong>422</strong> — the API constrains <code>radius_km</code> to 0.5–25.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-CLIN-06 — Overpass mirror fallback</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-050, NFR-Q1</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+<tr>
+<td><strong>Setup</strong></td>
+<td>Block the first mirror host at the network level</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — The backend transparently retries the second mirror and still returns results; the user sees no error.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>11. Test Cases — Settings and Profile (TC-SET)</h2>
+<h3>TC-SET-01 — Theme switching</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-053</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — In Settings → Appearance, select Light, then Dark, then System.</p>
+<p><strong>Expected result</strong> — The interface updates immediately for each choice and the selection survives a page reload.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Settings page renders an <strong>Appearance</strong> section with theme options. Evidence: <code>screenshots/12-settings.png</code>. Switching not exercised.</td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SET-02 — Analysis preference toggles</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-054, FR-055</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — "Show AI detection boxes on images", "Show confidence heatmap overlay" and "Email notifications for critical findings" toggle and persist.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>All three toggles render under <strong>Analysis Preferences</strong> and <strong>Notifications</strong>. Evidence: <code>screenshots/12-settings.png</code>. Persistence not exercised.</td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SET-03 — Preferences persist server-side</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-056</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Change a preference, sign out, sign in from a different browser.</p>
+<p><strong>Expected result</strong> — The preference is restored from <code>profiles.settings</code>, proving it is stored server-side and not only in local storage.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SET-04 — Profile and avatar update</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-009</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — On <code>/profile</code>, change the display name and upload an avatar.</p>
+<p><strong>Expected result</strong> — <code>PATCH /auth/profile</code> and <code>POST /auth/avatar</code> return 200; the header updates immediately; the new avatar survives a reload (cache-buster applied).</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Profile page renders with the user's name and profile details. Evidence: <code>screenshots/11-profile.png</code>. Update not exercised.</td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>12. Test Cases — System and Infrastructure (TC-SYS)</h2>
+<h3>TC-SYS-01 — Health endpoint</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-057</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — <code>curl https://&lt;backend&gt;/health</code> with no authentication.</p>
+<p><strong>Expected result</strong> — HTTP 200 with <code>{"status": "ok"}</code>.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SYS-02 — Root metadata endpoint</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-057</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Low</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP 200 with <code>status</code>, <code>service</code>, <code>version: "2.1.0"</code> and the four model names.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SYS-03 — API documentation is reachable</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-058, NFR-Q10</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — <code>/docs</code> renders Swagger UI listing all 21 endpoints; <code>/redoc</code> renders ReDoc.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SYS-04 — Requests are accepted during model preloading</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-059, NFR-P2, C-5</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Restart the backend and immediately poll <code>GET /health</code>.</p>
+<p><strong>Expected result</strong> — <code>/health</code> responds 200 within ~5 seconds while the preload thread is still loading models; the log shows "accepting requests" before "All AI models loaded".</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SYS-05 — Lazy loading with <code>DISABLE_PRELOAD=true</code></h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-060</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Set <code>DISABLE_PRELOAD=true</code>, restart, then call <code>/auth/login</code>, <code>/chat</code> and <code>/diet</code> before any analysis.</p>
+<p><strong>Expected result</strong> — Non-ML endpoints work immediately; the log shows the preload skip message; the first <code>/analyze</code> call loads its model on demand and succeeds.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>13. Test Cases — Security (TC-SEC)</h2>
+<h3>TC-SEC-01 — Expired token is rejected</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-007, NFR-SEC2</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+<tr>
+<td><strong>Setup</strong></td>
+<td>Set <code>JWT_EXPIRY_HOURS</code> to a very small value, or craft an expired token</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — HTTP <strong>401</strong> "Invalid or expired token"; the frontend clears the token and redirects to login.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SEC-02 — Tampered token signature is rejected</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-SEC2</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Alter one character of a valid JWT payload and send it.</p>
+<p><strong>Expected result</strong> — HTTP <strong>401</strong>; signature verification fails; no data is returned.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SEC-03 — Missing Authorization header</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>FR-007</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Call <code>GET /scans</code> with no header.</p>
+<p><strong>Expected result</strong> — HTTP <strong>401</strong>; no scan data is leaked.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SEC-04 — Cross-account data isolation</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>BR-1, NFR-SEC3, NFR-SEC4</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — As U2, call <code>GET /scans/{U1_scan_id}</code> and <code>DELETE /scans/{U1_scan_id}</code>.</p>
+<p><strong>Expected result</strong> — Both return <strong>404</strong>; U1's scan still exists afterwards.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SEC-05 — Row Level Security is enabled</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-SEC3</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — In the Supabase SQL editor, query <code>pg_tables</code> / policy metadata for the four tables.</p>
+<p><strong>Expected result</strong> — RLS is enabled on <code>profiles</code>, <code>scans</code>, <code>chat_sessions</code>, <code>chat_messages</code>, each with the documented policies.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SEC-06 — Default JWT secret is refused</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-SEC2</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+<tr>
+<td><strong>Setup</strong></td>
+<td>Set <code>JWT_SECRET</code> to the placeholder from <code>.env.example</code></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — The server refuses to operate with the default secret rather than starting insecurely.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SEC-07 — CORS blocks a disallowed origin</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-SEC6, CM-4</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Send a preflight <code>OPTIONS</code> request with <code>Origin: https://evil.example</code>.</p>
+<p><strong>Expected result</strong> — No permissive <code>Access-Control-Allow-Origin</code> for that origin; the browser blocks the request.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SEC-08 — Global rate limit</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-SEC5</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Send 201 requests to a non-AI endpoint within 60 seconds.</p>
+<p><strong>Expected result</strong> — The 201st returns HTTP <strong>429</strong>.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-SEC-09 — No secrets in the repository</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-SEC8</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Steps</strong> — Run <code>git ls-files | grep -i env</code> and inspect every match.</p>
+<p><strong>Expected result</strong> — No file containing a service-role key, <code>OPENROUTER_API_KEY</code>, <code>HF_TOKEN</code> or <code>JWT_SECRET</code> is tracked. Only <code>.env.example</code> with placeholders is present.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>backend/.env</code> is correctly ignored. <strong>Defect:</strong> the root <code>.env</code> <strong>is tracked</strong> (contains <code>VITE_SUPABASE_URL</code> and the Supabase publishable anon key). No service-role key, LLM key or JWT secret is exposed. Logged as <strong>DEF-01</strong>.</td>
+<td>❌ <strong>Fail</strong></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>14. Test Cases — Performance (TC-PERF)</h2>
+<blockquote>
+<p>Warm the backend with three requests before measuring. Record the median of five runs.</p>
+</blockquote>
+<h3>TC-PERF-01 — End-to-end analysis time</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-P1</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td>≤ 15 s from submit to rendered result on a warm backend</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(record median of 5 runs)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-PERF-02 — Non-AI endpoint latency</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-P3</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td><code>/scans</code>, <code>/stats</code>, <code>/auth/me</code> respond in ≤ 1 s at p95</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(record p95 over 20 calls each)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-PERF-03 — Chat reply latency</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-P4</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td>≤ 10 s typical</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(record median of 5 messages)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-PERF-04 — Concurrent analyses</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-P7</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td>3 simultaneous analyses all complete successfully</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-PERF-05 — Event loop remains responsive during inference</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-P5</td>
+</tr>
+<tr>
+<td><strong>Target</strong></td>
+<td><code>GET /health</code> responds in ≤ 1 s while an analysis is running</td>
+</tr>
+</tbody></table>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>(to be filled by tester)</em></td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>15. Test Cases — Usability and Compatibility (TC-UI)</h2>
+<h3>TC-UI-01 — Landing page renders completely</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>UI-1</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Hero, Capabilities, Workflow, Report, Trust and CTA sections all render, with scroll-reveal animations completing as the user scrolls.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>All six sections render at 1440×900 after scrolling; no blank regions remain. Evidence: <code>screenshots/01-landing.png</code> and section shots <code>01a</code>–<code>01e</code>.</td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-UI-02 — Mobile responsiveness</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>UI-1</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — At 390×844 the layout reflows to a single column with no horizontal scrolling and no overlapping text.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Landing page renders correctly at 390×844. Evidence: <code>screenshots/14-landing-mobile.png</code>. Authenticated pages not checked at mobile width.</td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-UI-03 — Educational-use disclaimer is always visible</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-S1, LR-1, UI-6</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td><strong>Critical</strong></td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — An "Educational use only" indicator is present in the app shell on every authenticated page, and a fuller disclaimer appears on the results page.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>"EDUCATIONAL USE ONLY" badge is pinned in the sidebar on every authenticated page; the results page footer reads "Educational use only. XRayVision AI is not a licensed medical device…". Evidence: <code>screenshots/05-dashboard.png</code>, <code>screenshots/13-results.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-UI-04 — Three-step analysis wizard is self-explanatory</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>NFR-Q3</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — The upload page presents numbered steps (Upload image → Analysis route → Context) and states the accepted formats and size limits on screen.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Steps 1–3 are labelled; the drop zone states "DICOM / PNG / JPG · MIN 200×200 PX · 100 KB – 20 MB"; an image-quality advisory is shown. Evidence: <code>screenshots/06-analyze-upload.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-UI-05 — Urgency is not conveyed by colour alone</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>UI-4, NFR-Q11</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>High</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — Every urgency badge carries a text label (<code>HIGH</code>, <code>CLEAR</code>, <code>MEDIUM</code>, …) alongside its colour.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Badges render as coloured chips containing the words HIGH / CLEAR / MEDIUM on both the dashboard and the results page. Evidence: <code>screenshots/05-dashboard.png</code>, <code>screenshots/13-results.png</code></td>
+<td>✅ Pass</td>
+</tr>
+</tbody></table>
+<hr>
+<h3>TC-UI-06 — Cross-browser rendering</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Requirement</strong></td>
+<td>Operating environment §2.4</td>
+</tr>
+<tr>
+<td><strong>Priority</strong></td>
+<td>Medium</td>
+</tr>
+</tbody></table>
+<p><strong>Expected result</strong> — The application renders and functions in Chrome, Edge, Firefox and Safari.</p>
+<table>
+<thead>
+<tr>
+<th>Actual result</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Verified in Chromium 143 only. Evidence: full screenshot set. Edge, Firefox and Safari not checked.</td>
+<td>⬜ Pending</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>16. Test Summary Report</h2>
+<h3>16.1 Coverage by Module</h3>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Cases</th>
+<th>Verified ✅</th>
+<th>Pending ⬜</th>
+<th>Failed ❌</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Authentication</td>
+<td>11</td>
+<td>1</td>
+<td>10</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Image Analysis</td>
+<td>16</td>
+<td>2</td>
+<td>14</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Scans and Records</td>
+<td>12</td>
+<td>4</td>
+<td>8</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Dashboard</td>
+<td>5</td>
+<td>4</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Chatbot</td>
+<td>8</td>
+<td>0</td>
+<td>8</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Diet Planner</td>
+<td>6</td>
+<td>0</td>
+<td>6</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Clinic Locator</td>
+<td>6</td>
+<td>2</td>
+<td>4</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Settings and Profile</td>
+<td>4</td>
+<td>0</td>
+<td>4</td>
+<td>0</td>
+</tr>
+<tr>
+<td>System</td>
+<td>5</td>
+<td>0</td>
+<td>5</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>9</td>
+<td>0</td>
+<td>8</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>5</td>
+<td>0</td>
+<td>5</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Usability</td>
+<td>6</td>
+<td>4</td>
+<td>2</td>
+<td>0</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>93</strong></td>
+<td><strong>17</strong></td>
+<td><strong>75</strong></td>
+<td><strong>1</strong></td>
+</tr>
+</tbody></table>
+<h3>16.2 Requirements Coverage</h3>
+<table>
+<thead>
+<tr>
+<th>SRS group</th>
+<th>Requirements</th>
+<th>Covered by</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>FR-001 – FR-010a</td>
+<td>11</td>
+<td>TC-AUTH-01 … 11</td>
+</tr>
+<tr>
+<td>FR-011 – FR-025a</td>
+<td>16</td>
+<td>TC-ANLZ-01 … 16</td>
+</tr>
+<tr>
+<td>FR-026 – FR-033</td>
+<td>12</td>
+<td>TC-SCAN-01 … 12</td>
+</tr>
+<tr>
+<td>FR-034 – FR-037</td>
+<td>5</td>
+<td>TC-DASH-01 … 05</td>
+</tr>
+<tr>
+<td>FR-038 – FR-043a</td>
+<td>8</td>
+<td>TC-CHAT-01 … 08</td>
+</tr>
+<tr>
+<td>FR-044 – FR-048</td>
+<td>6</td>
+<td>TC-DIET-01 … 06</td>
+</tr>
+<tr>
+<td>FR-049 – FR-052a</td>
+<td>6</td>
+<td>TC-CLIN-01 … 06</td>
+</tr>
+<tr>
+<td>FR-053 – FR-056</td>
+<td>4</td>
+<td>TC-SET-01 … 04</td>
+</tr>
+<tr>
+<td>FR-057 – FR-060</td>
+<td>5</td>
+<td>TC-SYS-01 … 05</td>
+</tr>
+<tr>
+<td>NFR-SEC1 – SEC9</td>
+<td>9</td>
+<td>TC-SEC-01 … 09</td>
+</tr>
+<tr>
+<td>NFR-P1 – P7</td>
+<td>5</td>
+<td>TC-PERF-01 … 05</td>
+</tr>
+<tr>
+<td>UI-1 – UI-7, NFR-Q3/Q11</td>
+<td>6</td>
+<td>TC-UI-01 … 06</td>
+</tr>
+</tbody></table>
+<p><strong>Every functional requirement has at least one corresponding test case.</strong></p>
+<h3>16.3 Sign-off</h3>
+<table>
+<thead>
+<tr>
+<th>Role</th>
+<th>Name</th>
+<th>Signature</th>
+<th>Date</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Tester</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Tester</td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>Supervisor</td>
+<td>Maam Misbah</td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>17. Defect Log</h2>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Test case</th>
+<th>Severity</th>
+<th>Description</th>
+<th>Status</th>
+<th>Fix</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>DEF-01</strong></td>
+<td>TC-SEC-09</td>
+<td><strong>Medium</strong></td>
+<td>The root <code>.env</code> file is tracked in git. It contains <code>VITE_API_URL</code>, <code>VITE_SUPABASE_URL</code> and the Supabase <strong>publishable</strong> anon key. No service-role key, LLM key or JWT secret is exposed, so this is a hygiene issue rather than a credential compromise — but the file is listed in <code>.gitignore</code> and should not be tracked.</td>
+<td>Open</td>
+<td><code>git rm --cached .env</code> and commit</td>
+</tr>
+<tr>
+<td><strong>DEF-02</strong></td>
+<td>Documentation review</td>
+<td><strong>Low</strong></td>
+<td><code>backend/README.md</code> instructs the operator to create the <code>xray-images</code> bucket as <strong>private</strong>, but <code>supabase_client.py</code> creates it with <code>public: True</code> and serves images via <code>get_public_url()</code>. The root <code>README.md</code> correctly says public.</td>
+<td>Open</td>
+<td>Correct the backend README</td>
+</tr>
+<tr>
+<td></td>
+<td><em>(add further defects as they are found)</em></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+</tbody></table>
+<p><strong>Severity definitions</strong> — <strong>Critical:</strong> data loss, security breach, or a core feature unusable. <strong>High:</strong> a major feature fails with no workaround. <strong>Medium:</strong> a feature fails but a workaround exists. <strong>Low:</strong> cosmetic or documentation issue.</p>
+<hr>
+<h2>Appendix — Revision History</h2>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Date</th>
+<th>Author</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1.0</td>
+<td>August 2026</td>
+<td>Muhammad Ali Raza, Hamza Afzal</td>
+<td>Initial test plan and 93 test case specifications; 17 verified against the live deployment</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>XRayVision AI — Software Test Documentation v1.0 — Minhaj University Lahore</em></p>
+</div>
+</body></html>

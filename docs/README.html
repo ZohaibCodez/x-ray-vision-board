@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XRayVision AI — Project Documentation — XRayVision AI</title>
+<style>
+:root{--fg:#1a2028;--muted:#5b6672;--bg:#ffffff;--line:#e2e8f0;--accent:#0E7490;
+      --code-bg:#f6f8fa;--th:#f1f5f9;--note:#f0f9ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 32px 96px}
+h1{font-size:2.1rem;line-height:1.2;margin:0 0 .6em;padding-bottom:.35em;border-bottom:3px solid var(--accent)}
+h2{font-size:1.55rem;margin:2.2em 0 .7em;padding-bottom:.3em;border-bottom:1px solid var(--line)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em;color:var(--accent)}
+h4{font-size:1.02rem;margin:1.4em 0 .4em}
+p{margin:.7em 0}
+a{color:var(--accent)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+table{border-collapse:collapse;width:100%;margin:1.1em 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--th);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:var(--code-bg);padding:.15em .4em;border-radius:4px;font-size:.86em;
+     font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto}
+pre code{background:none;padding:0;font-size:.84rem;line-height:1.5}
+blockquote{margin:1.2em 0;padding:.9em 1.2em;background:var(--note);
+           border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote > :first-child{margin-top:0} blockquote > :last-child{margin-bottom:0}
+ul,ol{padding-left:1.5em}
+img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;margin:.8em 0;display:block}
+.mermaid-figure{margin:1.6em 0;padding:20px;border:1px solid var(--line);border-radius:10px;
+                background:#fcfdfe;overflow-x:auto;text-align:center}
+.mermaid-figure svg{max-width:100%;height:auto}
+.docnav{background:var(--th);border:1px solid var(--line);border-radius:10px;
+        padding:12px 18px;margin-bottom:32px;font-size:.9rem}
+.docnav a{margin-right:18px;font-weight:600;text-decoration:none}
+.center{text-align:center}
+.center h1,.center h2,.center h3{border:0;text-align:center}
+.pagebreak{border-top:1px dashed var(--line);margin:44px 0}
+.toc-note{background:var(--note);border:1px solid var(--line);border-radius:8px;padding:14px 18px;font-size:.92rem}
+@media print{
+  .pagebreak{page-break-after:always;border:0;margin:0}
+  .docnav{display:none}
+  body{font-size:11pt}
+  .wrap{max-width:none;padding:0}
+  h1,h2,h3{page-break-after:avoid}
+  table,pre,.mermaid-figure,img{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="docnav"><strong>XRayVision AI docs:</strong> <a href="README.html">Index</a><a href="01-SRS.html">SRS</a><a href="02-SDD.html">SDD</a><a href="03-Test-Cases.html">Tests</a><a href="04-User-Manual.html">User Manual</a><a href="05-Thesis.html">Thesis</a></div><div class="wrap"><h1>XRayVision AI — Project Documentation</h1>
+<p>Final Year Project documentation set for <strong>XRayVision AI</strong>, a full-stack medical diagnostic platform.</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Project title</strong></td>
+<td>Web-Based AI Chatbot for Automated X-Ray Fracture Detection</td>
+</tr>
+<tr>
+<td><strong>Institution</strong></td>
+<td>Minhaj University Lahore — School of Software Engineering</td>
+</tr>
+<tr>
+<td><strong>Programme</strong></td>
+<td>BSSE, 8th Semester — Final Year Project</td>
+</tr>
+<tr>
+<td><strong>Students</strong></td>
+<td>Muhammad Ali Raza (2022F-MUL-BSSWE-017) · Hamza Afzal (2022F-MUL-BSSWE-027)</td>
+</tr>
+<tr>
+<td><strong>Supervisor</strong></td>
+<td>Maam Misbah — Lecturer, School of Software Engineering</td>
+</tr>
+<tr>
+<td><strong>Product version</strong></td>
+<td>2.1.0</td>
+</tr>
+<tr>
+<td><strong>Live application</strong></td>
+<td><a href="https://x-ray-vision-board.vercel.app">https://x-ray-vision-board.vercel.app</a></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>The Documents</h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Document</th>
+<th>What it answers</th>
+<th>Size</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td><strong><a href="01-SRS.html">Software Requirements Specification</a></strong></td>
+<td><em>What</em> must the system do? Scope, users, 60+ numbered functional requirements, use case model, non-functional targets, constraints.</td>
+<td>IEEE 830 format</td>
+</tr>
+<tr>
+<td>2</td>
+<td><strong><a href="02-SDD.html">Software Design Document</a></strong></td>
+<td><em>How</em> is it built? Architecture, ERD, DFDs (levels 0–2), class diagram, sequence diagrams, state diagrams, algorithms, security design, deployment.</td>
+<td>IEEE 1016 format</td>
+</tr>
+<tr>
+<td>3</td>
+<td><strong><a href="03-Test-Cases.html">Test Documentation</a></strong></td>
+<td><em>How was it verified?</em> Test plan, environment, test data, 93 test case specifications, traceability, defect log.</td>
+<td>IEEE 829 format</td>
+</tr>
+<tr>
+<td>4</td>
+<td><strong><a href="04-User-Manual.html">User Manual</a></strong></td>
+<td><em>How do I use it?</em> Step-by-step guide to every feature, with screenshots from the live deployment, troubleshooting and FAQ.</td>
+<td>End-user guide</td>
+</tr>
+<tr>
+<td>5</td>
+<td><strong><a href="05-Thesis.md">Thesis</a></strong></td>
+<td>The bound submission document. Title page, certificate, declaration, abstract, eight chapters, IEEE references and four appendices — drawing on documents 1–4.</td>
+<td>FYP thesis</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>📘 <strong>For submission, use <a href="XRayVision_AI_Thesis.docx"><code>XRayVision_AI_Thesis.docx</code></a></strong> — the thesis
+formatted for binding: A4, Times New Roman 12 pt, 1.5 line spacing, 1.5-inch binding margin,
+roman-numeral front matter, arabic body pagination, and an automatic Table of Contents field.
+See <a href="#printing-and-binding">Printing and Binding</a>.</p>
+</blockquote>
+<blockquote>
+<p>📄 <strong>Every document also exists as a ready-to-open <code>.html</code> file in this folder</strong> with all diagrams
+already rendered — no editor extension required, and it prints straight to PDF.
+See <a href="#viewing-the-diagrams">Viewing the Diagrams</a>.</p>
+</blockquote>
+<p>Supporting material also in the repository:</p>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Enterprise Technical Documentation (27 pages, PDF)</td>
+<td><a href="../XRayVision_AI_Documentation.pdf"><code>../XRayVision_AI_Documentation.pdf</code></a></td>
+</tr>
+<tr>
+<td>Project overview and quick start</td>
+<td><a href="../README.md"><code>../README.md</code></a></td>
+</tr>
+<tr>
+<td>Backend setup and model reference</td>
+<td><a href="../backend/README.md"><code>../backend/README.md</code></a></td>
+</tr>
+<tr>
+<td>Security policy</td>
+<td><a href="../SECURITY.md"><code>../SECURITY.md</code></a></td>
+</tr>
+<tr>
+<td>Contribution guidelines</td>
+<td><a href="../CONTRIBUTING.md"><code>../CONTRIBUTING.md</code></a></td>
+</tr>
+<tr>
+<td>Code of conduct</td>
+<td><a href="../CODE_OF_CONDUCT.md"><code>../CODE_OF_CONDUCT.md</code></a></td>
+</tr>
+<tr>
+<td>Database schema</td>
+<td><a href="../backend/supabase_schema.sql"><code>../backend/supabase_schema.sql</code></a></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Screenshots</h2>
+<p>All screenshots in <a href="screenshots/"><code>screenshots/</code></a> were captured from the <strong>live deployment</strong> at
+<code>https://x-ray-vision-board.vercel.app</code> using an automated Chromium session signed in to the demo
+account.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Page</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>01-landing.png</code></td>
+<td>Landing page, full length</td>
+</tr>
+<tr>
+<td><code>01a-landing-hero.png</code></td>
+<td>Landing hero section</td>
+</tr>
+<tr>
+<td><code>01b-landing-capabilities.png</code></td>
+<td>Capabilities section</td>
+</tr>
+<tr>
+<td><code>01c-landing-workflow.png</code></td>
+<td>Workflow section</td>
+</tr>
+<tr>
+<td><code>01d-landing-report.png</code></td>
+<td>Report-experience section</td>
+</tr>
+<tr>
+<td><code>01e-landing-trust.png</code></td>
+<td>Trust/statistics section</td>
+</tr>
+<tr>
+<td><code>02-login.png</code></td>
+<td>Sign-in page</td>
+</tr>
+<tr>
+<td><code>03-register.png</code></td>
+<td>Registration page</td>
+</tr>
+<tr>
+<td><code>04-forgot-password.png</code></td>
+<td>Password reset page</td>
+</tr>
+<tr>
+<td><code>05-dashboard.png</code></td>
+<td>Dashboard with analytics</td>
+</tr>
+<tr>
+<td><code>06-analyze-upload.png</code></td>
+<td>Three-step analysis wizard</td>
+</tr>
+<tr>
+<td><code>07-history.png</code></td>
+<td>Scan history</td>
+</tr>
+<tr>
+<td><code>08-chat.png</code></td>
+<td>Bilingual health chatbot</td>
+</tr>
+<tr>
+<td><code>09-diet.png</code></td>
+<td>Diet planner</td>
+</tr>
+<tr>
+<td><code>10-clinics.png</code></td>
+<td>Clinic locator</td>
+</tr>
+<tr>
+<td><code>11-profile.png</code></td>
+<td>User profile</td>
+</tr>
+<tr>
+<td><code>12-settings.png</code></td>
+<td>Settings</td>
+</tr>
+<tr>
+<td><code>13-results.png</code></td>
+<td>Diagnostic report with bounding boxes</td>
+</tr>
+<tr>
+<td><code>14-landing-mobile.png</code></td>
+<td>Landing page at 390×844</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Reading Order</h2>
+<p><strong>For the evaluation committee</strong></p>
+<ol>
+<li><a href="01-SRS.html">SRS §1–2</a> — what the system is and who it is for</li>
+<li><a href="02-SDD.html#2-system-architecture">SDD §2</a> — the architecture</li>
+<li><a href="04-User-Manual.html#6-running-an-analysis-core-feature">User Manual §6–7</a> — the core feature in action</li>
+<li><a href="03-Test-Cases.html#16-test-summary-report">Test Documentation §16</a> — verification status</li>
+</ol>
+<p><strong>For a developer joining the project</strong></p>
+<ol>
+<li><a href="../README.md"><code>../README.md</code></a> — set up and run it</li>
+<li><a href="02-SDD.html#5-component-design">SDD §5</a> — where the code lives</li>
+<li><a href="02-SDD.html#6-interface-design">SDD §6</a> — the API contract</li>
+<li><a href="02-SDD.html#12-design-decisions-and-rationale">SDD §12</a> — why it is built this way</li>
+</ol>
+<p><strong>For an end user</strong>
+Go straight to the <a href="04-User-Manual.html">User Manual</a>.</p>
+<hr>
+<h2>Viewing the Diagrams</h2>
+<p>The diagrams are written in <strong>Mermaid</strong> inside the Markdown files. Depending on how you open the
+docs, you may need to do nothing — or you may see nothing at all. Here is what works:</p>
+<h3>✅ Easiest — open the ready-made HTML</h3>
+<p>Every document has been pre-rendered to a <strong>self-contained HTML file</strong> with all diagrams baked in as
+SVG. <strong>Just double-click it.</strong> No extension, no internet connection, no build step.</p>
+<table>
+<thead>
+<tr>
+<th>Open this</th>
+<th>For</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="README.html"><code>README.html</code></a></td>
+<td>This index</td>
+</tr>
+<tr>
+<td><a href="01-SRS.html"><code>01-SRS.html</code></a></td>
+<td>Requirements specification</td>
+</tr>
+<tr>
+<td><a href="02-SDD.html"><code>02-SDD.html</code></a></td>
+<td>Design document — all 18 diagrams rendered</td>
+</tr>
+<tr>
+<td><a href="03-Test-Cases.html"><code>03-Test-Cases.html</code></a></td>
+<td>Test documentation</td>
+</tr>
+<tr>
+<td><a href="04-User-Manual.html"><code>04-User-Manual.html</code></a></td>
+<td>User manual with screenshots</td>
+</tr>
+<tr>
+<td><a href="05-Thesis.html"><code>05-Thesis.html</code></a></td>
+<td>Thesis, browser edition</td>
+</tr>
+</tbody></table>
+<p>To turn any of these into a PDF, open it in a browser and press <strong>Ctrl + P → Save as PDF</strong>. The
+stylesheet includes print rules that stop tables, diagrams and screenshots from being split across
+pages. For the thesis specifically, prefer the Word edition — see below.</p>
+<hr>
+<h2>Printing and Binding</h2>
+<p>The submission copy is <strong><a href="XRayVision_AI_Thesis.docx"><code>XRayVision_AI_Thesis.docx</code></a></strong> (about 11 MB,
+with all 22 diagrams and 13 screenshots embedded).</p>
+<p><strong>Formatting already applied</strong></p>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Page size</td>
+<td>A4</td>
+</tr>
+<tr>
+<td>Margins</td>
+<td>1.5 in left (binding edge), 1 in top / right / bottom</td>
+</tr>
+<tr>
+<td>Body font</td>
+<td>Times New Roman, 12 pt</td>
+</tr>
+<tr>
+<td>Line spacing</td>
+<td>1.5</td>
+</tr>
+<tr>
+<td>Front matter pagination</td>
+<td>Lower-case roman numerals (i, ii, iii …)</td>
+</tr>
+<tr>
+<td>Body pagination</td>
+<td>Arabic, restarting at 1 from Chapter 1</td>
+</tr>
+<tr>
+<td>Headings</td>
+<td>Times New Roman bold, outline levels set for the contents field</td>
+</tr>
+<tr>
+<td>Tables</td>
+<td>27, full content width, header rows shaded and repeated</td>
+</tr>
+<tr>
+<td>Figures</td>
+<td>35, centred with italic captions</td>
+</tr>
+</tbody></table>
+<p><strong>Before you print — two steps in Word</strong></p>
+<ol>
+<li><strong>Build the contents table.</strong> Open the file, click the Table of Contents placeholder, then press
+<strong>F9</strong> (or right-click → <em>Update Field</em> → <em>Update entire table</em>). Word fills in the entries and
+their page numbers. Repeat this after any edit that changes pagination.</li>
+<li><strong>Fill in the signature blocks</strong> on the Certificate of Approval and Declaration pages, and sign
+them.</li>
+</ol>
+<p><strong>Then check against your department's template.</strong> The formatting above follows the common Pakistani
+university thesis convention, but departments differ on details — required certificate wording, logo
+placement, font choice, and whether an abstract word limit applies. Compare against the template your
+department issues and adjust; everything is plain Word formatting, so nothing here is locked.</p>
+<p><strong>To regenerate the <code>.docx</code> after editing.</strong> The Word file is generated from
+<a href="05-Thesis.md"><code>05-Thesis.md</code></a>, so edit the Markdown and rebuild rather than editing both. If you
+edit the <code>.docx</code> directly, treat it as the new master and stop rebuilding, or your changes will be
+overwritten. Build instructions are in <a href="tools/README.md"><code>tools/README.md</code></a>.</p>
+<hr>
+<h2>Rebuilding the Documents</h2>
+<p>The Markdown files are the single source of truth; the <code>.html</code> and <code>.docx</code> files are generated. Three
+scripts in <a href="tools/"><code>tools/</code></a> regenerate them:</p>
+<pre><code class="language-bash">cd docs/tools
+pip install playwright &amp;&amp; python -m playwright install chromium
+npm install
+
+python build_html.py              # Markdown -&gt; HTML + diagrams/*.svg
+python render_diagrams_png.py     # SVG -&gt; print-quality PNG
+node build_thesis_docx.js         # Thesis Markdown -&gt; Word
+</code></pre>
+<p>See <a href="tools/README.md"><code>tools/README.md</code></a> for prerequisites, the authoring markers used in the thesis,
+and how to change the Word formatting.</p>
+<h3>Viewing the Markdown source instead</h3>
+<table>
+<thead>
+<tr>
+<th>Where you open the <code>.md</code> file</th>
+<th>Do diagrams render?</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>GitHub / GitLab</strong> (web)</td>
+<td>✅ Yes, automatically</td>
+</tr>
+<tr>
+<td><strong>VS Code — built-in preview</strong></td>
+<td>❌ <strong>No.</strong> VS Code cannot render Mermaid on its own. Install the free extension <strong>Markdown Preview Mermaid Support</strong> (<code>bierner.markdown-mermaid</code>), then reopen the preview.</td>
+</tr>
+<tr>
+<td><strong>Obsidian, Typora</strong></td>
+<td>✅ Yes</td>
+</tr>
+<tr>
+<td><strong>Plain text editor</strong></td>
+<td>❌ You will see the diagram source code</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>If your diagrams are blank in VS Code, that is expected</strong> — it is the editor, not the document.
+Either install the extension above or just open the matching <code>.html</code> file.</p>
+</blockquote>
+<h3>Individual diagram files</h3>
+<p>Each diagram is also saved separately as an SVG in <a href="diagrams/"><code>diagrams/</code></a> — 22 files, named after
+their source document and position (e.g. <code>02-SDD-diagram-03.svg</code> is the ERD). Use these to paste a
+single diagram into a thesis chapter, a slide deck or a poster. SVG is vector, so it stays sharp at
+any print size.</p>
+<p><strong>Diagram inventory</strong></p>
+<table>
+<thead>
+<tr>
+<th>Diagram</th>
+<th>Type</th>
+<th>Location</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Product context</td>
+<td>Graph</td>
+<td><a href="01-SRS.html#21-product-perspective">SRS §2.1</a></td>
+</tr>
+<tr>
+<td>Product functions</td>
+<td>Mindmap</td>
+<td><a href="01-SRS.html#22-product-functions">SRS §2.2</a></td>
+</tr>
+<tr>
+<td>Use case diagram</td>
+<td>Graph</td>
+<td><a href="01-SRS.html#51-use-case-diagram--system-overview">SRS §5.1</a></td>
+</tr>
+<tr>
+<td>Analysis activity diagram</td>
+<td>Flowchart</td>
+<td><a href="01-SRS.html#53-activity-diagram--analysis-pipeline">SRS §5.3</a></td>
+</tr>
+<tr>
+<td>Layered architecture</td>
+<td>Graph</td>
+<td><a href="02-SDD.html#21-architectural-style">SDD §2.1</a></td>
+</tr>
+<tr>
+<td>Component diagram</td>
+<td>Graph</td>
+<td><a href="02-SDD.html#22-component-diagram">SDD §2.2</a></td>
+</tr>
+<tr>
+<td>Entity relationship diagram</td>
+<td>ER diagram</td>
+<td><a href="02-SDD.html#31-entity-relationship-diagram">SDD §3.1</a></td>
+</tr>
+<tr>
+<td>RLS policy map</td>
+<td>Graph</td>
+<td><a href="02-SDD.html#35-row-level-security-policy-design">SDD §3.5</a></td>
+</tr>
+<tr>
+<td>DFD Level 0 (context)</td>
+<td>Graph</td>
+<td><a href="02-SDD.html#41-dfd-level-0--context-diagram">SDD §4.1</a></td>
+</tr>
+<tr>
+<td>DFD Level 1</td>
+<td>Graph</td>
+<td><a href="02-SDD.html#42-dfd-level-1--major-processes">SDD §4.2</a></td>
+</tr>
+<tr>
+<td>DFD Level 2 (analysis)</td>
+<td>Graph</td>
+<td><a href="02-SDD.html#43-dfd-level-2--process-20-analyse-image-decomposed">SDD §4.3</a></td>
+</tr>
+<tr>
+<td>Domain class diagram</td>
+<td>Class diagram</td>
+<td><a href="02-SDD.html#53-class-diagram--domain-model-pydantic-schemas">SDD §5.3</a></td>
+</tr>
+<tr>
+<td>Registration/login sequence</td>
+<td>Sequence</td>
+<td><a href="02-SDD.html#71-sequence-diagram--registration-and-login">SDD §7.1</a></td>
+</tr>
+<tr>
+<td>Image analysis sequence</td>
+<td>Sequence</td>
+<td><a href="02-SDD.html#72-sequence-diagram--image-analysis-primary-flow">SDD §7.2</a></td>
+</tr>
+<tr>
+<td>Chat sequence</td>
+<td>Sequence</td>
+<td><a href="02-SDD.html#73-sequence-diagram--bilingual-chat">SDD §7.3</a></td>
+</tr>
+<tr>
+<td>PDF export sequence</td>
+<td>Sequence</td>
+<td><a href="02-SDD.html#74-sequence-diagram--pdf-report-export">SDD §7.4</a></td>
+</tr>
+<tr>
+<td>Scan lifecycle</td>
+<td>State diagram</td>
+<td><a href="02-SDD.html#75-state-diagram--scan-lifecycle">SDD §7.5</a></td>
+</tr>
+<tr>
+<td>Auth session lifecycle</td>
+<td>State diagram</td>
+<td><a href="02-SDD.html#76-state-diagram--authentication-session">SDD §7.6</a></td>
+</tr>
+<tr>
+<td>Auth/authorisation flow</td>
+<td>Graph</td>
+<td><a href="02-SDD.html#91-authentication-and-authorisation-flow">SDD §9.1</a></td>
+</tr>
+<tr>
+<td>Degradation decision tree</td>
+<td>Graph</td>
+<td><a href="02-SDD.html#10-error-handling-and-degradation-design">SDD §10</a></td>
+</tr>
+<tr>
+<td>Deployment diagram</td>
+<td>Graph</td>
+<td><a href="02-SDD.html#111-deployment-diagram">SDD §11.1</a></td>
+</tr>
+<tr>
+<td>Startup sequence</td>
+<td>Sequence</td>
+<td><a href="02-SDD.html#112-startup-sequence">SDD §11.2</a></td>
+</tr>
+</tbody></table>
+<p><strong>22 diagrams</strong> across the two design documents.</p>
+<hr>
+<h2>Status</h2>
+<table>
+<thead>
+<tr>
+<th>Document</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>SRS</td>
+<td>✅ Complete — 60+ functional requirements, 12 use cases, full NFR set</td>
+</tr>
+<tr>
+<td>SDD</td>
+<td>✅ Complete — 22 diagrams, algorithms, design rationale</td>
+</tr>
+<tr>
+<td>Test Documentation</td>
+<td>⚠️ Specifications complete (93 cases). <strong>17 verified against the live deployment; 75 pending execution; 1 defect open.</strong> See the notice at the top of the document.</td>
+</tr>
+<tr>
+<td>User Manual</td>
+<td>✅ Complete — every feature documented with live screenshots</td>
+</tr>
+<tr>
+<td>Thesis</td>
+<td>✅ Complete — 8 chapters, 25 IEEE references, 4 appendices; Word edition ready for binding</td>
+</tr>
+</tbody></table>
+<h3>Open items before final submission</h3>
+<ol>
+<li><strong>Update the Table of Contents field</strong> in the <code>.docx</code> (select it and press F9) and sign the certificate and declaration pages.</li>
+<li><strong>Execute the pending test cases</strong> and fill in the Actual Result columns — see <a href="03-Test-Cases.html#161-coverage-by-module">§16.1</a>. Then update Chapter 6 of the thesis, which currently reports 17 of 93 executed.</li>
+<li><strong>Close DEF-01</strong> — the root <code>.env</code> is tracked in git; run <code>git rm --cached .env</code> and commit.</li>
+<li><strong>Close DEF-02</strong> — <code>backend/README.md</code> says the <code>xray-images</code> bucket is private; the code creates it public.</li>
+<li><strong>Investigate DEF-03</strong> — the fracture detector emits non-anatomical class labels (a <code>Vase</code> label was observed on a wrist radiograph). Constrain reported detector classes to the fracture vocabulary and verify the deployed weights.</li>
+<li><strong>Check the thesis against your department's template</strong> — certificate wording, logo placement and font requirements vary by department.</li>
+</ol>
+<hr>
+<h2>Medical Disclaimer</h2>
+<p><strong>XRayVision AI is an educational tool. It is NOT a certified medical device.</strong> All outputs are
+AI-generated estimates intended to support, not replace, the clinical judgement of a qualified
+radiologist. Do not use this software for diagnosis or treatment decisions.</p>
+<hr>
+<p><em>XRayVision AI — Project Documentation — Minhaj University Lahore</em></p>
+</div>
+</body></html>

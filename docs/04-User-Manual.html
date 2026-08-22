@@ -1,0 +1,1029 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>User Manual — XRayVision AI</title>
+<style>
+:root{--fg:#1a2028;--muted:#5b6672;--bg:#ffffff;--line:#e2e8f0;--accent:#0E7490;
+      --code-bg:#f6f8fa;--th:#f1f5f9;--note:#f0f9ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 32px 96px}
+h1{font-size:2.1rem;line-height:1.2;margin:0 0 .6em;padding-bottom:.35em;border-bottom:3px solid var(--accent)}
+h2{font-size:1.55rem;margin:2.2em 0 .7em;padding-bottom:.3em;border-bottom:1px solid var(--line)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em;color:var(--accent)}
+h4{font-size:1.02rem;margin:1.4em 0 .4em}
+p{margin:.7em 0}
+a{color:var(--accent)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+table{border-collapse:collapse;width:100%;margin:1.1em 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--th);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:var(--code-bg);padding:.15em .4em;border-radius:4px;font-size:.86em;
+     font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto}
+pre code{background:none;padding:0;font-size:.84rem;line-height:1.5}
+blockquote{margin:1.2em 0;padding:.9em 1.2em;background:var(--note);
+           border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote > :first-child{margin-top:0} blockquote > :last-child{margin-bottom:0}
+ul,ol{padding-left:1.5em}
+img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;margin:.8em 0;display:block}
+.mermaid-figure{margin:1.6em 0;padding:20px;border:1px solid var(--line);border-radius:10px;
+                background:#fcfdfe;overflow-x:auto;text-align:center}
+.mermaid-figure svg{max-width:100%;height:auto}
+.docnav{background:var(--th);border:1px solid var(--line);border-radius:10px;
+        padding:12px 18px;margin-bottom:32px;font-size:.9rem}
+.docnav a{margin-right:18px;font-weight:600;text-decoration:none}
+.center{text-align:center}
+.center h1,.center h2,.center h3{border:0;text-align:center}
+.pagebreak{border-top:1px dashed var(--line);margin:44px 0}
+.toc-note{background:var(--note);border:1px solid var(--line);border-radius:8px;padding:14px 18px;font-size:.92rem}
+@media print{
+  .pagebreak{page-break-after:always;border:0;margin:0}
+  .docnav{display:none}
+  body{font-size:11pt}
+  .wrap{max-width:none;padding:0}
+  h1,h2,h3{page-break-after:avoid}
+  table,pre,.mermaid-figure,img{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="docnav"><strong>XRayVision AI docs:</strong> <a href="README.html">Index</a><a href="01-SRS.html">SRS</a><a href="02-SDD.html">SDD</a><a href="03-Test-Cases.html">Tests</a><a href="04-User-Manual.html">User Manual</a><a href="05-Thesis.html">Thesis</a></div><div class="wrap"><h1>User Manual</h1>
+<h2>XRayVision AI — Getting Started and Complete Feature Guide</h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Document</strong></td>
+<td>User Manual</td>
+</tr>
+<tr>
+<td><strong>Version</strong></td>
+<td>1.0</td>
+</tr>
+<tr>
+<td><strong>Product version</strong></td>
+<td>2.1.0</td>
+</tr>
+<tr>
+<td><strong>Live application</strong></td>
+<td><a href="https://x-ray-vision-board.vercel.app">https://x-ray-vision-board.vercel.app</a></td>
+</tr>
+<tr>
+<td><strong>Companion documents</strong></td>
+<td><a href="01-SRS.html">SRS</a> · <a href="02-SDD.html">SDD</a> · <a href="03-Test-Cases.html">Test Cases</a></td>
+</tr>
+<tr>
+<td><strong>Institution</strong></td>
+<td>Minhaj University Lahore — School of Software Engineering</td>
+</tr>
+<tr>
+<td><strong>Students</strong></td>
+<td>Muhammad Ali Raza (2022F-MUL-BSSWE-017), Hamza Afzal (2022F-MUL-BSSWE-027)</td>
+</tr>
+<tr>
+<td><strong>Supervisor</strong></td>
+<td>Maam Misbah — Lecturer, School of Software Engineering</td>
+</tr>
+</tbody></table>
+<hr>
+<blockquote>
+<h2>⚠️ Important Medical Disclaimer — read this first</h2>
+<p><strong>XRayVision AI is an educational tool. It is NOT a certified medical device.</strong></p>
+<ul>
+<li>Every result is an AI-generated estimate produced to <strong>support</strong>, never to replace, the clinical judgement of a qualified radiologist or physician.</li>
+<li>Do <strong>not</strong> use this software to make a diagnosis, to start or stop treatment, or to decide whether to seek care.</li>
+<li>The chatbot and the diet planner give general health information only. They are not a consultation.</li>
+<li>If you have a medical emergency, contact emergency services immediately — do not use this application.</li>
+</ul>
+<p>An <strong>EDUCATIONAL USE ONLY</strong> badge is displayed permanently in the sidebar of every page, and a fuller disclaimer appears at the foot of every diagnostic report.</p>
+</blockquote>
+<hr>
+<h2>Table of Contents</h2>
+<ol>
+<li><a href="#1-what-xrayvision-ai-does">What XRayVision AI Does</a></li>
+<li><a href="#2-before-you-begin">Before You Begin</a></li>
+<li><a href="#3-creating-an-account-and-signing-in">Creating an Account and Signing In</a></li>
+<li><a href="#4-finding-your-way-around">Finding Your Way Around</a></li>
+<li><a href="#5-the-dashboard">The Dashboard</a></li>
+<li><a href="#6-running-an-analysis-core-feature">Running an Analysis</a></li>
+<li><a href="#7-reading-your-diagnostic-report">Reading Your Diagnostic Report</a></li>
+<li><a href="#8-scan-history-and-exports">Scan History and Exports</a></li>
+<li><a href="#9-the-health-chatbot">The Health Chatbot</a></li>
+<li><a href="#10-the-diet-planner">The Diet Planner</a></li>
+<li><a href="#11-finding-nearby-clinics">Finding Nearby Clinics</a></li>
+<li><a href="#12-your-profile">Your Profile</a></li>
+<li><a href="#13-settings">Settings</a></li>
+<li><a href="#14-using-xrayvision-ai-on-a-phone">Using XRayVision AI on a Phone</a></li>
+<li><a href="#15-troubleshooting">Troubleshooting</a></li>
+<li><a href="#16-frequently-asked-questions">Frequently Asked Questions</a></li>
+<li><a href="#17-glossary">Glossary</a></li>
+</ol>
+<hr>
+<h2>1. What XRayVision AI Does</h2>
+<p>XRayVision AI takes a medical image you upload and returns a structured diagnostic report in seconds.
+Behind the scenes, four AI models work together — think of them as a team of four specialists:</p>
+<table>
+<thead>
+<tr>
+<th>Specialist</th>
+<th>Model</th>
+<th>What it does</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>🫁 <strong>Chest specialist</strong></td>
+<td>DenseNet121</td>
+<td>Screens chest X-rays for 18 pathologies, trained on 700,000+ clinical images</td>
+</tr>
+<tr>
+<td>🦴 <strong>Orthopaedic specialist</strong></td>
+<td>YOLOv8</td>
+<td>Draws boxes around suspected fractures on bone X-rays</td>
+</tr>
+<tr>
+<td>🩹 <strong>Wound care specialist</strong></td>
+<td>ViT</td>
+<td>Classifies photographs of external wounds</td>
+</tr>
+<tr>
+<td>🤖 <strong>Senior consultant</strong></td>
+<td>GLM 4.5 Air</td>
+<td>Reads all their findings and writes one clear clinical summary with next steps</td>
+</tr>
+</tbody></table>
+<p>You choose which specialist to consult by selecting an <strong>analysis route</strong>. The system does not run
+every model on every image — sending a chest model a photograph of a wound would only produce noise.</p>
+<p><img src="screenshots/01-landing.png" alt="XRayVision AI landing page"></p>
+<p><em>The public landing page at <a href="https://x-ray-vision-board.vercel.app">https://x-ray-vision-board.vercel.app</a></em></p>
+<hr>
+<h2>2. Before You Begin</h2>
+<h3>2.1 What you need</h3>
+<table>
+<thead>
+<tr>
+<th>Requirement</th>
+<th>Detail</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Browser</strong></td>
+<td>Chrome, Edge, Firefox or Safari — a recent version</td>
+</tr>
+<tr>
+<td><strong>Internet</strong></td>
+<td>A stable connection. Images can be up to 20 MB.</td>
+</tr>
+<tr>
+<td><strong>An account</strong></td>
+<td>Free — see <a href="#3-creating-an-account-and-signing-in">Section 3</a></td>
+</tr>
+<tr>
+<td><strong>Location permission</strong></td>
+<td>Only for the Clinic Locator. Optional.</td>
+</tr>
+<tr>
+<td><strong>Microphone permission</strong></td>
+<td>Only for chatbot voice input. Optional.</td>
+</tr>
+</tbody></table>
+<h3>2.2 What images the system accepts</h3>
+<table>
+<thead>
+<tr>
+<th>Property</th>
+<th>Requirement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Formats</strong></td>
+<td>DICOM (<code>.dcm</code>), PNG, JPG</td>
+</tr>
+<tr>
+<td><strong>File size</strong></td>
+<td>Between <strong>100 KB</strong> and <strong>20 MB</strong></td>
+</tr>
+<tr>
+<td><strong>Resolution</strong></td>
+<td>At least <strong>200 × 200 pixels</strong></td>
+</tr>
+<tr>
+<td><strong>Recommended</strong></td>
+<td>Clear, well-lit, non-blurry, at least 512 × 512 px for best accuracy</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p><strong>Why the minimum size?</strong> Very small or low-resolution images simply do not contain enough pixel
+detail for reliable inference. The system rejects them rather than returning an unreliable result.</p>
+</blockquote>
+<hr>
+<h2>3. Creating an Account and Signing In</h2>
+<h3>3.1 Creating a new account</h3>
+<p><img src="screenshots/03-register.png" alt="Registration page"></p>
+<ol>
+<li>Go to <strong><a href="https://x-ray-vision-board.vercel.app">https://x-ray-vision-board.vercel.app</a></strong>.</li>
+<li>Click <strong>Get started</strong> (top right) — or open <code>/auth/register</code> directly.</li>
+<li>Fill in:<ul>
+<li><strong>Full name</strong> — shown in the header and on your PDF reports</li>
+<li><strong>Email</strong> — your sign-in identifier</li>
+<li><strong>Password</strong> — must be <strong>at least 8 characters</strong></li>
+<li><strong>Confirm password</strong> — must match exactly</li>
+</ul>
+</li>
+<li>Click <strong>Create account</strong>.</li>
+</ol>
+<p>You are signed in automatically and taken straight to your Dashboard.</p>
+<blockquote>
+<p><strong>If you see "email already registered"</strong> — that address already has an account. Use
+<a href="#32-signing-in">Sign in</a> instead, or <a href="#33-forgot-your-password">reset your password</a>.</p>
+</blockquote>
+<h3>3.2 Signing in</h3>
+<p><img src="screenshots/02-login.png" alt="Sign-in page"></p>
+<ol>
+<li>Open <code>/auth/login</code> or click <strong>Sign in</strong>.</li>
+<li>Enter your email and password.</li>
+<li>Click <strong>Sign In</strong>.</li>
+</ol>
+<p><strong>Trying the app without registering.</strong> Click <strong>Try demo account</strong> to sign in instantly to a
+pre-populated demonstration account. This is the fastest way for a reviewer or evaluator to explore
+every feature with real data already in place.</p>
+<blockquote>
+<p><strong>How long you stay signed in.</strong> Your session lasts <strong>24 hours</strong>. After that you will be returned to
+the sign-in page and will need to sign in again. This is a security measure.</p>
+</blockquote>
+<h3>3.3 Forgot your password?</h3>
+<p><img src="screenshots/04-forgot-password.png" alt="Password reset page"></p>
+<ol>
+<li>On the sign-in page, click the <strong>Forgot password</strong> link.</li>
+<li>Enter the email address of your account.</li>
+<li>Click <strong>Send reset link</strong>.</li>
+<li>Check your inbox — including the spam folder — and follow the link in the email.</li>
+</ol>
+<hr>
+<h2>4. Finding Your Way Around</h2>
+<p>Once signed in, every page shares the same layout.</p>
+<p><strong>The sidebar (left)</strong> — your main navigation:</p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>What it is for</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Dashboard</strong></td>
+<td>Your statistics and recent activity</td>
+</tr>
+<tr>
+<td><strong>New Analysis</strong></td>
+<td>Upload an image and run the AI</td>
+</tr>
+<tr>
+<td><strong>Health Chat</strong></td>
+<td>Ask health questions in English or Urdu</td>
+</tr>
+<tr>
+<td><strong>Diet Planner</strong></td>
+<td>Generate a personalised 7-day meal plan</td>
+</tr>
+<tr>
+<td><strong>Clinics</strong></td>
+<td>Find hospitals and clinics near you</td>
+</tr>
+<tr>
+<td><strong>History</strong></td>
+<td>Every scan you have ever run</td>
+</tr>
+<tr>
+<td><strong>Profile</strong></td>
+<td>Your name, role and profile picture</td>
+</tr>
+<tr>
+<td><strong>Settings</strong></td>
+<td>Theme and display preferences</td>
+</tr>
+</tbody></table>
+<p>At the top of the sidebar, <strong>AI Ensemble — 4 models online</strong> shows the models are ready. At the bottom,
+the <strong>EDUCATIONAL USE ONLY</strong> badge is always visible. <strong>Collapse</strong> narrows the sidebar to give the
+content more room.</p>
+<p><strong>The header (top)</strong> — shows the current page name, a search box (<code>Ctrl K</code>), a notifications bell, and
+your account menu with the sign-out button.</p>
+<hr>
+<h2>5. The Dashboard</h2>
+<p>The Dashboard is your home page after signing in.</p>
+<p><img src="screenshots/05-dashboard.png" alt="Dashboard"></p>
+<h3>5.1 The four headline tiles</h3>
+<table>
+<thead>
+<tr>
+<th>Tile</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Total scans</strong></td>
+<td>How many analyses you have run, across all image types</td>
+</tr>
+<tr>
+<td><strong>Urgent reports</strong></td>
+<td>How many of your scans came back rated <strong>high</strong> or <strong>critical</strong></td>
+</tr>
+<tr>
+<td><strong>Avg confidence</strong></td>
+<td>The mean confidence score across all findings in your history</td>
+</tr>
+<tr>
+<td><strong>Report time</strong></td>
+<td>The average time your analyses took to complete</td>
+</tr>
+</tbody></table>
+<h3>5.2 Recent analyses</h3>
+<p>The five most recent scans, with scan id, image type, number of findings, urgency badge and date.
+Click any row to open the full report. <strong>View all</strong> takes you to the complete History.</p>
+<h3>5.3 Finding distribution</h3>
+<p>A ranked bar chart of the labels that appear most often across your scans — useful for spotting
+patterns in the images you have been studying.</p>
+<h3>5.4 Average model confidence</h3>
+<p>How confident each of the three imaging models has been, on average, across your scan history.</p>
+<blockquote>
+<p><strong>These figures are yours alone.</strong> Every number on this page is calculated from only your own scans.
+No other user's data is ever included.</p>
+</blockquote>
+<hr>
+<h2>6. Running an Analysis (core feature)</h2>
+<p>This is the heart of the application. Click <strong>New Analysis</strong> in the sidebar.</p>
+<p><img src="screenshots/06-analyze-upload.png" alt="Analysis upload page"></p>
+<p>The page guides you through <strong>three steps</strong>.</p>
+<h3>Step 1 — Upload your image</h3>
+<p>Drag your file onto the upload area, or click it to browse your device.</p>
+<p>The panel restates the limits: <code>DICOM / PNG / JPG · MIN 200×200 PX · 100 KB – 20 MB</code>.</p>
+<blockquote>
+<p>💡 <strong>Image quality matters.</strong> Use clear, well-lit, non-blurry images of at least 512 × 512 px for best
+accuracy. Very small or low-quality images can cause incorrect predictions.</p>
+</blockquote>
+<h3>Step 2 — Choose your analysis route</h3>
+<p>Pick the one route that matches your image. This decides which AI model examines it.</p>
+<table>
+<thead>
+<tr>
+<th>Route</th>
+<th>Model</th>
+<th>Use it for</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Chest pathology</strong></td>
+<td>DenseNet121</td>
+<td>Chest X-rays — screens for common pathology classes</td>
+</tr>
+<tr>
+<td><strong>Fracture detection</strong></td>
+<td>YOLOv8</td>
+<td>Bone X-rays — localises fractures with bounding boxes</td>
+</tr>
+<tr>
+<td><strong>External wound</strong></td>
+<td>ViT</td>
+<td>Photographs of external wounds</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>⚠️ <strong>Choose carefully.</strong> Selecting the wrong route gives a meaningless result. A chest model looking
+at a wound photograph has nothing useful to say about it.</p>
+</blockquote>
+<h3>Step 3 — Add context (optional but recommended)</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Purpose</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Patient / session label</strong></td>
+<td>A tag so you can find this scan later in History</td>
+<td><code>PT-4821</code></td>
+</tr>
+<tr>
+<td><strong>Notes for AI agent</strong></td>
+<td>Clinical context passed to the AI, which uses it when writing the summary</td>
+<td><code>Pain after fall; swelling near wrist</code></td>
+</tr>
+</tbody></table>
+<p>Notes genuinely change the output — the AI weighs your clinical context when assessing urgency and
+recommending next steps.</p>
+<h3>Running it</h3>
+<p>Click <strong>Analyze image</strong>. A full-screen processing overlay appears while the models work — this
+typically takes <strong>8 to 15 seconds</strong>.</p>
+<blockquote>
+<p><strong>First analysis of the day may be slower.</strong> The backend runs on a free-tier host that sleeps when
+idle. The very first request can take 30–60 seconds while the AI models load into memory. Subsequent
+analyses are fast.</p>
+</blockquote>
+<p>When it finishes you are taken automatically to your report.</p>
+<hr>
+<h2>7. Reading Your Diagnostic Report</h2>
+<p><img src="screenshots/13-results.png" alt="Diagnostic results page"></p>
+<p>The report has two columns.</p>
+<h3>7.1 Left column — the image</h3>
+<p>Your uploaded image is displayed with the AI's findings drawn on top as dashed boxes, each labelled
+with its finding name and confidence.</p>
+<p><strong>The controls beneath the image:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Control</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>AI Findings</strong></td>
+<td>Show or hide the bounding boxes</td>
+</tr>
+<tr>
+<td><strong>Heatmap</strong></td>
+<td>Show or hide the confidence heatmap overlay</td>
+</tr>
+<tr>
+<td><strong>Labels</strong></td>
+<td>Show or hide the text labels on each box</td>
+</tr>
+<tr>
+<td>🔍 <strong>+ / −</strong></td>
+<td>Zoom between 0.5× and 2.5×</td>
+</tr>
+<tr>
+<td>↺</td>
+<td>Reset the zoom to normal</td>
+</tr>
+</tbody></table>
+<h3>7.2 Right column — the findings</h3>
+<p><strong>The urgency banner</strong> at the top gives the overall assessment, in one of five levels:</p>
+<table>
+<thead>
+<tr>
+<th>Level</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>CRITICAL</strong></td>
+<td>Findings suggest an immediately serious condition</td>
+</tr>
+<tr>
+<td><strong>HIGH</strong></td>
+<td>Significant findings requiring prompt professional attention</td>
+</tr>
+<tr>
+<td><strong>MEDIUM</strong></td>
+<td>Findings warranting follow-up</td>
+</tr>
+<tr>
+<td><strong>LOW</strong></td>
+<td>Minor or uncertain findings</td>
+</tr>
+<tr>
+<td><strong>CLEAR</strong></td>
+<td>No significant findings detected</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>Each level is shown as <strong>both</strong> a colour and a word, so the meaning is never ambiguous.</p>
+</blockquote>
+<p><strong>The low-confidence warning.</strong> If any finding scored below 60 % confidence, a blue banner appears:
+<em>"One or more findings have confidence below 60% — radiologist review recommended."</em> Take this
+seriously — it means the AI itself is uncertain.</p>
+<p><strong>Findings, grouped by confidence.</strong> This grouping is deliberate — it makes uncertainty visible
+instead of leaving you to interpret raw percentages:</p>
+<table>
+<thead>
+<tr>
+<th>Group</th>
+<th>Confidence</th>
+<th>How it is shown</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Primary Findings</strong></td>
+<td>65 % and above</td>
+<td>Full cards with confidence bars — the AI's strongest signals</td>
+</tr>
+<tr>
+<td><strong>Secondary Findings</strong></td>
+<td>50 % – 65 %</td>
+<td>Compact rows, labelled with the confidence range</td>
+</tr>
+<tr>
+<td><strong>Borderline</strong></td>
+<td>Below 50 %</td>
+<td>Collapsed behind a "click to expand" control — weak signals, shown for completeness</td>
+</tr>
+</tbody></table>
+<p>Each finding card shows the finding name, confidence percentage, severity, the model that produced it,
+the anatomical region, and an ICD-10 diagnostic code where one is mapped.</p>
+<p><strong>GLM Agent Analysis.</strong> The AI's written clinical summary — what the findings suggest, taken together,
+and what the confidence levels mean in context. It always ends by reminding you that this is
+educational, not a substitute for a qualified radiologist.</p>
+<p><strong>Immediate Actions.</strong> A numbered list of practical next steps — consultations, further imaging,
+management measures, follow-up.</p>
+<p><strong>Recommended specialist.</strong> Which kind of doctor these findings would normally be referred to, with a
+<strong>Find nearby →</strong> link that takes you straight to the Clinic Locator.</p>
+<p><strong>Confidence Summary.</strong> A complete table of every finding — model, finding, confidence, severity — so
+nothing is hidden behind the tiered grouping.</p>
+<h3>7.3 Saving your report</h3>
+<p>At the bottom of the report:</p>
+<ul>
+<li><strong>Download PDF Report</strong> — a formatted document with the image, findings, summary and disclaimer. This is the version to attach to a referral or a case study.</li>
+<li><strong>Export JSON</strong> — the raw structured findings, for further analysis or research.</li>
+<li><strong>Back to history</strong> — returns to your scan list.</li>
+</ul>
+<hr>
+<h2>8. Scan History and Exports</h2>
+<p>Click <strong>History</strong> in the sidebar to see every analysis you have ever run.</p>
+<p><img src="screenshots/07-history.png" alt="Scan history"></p>
+<p>Scans are listed <strong>newest first</strong>. Each row shows the image thumbnail, scan type, number of findings,
+urgency badge and date. Hovering a row reveals a <strong>View report →</strong> link.</p>
+<p><strong>What you can do here:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Action</th>
+<th>How</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Open a report</strong></td>
+<td>Click the row</td>
+</tr>
+<tr>
+<td><strong>Filter by type</strong></td>
+<td>Use the scan-type filter to show only chest, fracture or wound scans</td>
+</tr>
+<tr>
+<td><strong>Download a PDF</strong></td>
+<td>Open the report, then click <strong>Download PDF Report</strong></td>
+</tr>
+<tr>
+<td><strong>Export JSON</strong></td>
+<td>Open the report, then click <strong>Export JSON</strong></td>
+</tr>
+<tr>
+<td><strong>Delete a scan</strong></td>
+<td>Use the delete control on the scan</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>⚠️ <strong>Deletion is permanent.</strong> Deleting a scan removes both the database record and the stored image.
+There is no undo and no recycle bin. Download the PDF first if you might need it.</p>
+</blockquote>
+<hr>
+<h2>9. The Health Chatbot</h2>
+<p>Click <strong>Health Chat</strong> for general medical questions in <strong>English or Urdu</strong>.</p>
+<p><img src="screenshots/08-chat.png" alt="Health chatbot"></p>
+<h3>9.1 Asking a question</h3>
+<ol>
+<li>Choose your language with the <strong>EN</strong> / <strong>اردو</strong> toggle at the top.</li>
+<li>Type your question in the box at the bottom — or click the microphone to dictate it.</li>
+<li>Press Enter or click send.</li>
+</ol>
+<p>When you select Urdu, the interface switches to right-to-left and the placeholder changes to
+<em>اپنی علامات بتائیں...</em></p>
+<h3>9.2 What you get back</h3>
+<p>Alongside the written reply, the assistant surfaces two structured cards where relevant:</p>
+<ul>
+<li><strong>Doctor type</strong> — the kind of specialist your described symptoms would normally be taken to</li>
+<li><strong>Home remedies</strong> — general self-care suggestions</li>
+</ul>
+<h3>9.3 Conversation memory</h3>
+<p>The chatbot remembers the last <strong>10 messages</strong> in your conversation, so you can ask follow-up
+questions naturally:</p>
+<blockquote>
+<p><strong>You:</strong> I've had a fever for two days.
+<strong>Bot:</strong> <em>(replies about fever)</em>
+<strong>You:</strong> How long should it last?  ← the bot knows you still mean the fever</p>
+</blockquote>
+<p>Your conversations are saved. When you come back to the Health Chat page, previous sessions are listed
+and can be reopened.</p>
+<blockquote>
+<p>⚠️ <strong>What the chatbot will not do.</strong> It will never give you a definitive diagnosis, and it will always
+point you toward a qualified professional for real medical decisions. This is deliberate. If you press
+it for a yes-or-no answer about a serious condition, it will decline and refer you to a doctor.</p>
+</blockquote>
+<hr>
+<h2>10. The Diet Planner</h2>
+<p>Click <strong>Diet Planner</strong> to generate a personalised <strong>7-day meal plan</strong>.</p>
+<p><img src="screenshots/09-diet.png" alt="Diet planner"></p>
+<h3>10.1 Filling in the form</h3>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>What to enter</th>
+<th>Example</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Medical condition</strong></td>
+<td>Any condition the plan should account for</td>
+<td><code>diabetes</code>, <code>high blood pressure</code></td>
+</tr>
+<tr>
+<td><strong>Dietary preference</strong></td>
+<td>Your general eating style</td>
+<td><code>balanced</code>, <code>vegetarian</code></td>
+</tr>
+<tr>
+<td><strong>Restrictions</strong></td>
+<td>Allergies and foods to avoid</td>
+<td><code>gluten-free, dairy-free, nut allergy</code></td>
+</tr>
+<tr>
+<td><strong>Goals</strong></td>
+<td>What you want the plan to achieve</td>
+<td><code>weight loss</code>, <code>muscle gain</code></td>
+</tr>
+</tbody></table>
+<p>Click generate and the plan appears below.</p>
+<h3>10.2 Built-in medical safety rules</h3>
+<p>The planner applies condition-specific clinical guardrails automatically:</p>
+<table>
+<thead>
+<tr>
+<th>If you enter</th>
+<th>The plan applies</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Hypertension / high blood pressure</strong></td>
+<td>DASH dietary principles — reduced sodium, more fruit, vegetables and low-fat dairy</td>
+</tr>
+<tr>
+<td><strong>Diabetes</strong></td>
+<td>Low-glycaemic-index food choices</td>
+</tr>
+<tr>
+<td><strong>Kidney disease</strong></td>
+<td>An explicit recommendation to consult a <strong>renal dietitian</strong> — kidney nutrition needs individual professional supervision</td>
+</tr>
+</tbody></table>
+<h3>10.3 Your plan</h3>
+<p>Each of the seven days shows <strong>Breakfast</strong>, <strong>Lunch</strong> and <strong>Dinner</strong> — with a name, a description and,
+where available, calories and key nutrients. Snacks are included where appropriate, along with a
+summary and general tips.</p>
+<blockquote>
+<p>⚠️ <strong>General guidance only.</strong> If you have a medical condition, discuss any diet plan with your doctor
+or a qualified dietitian before following it.</p>
+</blockquote>
+<hr>
+<h2>11. Finding Nearby Clinics</h2>
+<p>Click <strong>Clinics</strong> to find hospitals, clinics, doctors and pharmacies near you.</p>
+<p><img src="screenshots/10-clinics.png" alt="Clinic locator"></p>
+<ol>
+<li>Set your <strong>search radius</strong> with the slider — anywhere from <strong>1 km to 20 km</strong>. It starts at 5 km.</li>
+<li>Click <strong>Use My Location</strong>.</li>
+<li>Your browser will ask permission to share your location. Click <strong>Allow</strong>.</li>
+</ol>
+<p>Results appear sorted by distance, nearest first. Each shows the facility name, its type, its address,
+how far away it is, and a link that opens it in Google Maps.</p>
+<p>Facility data comes from <strong>OpenStreetMap</strong>, a community-maintained map database. The page notes:
+<em>"Data may not reflect all facilities."</em></p>
+<p><strong>If you decline location permission,</strong> the page explains what happened and no search is run. You can
+grant permission in your browser's site settings and try again.</p>
+<p><strong>If no results appear,</strong> increase the radius with the slider and search again. Coverage varies by
+region.</p>
+<hr>
+<h2>12. Your Profile</h2>
+<p>Click <strong>Profile</strong> to view and edit your account details.</p>
+<p><img src="screenshots/11-profile.png" alt="Profile page"></p>
+<p>Here you can:</p>
+<ul>
+<li>Change your <strong>display name</strong> — this appears in the header and on your PDF reports</li>
+<li>Update your <strong>role</strong> (for example Medical Student, Radiologist, Researcher) — this is a descriptive label only and does not change what you can access</li>
+<li>Upload a <strong>profile picture</strong></li>
+</ul>
+<p>Your scan statistics are also summarised on this page.</p>
+<hr>
+<h2>13. Settings</h2>
+<p>Click <strong>Settings</strong> to personalise how the application looks and behaves.</p>
+<p><img src="screenshots/12-settings.png" alt="Settings page"></p>
+<h3>13.1 Appearance</h3>
+<p>Choose <strong>Light</strong>, <strong>Dark</strong> or <strong>System</strong> (which follows your operating system's setting).</p>
+<h3>13.2 Analysis preferences</h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Show AI detection boxes on images</strong></td>
+<td>Whether bounding boxes are drawn by default on result images</td>
+</tr>
+<tr>
+<td><strong>Show confidence heatmap overlay</strong></td>
+<td>Whether the heatmap layer is shown by default</td>
+</tr>
+</tbody></table>
+<h3>13.3 Notifications</h3>
+<table>
+<thead>
+<tr>
+<th>Setting</th>
+<th>Effect</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Email notifications for critical findings</strong></td>
+<td>Whether you are emailed when a scan returns a critical result</td>
+</tr>
+</tbody></table>
+<p>Your preferences are saved to your account, so they follow you to any device you sign in from.</p>
+<hr>
+<h2>14. Using XRayVision AI on a Phone</h2>
+<p>The application is fully responsive and works on mobile browsers.</p>
+<p><img src="screenshots/14-landing-mobile.png" alt="Mobile view"></p>
+<p>On a small screen the layout reflows to a single column and the sidebar becomes a menu. Everything
+works, though reviewing bounding boxes on a detailed X-ray is naturally easier on a larger screen.</p>
+<hr>
+<h2>15. Troubleshooting</h2>
+<h3>Upload and analysis</h3>
+<table>
+<thead>
+<tr>
+<th>Message or symptom</th>
+<th>What it means</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><em>"File is too small (40 KB). Minimum is 100 KB…"</em></td>
+<td>The image lacks enough pixel data for reliable inference</td>
+<td>Use a higher-quality export of the image</td>
+</tr>
+<tr>
+<td><em>"File is too large (24.3 MB). Maximum allowed size is 20 MB."</em></td>
+<td>The file exceeds the upload limit</td>
+<td>Compress or resize the image below 20 MB</td>
+</tr>
+<tr>
+<td><em>"Image resolution is too low (150×150 px)…"</em></td>
+<td>Below the 200 × 200 px minimum</td>
+<td>Use an image of at least 200 × 200 px — 512 × 512 px or larger is recommended</td>
+</tr>
+<tr>
+<td><em>"File could not be decoded as a valid image…"</em></td>
+<td>The file is not a readable JPEG, PNG or DICOM</td>
+<td>Check the file actually opens in an image viewer; renaming a PDF to <code>.jpg</code> will not work</td>
+</tr>
+<tr>
+<td><em>"Empty file uploaded."</em></td>
+<td>The file contains no data</td>
+<td>Re-export or re-download the image</td>
+</tr>
+<tr>
+<td><em>"Rate limit exceeded. Please slow down."</em></td>
+<td>More than 10 analyses in one minute</td>
+<td>Wait a minute and try again</td>
+</tr>
+<tr>
+<td><strong>Analysis failed</strong> screen</td>
+<td>The AI models could not process the image</td>
+<td>Verify you selected the right route for the image type, then retry. If it persists, the backend may be restarting — wait a minute.</td>
+</tr>
+<tr>
+<td><em>"AI synthesis temporarily unavailable. Please review findings manually."</em></td>
+<td>The AI models worked, but the summary-writing service was unreachable</td>
+<td>The findings are still valid — read them directly. Re-run later for a written summary.</td>
+</tr>
+<tr>
+<td>The first analysis takes 30–60 seconds</td>
+<td>The free-tier backend was asleep and is loading models</td>
+<td>Normal. Subsequent analyses are fast.</td>
+</tr>
+<tr>
+<td>Results appear but the image is missing</td>
+<td>Image storage was unavailable during upload</td>
+<td>The findings are still valid. Re-run the analysis if you need the image saved.</td>
+</tr>
+</tbody></table>
+<h3>Signing in</h3>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Signed out unexpectedly</td>
+<td>Sessions last 24 hours. Simply sign in again.</td>
+</tr>
+<tr>
+<td><em>"Invalid email or password"</em></td>
+<td>Check for typos and caps lock. If you still cannot get in, use <strong>Forgot password</strong>.</td>
+</tr>
+<tr>
+<td><em>"Demo login failed. Please try again."</em></td>
+<td>The backend may be waking up. Wait 30 seconds and retry.</td>
+</tr>
+<tr>
+<td>Reset email never arrived</td>
+<td>Check your spam folder, and confirm you entered the address the account was registered with.</td>
+</tr>
+</tbody></table>
+<h3>Other features</h3>
+<table>
+<thead>
+<tr>
+<th>Symptom</th>
+<th>What to do</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Clinic search finds nothing</td>
+<td>Increase the radius. OpenStreetMap coverage varies by region.</td>
+</tr>
+<tr>
+<td>Clinic search shows an error</td>
+<td>The public map service may be busy. Wait a moment and try again.</td>
+</tr>
+<tr>
+<td>Location permission blocked</td>
+<td>Grant location access for this site in your browser's site settings.</td>
+</tr>
+<tr>
+<td>Microphone does not work in chat</td>
+<td>Grant microphone permission, or just type your question instead.</td>
+</tr>
+<tr>
+<td>Chatbot replies are slow</td>
+<td>Replies typically take a few seconds. Longer waits usually mean the AI service is busy.</td>
+</tr>
+<tr>
+<td>Diet plan looks generic</td>
+<td>If the AI's response failed validation, a safe pre-written plan is shown instead. Try again with more specific inputs.</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>16. Frequently Asked Questions</h2>
+<p><strong>Can I use this to diagnose a patient?</strong>
+No. XRayVision AI is an educational tool and is not a certified medical device. Every output is an
+AI estimate to support learning and preliminary review. Clinical decisions must be made by a qualified
+professional.</p>
+<p><strong>How accurate is it?</strong>
+Accuracy varies by model, by image quality and by the condition being examined. That is precisely why
+every finding shows a confidence percentage, why findings are grouped into confidence tiers, and why
+anything below 60 % triggers an explicit recommendation for radiologist review. Treat low-confidence
+findings as prompts to look more carefully — not as conclusions.</p>
+<p><strong>What happens to the images I upload?</strong>
+They are stored in your account so you can review them later, and are only ever shown alongside your
+own scans. Deleting a scan removes both the record and the image permanently.</p>
+<p><strong>Can other users see my scans?</strong>
+No. Every scan, chat conversation and statistic is tied to your account. Ownership is checked in the
+application and again in the database.</p>
+<p><strong>Why do I have to sign in again every day?</strong>
+Sessions expire after 24 hours as a security measure.</p>
+<p><strong>Why was my image rejected?</strong>
+Almost always size or resolution — the minimums are 100 KB and 200 × 200 px. The error message always
+states the specific reason and the limit involved.</p>
+<p><strong>Can I upload a DICOM file straight from a scanner?</strong>
+Yes. DICOM (<code>.dcm</code>) files are supported alongside PNG and JPG.</p>
+<p><strong>Which route should I pick?</strong>
+Chest X-ray → <strong>Chest pathology</strong>. Bone X-ray where you suspect a fracture → <strong>Fracture detection</strong>.
+Photograph of a wound on the skin → <strong>External wound</strong>.</p>
+<p><strong>Why did I get no findings at all?</strong>
+No finding met the confidence threshold. The urgency will read <strong>CLEAR</strong>. This does not prove the image
+is normal — it means this model found nothing it was confident about.</p>
+<p><strong>Is the chatbot a doctor?</strong>
+No. It provides general health information and points you toward the right kind of specialist. It will
+not diagnose you.</p>
+<p><strong>Is it free?</strong>
+Yes. The entire platform runs on free-tier services. That is also why the first request after a period
+of inactivity can be slow.</p>
+<hr>
+<h2>17. Glossary</h2>
+<table>
+<thead>
+<tr>
+<th>Term</th>
+<th>Plain-English meaning</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Bounding box</strong></td>
+<td>The rectangle the AI draws around a region it thinks is abnormal</td>
+</tr>
+<tr>
+<td><strong>CLAHE</strong></td>
+<td>A contrast-enhancement step applied to your image before analysis, so faint details become easier for the model to see</td>
+</tr>
+<tr>
+<td><strong>Confidence</strong></td>
+<td>How sure the model is, as a percentage. Higher is more certain — but it is never a guarantee.</td>
+</tr>
+<tr>
+<td><strong>DenseNet121</strong></td>
+<td>The neural network that examines chest X-rays, trained on over 700,000 clinical images</td>
+</tr>
+<tr>
+<td><strong>DICOM</strong></td>
+<td>The standard file format that medical imaging equipment produces (<code>.dcm</code>)</td>
+</tr>
+<tr>
+<td><strong>Finding</strong></td>
+<td>One thing the AI thinks it has spotted, with a name and a confidence score</td>
+</tr>
+<tr>
+<td><strong>ICD-10 code</strong></td>
+<td>The internationally standard code for a diagnosis, e.g. <code>S02-S92</code> for certain fractures</td>
+</tr>
+<tr>
+<td><strong>LLM</strong></td>
+<td>Large Language Model — the AI that writes the readable clinical summary</td>
+</tr>
+<tr>
+<td><strong>Severity</strong></td>
+<td>How serious a single finding is judged to be: critical, high, moderate or low</td>
+</tr>
+<tr>
+<td><strong>Synthesis</strong></td>
+<td>The AI-written paragraph that pulls all the findings together into one clinical picture</td>
+</tr>
+<tr>
+<td><strong>Urgency</strong></td>
+<td>The overall rating for the whole scan: critical, high, medium, low or clear</td>
+</tr>
+<tr>
+<td><strong>ViT</strong></td>
+<td>Vision Transformer — the neural network that classifies wound photographs</td>
+</tr>
+<tr>
+<td><strong>YOLOv8</strong></td>
+<td>The object-detection model that finds and boxes fractures on bone X-rays</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Getting Help</h2>
+<table>
+<thead>
+<tr>
+<th>Need</th>
+<th>Where to go</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Technical API reference</strong></td>
+<td><code>/docs</code> on the backend (Swagger UI)</td>
+</tr>
+<tr>
+<td><strong>What the system is required to do</strong></td>
+<td><a href="01-SRS.html">Software Requirements Specification</a></td>
+</tr>
+<tr>
+<td><strong>How the system is built</strong></td>
+<td><a href="02-SDD.html">Software Design Document</a></td>
+</tr>
+<tr>
+<td><strong>How it was verified</strong></td>
+<td><a href="03-Test-Cases.html">Test Documentation</a></td>
+</tr>
+<tr>
+<td><strong>Reporting a security issue</strong></td>
+<td><a href="../SECURITY.md">SECURITY.md</a></td>
+</tr>
+<tr>
+<td><strong>Contributing</strong></td>
+<td><a href="../CONTRIBUTING.md">CONTRIBUTING.md</a></td>
+</tr>
+</tbody></table>
+<hr>
+<h2>Revision History</h2>
+<table>
+<thead>
+<tr>
+<th>Version</th>
+<th>Date</th>
+<th>Author</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1.0</td>
+<td>August 2026</td>
+<td>Muhammad Ali Raza, Hamza Afzal</td>
+<td>Initial user manual with screenshots from the live deployment</td>
+</tr>
+</tbody></table>
+<hr>
+<p><em>XRayVision AI — User Manual v1.0 — Minhaj University Lahore</em>
+<em>Educational use only. Not a certified medical device.</em></p>
+</div>
+</body></html>

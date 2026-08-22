@@ -1,0 +1,156 @@
+[
+ {
+  "file": "01-SRS",
+  "idx": 1,
+  "png": "01-SRS-diagram-01.png",
+  "section": "2.1 Product Perspective",
+  "kind": "graph LR"
+ },
+ {
+  "file": "01-SRS",
+  "idx": 2,
+  "png": "01-SRS-diagram-02.png",
+  "section": "2.2 Product Functions",
+  "kind": "mindmap"
+ },
+ {
+  "file": "01-SRS",
+  "idx": 3,
+  "png": "01-SRS-diagram-03.png",
+  "section": "5.1 Use Case Diagram \u2014 System Overview",
+  "kind": "graph LR"
+ },
+ {
+  "file": "01-SRS",
+  "idx": 4,
+  "png": "01-SRS-diagram-04.png",
+  "section": "5.3 Activity Diagram \u2014 Analysis Pipeline",
+  "kind": "flowchart TD"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 1,
+  "png": "02-SDD-diagram-01.png",
+  "section": "2.1 Architectural Style",
+  "kind": "graph TB"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 2,
+  "png": "02-SDD-diagram-02.png",
+  "section": "2.2 Component Diagram",
+  "kind": "graph LR"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 3,
+  "png": "02-SDD-diagram-03.png",
+  "section": "3.1 Entity Relationship Diagram",
+  "kind": "erDiagram"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 4,
+  "png": "02-SDD-diagram-04.png",
+  "section": "3.5 Row Level Security Policy Design",
+  "kind": "graph LR"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 5,
+  "png": "02-SDD-diagram-05.png",
+  "section": "4.1 DFD Level 0 \u2014 Context Diagram",
+  "kind": "graph LR"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 6,
+  "png": "02-SDD-diagram-06.png",
+  "section": "4.2 DFD Level 1 \u2014 Major Processes",
+  "kind": "graph TB"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 7,
+  "png": "02-SDD-diagram-07.png",
+  "section": "4.3 DFD Level 2 \u2014 Process 2.0 \"Analyse Image\" Decomposed",
+  "kind": "graph TB"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 8,
+  "png": "02-SDD-diagram-08.png",
+  "section": "5.3 Class Diagram \u2014 Domain Model (Pydantic Schemas)",
+  "kind": "classDiagram"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 9,
+  "png": "02-SDD-diagram-09.png",
+  "section": "7.1 Sequence Diagram \u2014 Registration and Login",
+  "kind": "sequenceDiagram"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 10,
+  "png": "02-SDD-diagram-10.png",
+  "section": "7.2 Sequence Diagram \u2014 Image Analysis (primary flow)",
+  "kind": "sequenceDiagram"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 11,
+  "png": "02-SDD-diagram-11.png",
+  "section": "7.3 Sequence Diagram \u2014 Bilingual Chat",
+  "kind": "sequenceDiagram"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 12,
+  "png": "02-SDD-diagram-12.png",
+  "section": "7.4 Sequence Diagram \u2014 PDF Report Export",
+  "kind": "sequenceDiagram"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 13,
+  "png": "02-SDD-diagram-13.png",
+  "section": "7.5 State Diagram \u2014 Scan Lifecycle",
+  "kind": "stateDiagram-v2"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 14,
+  "png": "02-SDD-diagram-14.png",
+  "section": "7.6 State Diagram \u2014 Authentication Session",
+  "kind": "stateDiagram-v2"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 15,
+  "png": "02-SDD-diagram-15.png",
+  "section": "9.1 Authentication and Authorisation Flow",
+  "kind": "graph TB"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 16,
+  "png": "02-SDD-diagram-16.png",
+  "section": "10. Error Handling and Degradation Design",
+  "kind": "graph TB"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 17,
+  "png": "02-SDD-diagram-17.png",
+  "section": "11.1 Deployment Diagram",
+  "kind": "graph TB"
+ },
+ {
+  "file": "02-SDD",
+  "idx": 18,
+  "png": "02-SDD-diagram-18.png",
+  "section": "11.2 Startup Sequence",
+  "kind": "sequenceDiagram"
+ }
+]

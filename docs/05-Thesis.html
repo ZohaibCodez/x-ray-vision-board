@@ -1,0 +1,2993 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>XRayVision AI — XRayVision AI</title>
+<style>
+:root{--fg:#1a2028;--muted:#5b6672;--bg:#ffffff;--line:#e2e8f0;--accent:#0E7490;
+      --code-bg:#f6f8fa;--th:#f1f5f9;--note:#f0f9ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 32px 96px}
+h1{font-size:2.1rem;line-height:1.2;margin:0 0 .6em;padding-bottom:.35em;border-bottom:3px solid var(--accent)}
+h2{font-size:1.55rem;margin:2.2em 0 .7em;padding-bottom:.3em;border-bottom:1px solid var(--line)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em;color:var(--accent)}
+h4{font-size:1.02rem;margin:1.4em 0 .4em}
+p{margin:.7em 0}
+a{color:var(--accent)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+table{border-collapse:collapse;width:100%;margin:1.1em 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--th);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:var(--code-bg);padding:.15em .4em;border-radius:4px;font-size:.86em;
+     font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto}
+pre code{background:none;padding:0;font-size:.84rem;line-height:1.5}
+blockquote{margin:1.2em 0;padding:.9em 1.2em;background:var(--note);
+           border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote > :first-child{margin-top:0} blockquote > :last-child{margin-bottom:0}
+ul,ol{padding-left:1.5em}
+img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;margin:.8em 0;display:block}
+.mermaid-figure{margin:1.6em 0;padding:20px;border:1px solid var(--line);border-radius:10px;
+                background:#fcfdfe;overflow-x:auto;text-align:center}
+.mermaid-figure svg{max-width:100%;height:auto}
+.docnav{background:var(--th);border:1px solid var(--line);border-radius:10px;
+        padding:12px 18px;margin-bottom:32px;font-size:.9rem}
+.docnav a{margin-right:18px;font-weight:600;text-decoration:none}
+.center{text-align:center}
+.center h1,.center h2,.center h3{border:0;text-align:center}
+.pagebreak{border-top:1px dashed var(--line);margin:44px 0}
+.toc-note{background:var(--note);border:1px solid var(--line);border-radius:8px;padding:14px 18px;font-size:.92rem}
+@media print{
+  .pagebreak{page-break-after:always;border:0;margin:0}
+  .docnav{display:none}
+  body{font-size:11pt}
+  .wrap{max-width:none;padding:0}
+  h1,h2,h3{page-break-after:avoid}
+  table,pre,.mermaid-figure,img{page-break-inside:avoid}
+}
+</style>
+</head>
+<body>
+<div class="docnav"><strong>XRayVision AI docs:</strong> <a href="README.html">Index</a><a href="01-SRS.html">SRS</a><a href="02-SDD.html">SDD</a><a href="03-Test-Cases.html">Tests</a><a href="04-User-Manual.html">User Manual</a><a href="05-Thesis.html">Thesis</a></div><div class="wrap"><div class="center">
+
+<h1>XRayVision AI</h1>
+<h2>A Web-Based AI-Assisted Platform for Automated X-Ray Fracture Detection, Chest Pathology Screening and Clinical Report Generation</h2>
+<p><strong>A Final Year Project Thesis</strong></p>
+<p>Submitted in partial fulfilment of the requirements
+for the degree of</p>
+<p><strong>Bachelor of Science in Software Engineering (BSSE)</strong></p>
+<p><strong>Submitted by</strong></p>
+<p>Muhammad Ali Raza — 2022F-MUL-BSSWE-017</p>
+<p>Hamza Afzal — 2022F-MUL-BSSWE-027</p>
+<p><strong>Supervised by</strong></p>
+<p>Maam Misbah</p>
+<p>Lecturer, School of Software Engineering</p>
+<p><strong>School of Software Engineering</strong></p>
+<p><strong>Minhaj University Lahore</strong></p>
+<p>August 2026</p>
+</div>
+
+<div class="pagebreak"></div>
+
+<div class="center">
+
+<h1>Certificate of Approval</h1>
+</div>
+
+<p>This is to certify that the Final Year Project titled <strong>"XRayVision AI — A Web-Based AI-Assisted
+Platform for Automated X-Ray Fracture Detection, Chest Pathology Screening and Clinical Report
+Generation"</strong> has been carried out by <strong>Muhammad Ali Raza (2022F-MUL-BSSWE-017)</strong> and
+<strong>Hamza Afzal (2022F-MUL-BSSWE-027)</strong> under my supervision, and is submitted in partial fulfilment
+of the requirements for the degree of Bachelor of Science in Software Engineering at the School of
+Software Engineering, Minhaj University Lahore.</p>
+<p>The work presented in this thesis is, to the best of my knowledge, the original work of the
+candidates and has not been submitted elsewhere for the award of any other degree.</p>
+<p>I recommend this project for evaluation by the Final Year Project Evaluation Committee.</p>
+<p>&nbsp;</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Supervisor</strong></td>
+<td><strong>Date</strong></td>
+</tr>
+<tr>
+<td>_______________________</td>
+<td>_______________________</td>
+</tr>
+<tr>
+<td>Maam Misbah</td>
+<td></td>
+</tr>
+<tr>
+<td>Lecturer, School of Software Engineering</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Project Coordinator</strong></td>
+<td><strong>Date</strong></td>
+</tr>
+<tr>
+<td>_______________________</td>
+<td>_______________________</td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>Head of Department</strong></td>
+<td><strong>Date</strong></td>
+</tr>
+<tr>
+<td>_______________________</td>
+<td>_______________________</td>
+</tr>
+<tr>
+<td>School of Software Engineering</td>
+<td></td>
+</tr>
+<tr>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td><strong>External Examiner</strong></td>
+<td><strong>Date</strong></td>
+</tr>
+<tr>
+<td>_______________________</td>
+<td>_______________________</td>
+</tr>
+</tbody></table>
+<div class="pagebreak"></div>
+
+<div class="center">
+
+<h1>Declaration of Originality</h1>
+</div>
+
+<p>We, <strong>Muhammad Ali Raza</strong> and <strong>Hamza Afzal</strong>, hereby declare that the work presented in this thesis
+titled <strong>"XRayVision AI — A Web-Based AI-Assisted Platform for Automated X-Ray Fracture Detection,
+Chest Pathology Screening and Clinical Report Generation"</strong> is our own original work, carried out
+under the supervision of Maam Misbah at the School of Software Engineering, Minhaj University Lahore.</p>
+<p>We further declare that:</p>
+<ol>
+<li>This thesis has not been submitted, in whole or in part, for the award of any other degree or
+qualification at this or any other institution.</li>
+<li>All external sources — including research papers, datasets, pretrained models, open-source
+libraries and web resources — have been explicitly acknowledged and cited in the References.</li>
+<li>Third-party pretrained machine-learning models used in this project are the intellectual property
+of their respective authors and are used under their published licences. Their contribution is
+documented in Chapter 5 and the References.</li>
+<li>All source code written by us is our own. Where third-party code or components have been adapted,
+this is stated in the relevant section.</li>
+<li>We understand that any act of plagiarism or misrepresentation is a serious academic offence and
+may result in disciplinary action under the regulations of Minhaj University Lahore.</li>
+</ol>
+<p>&nbsp;</p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody><tr>
+<td>_______________________</td>
+<td>_______________________</td>
+</tr>
+<tr>
+<td><strong>Muhammad Ali Raza</strong></td>
+<td><strong>Hamza Afzal</strong></td>
+</tr>
+<tr>
+<td>2022F-MUL-BSSWE-017</td>
+<td>2022F-MUL-BSSWE-027</td>
+</tr>
+<tr>
+<td>Date: _______________</td>
+<td>Date: _______________</td>
+</tr>
+</tbody></table>
+<div class="pagebreak"></div>
+
+<div class="center">
+
+<h1>Dedication</h1>
+<p>&nbsp;</p>
+<p><em>To our parents,
+whose patience and sacrifice made this education possible.</em></p>
+<p><em>To our teachers at Minhaj University Lahore,
+who taught us to build things that matter.</em></p>
+<p><em>And to the radiologists and clinicians of Pakistan,
+who read more images in a day than most of us will see in a lifetime.</em></p>
+</div>
+
+<div class="pagebreak"></div>
+
+<h1>Acknowledgement</h1>
+<p>All praise is due to Allah, the Most Gracious, the Most Merciful, who granted us the health, patience
+and clarity of mind to complete this work.</p>
+<p>We are deeply grateful to our supervisor, <strong>Maam Misbah</strong>, Lecturer at the School of Software
+Engineering, for her guidance throughout this project. Her insistence that we justify every design
+decision — rather than simply implement whatever was convenient — shaped both this system and the way
+we now approach engineering problems. The emphasis this thesis places on safety framing, graceful
+degradation and honest reporting of limitations is a direct result of her supervision.</p>
+<p>We thank the faculty and administration of the <strong>School of Software Engineering, Minhaj University
+Lahore</strong>, for providing the academic environment, laboratory access and institutional support that
+made this project possible.</p>
+<p>We acknowledge the open-source and research communities whose work this project stands on. In
+particular, the authors of <strong>TorchXRayVision</strong> for making clinically pretrained chest radiograph
+models freely available; <strong>Ultralytics</strong> for the YOLOv8 framework; the <strong>Hugging Face</strong> community for
+hosting and distributing model weights; and the maintainers of <strong>FastAPI</strong>, <strong>React</strong>, <strong>TanStack</strong>
+and <strong>Supabase</strong>. This project would not have been feasible for two undergraduate students without
+their generosity. We also acknowledge the <strong>OpenStreetMap</strong> contributors whose community-maintained
+data powers our clinic locator.</p>
+<p>We are grateful to <strong>OpenRouter</strong> for providing free-tier access to large language models, without
+which the clinical synthesis component of this system could not have been built within our budget.</p>
+<p>Finally, we thank our families and our classmates for their encouragement during the long stretches
+of debugging that no one sees in a finished demonstration.</p>
+<p><strong>Muhammad Ali Raza</strong>
+<strong>Hamza Afzal</strong></p>
+<p><em>August 2026</em></p>
+<div class="pagebreak"></div>
+
+<h1>Abstract</h1>
+<p>Radiological interpretation is a bottleneck in healthcare systems worldwide, and acutely so in
+Pakistan, where the ratio of trained radiologists to patients is severely constrained. Medical
+students, meanwhile, have limited access to structured feedback while learning to read radiographs.
+This project addresses both problems with an educational decision-support tool rather than a
+diagnostic device.</p>
+<p>This thesis presents <strong>XRayVision AI</strong>, a full-stack web platform that accepts a chest radiograph, a
+bone radiograph or an external wound photograph and returns a structured, confidence-tiered clinical
+report within seconds. The system implements a <strong>routed multi-model ensemble</strong>: rather than executing
+every model on every image, it dispatches the image to the specialist model matching the user's
+declared scan type. A DenseNet121 network pretrained on over 700,000 clinical radiographs screens
+chest images for eighteen pathology classes; a YOLOv8 detector localises suspected fractures with
+bounding boxes, supported by an image-level fracture screening classifier; and a Vision Transformer
+classifies external wounds. The structured outputs of these models are then passed to a large
+language model, which synthesises them into a readable clinical paragraph with an urgency rating,
+recommended actions and a specialist referral suggestion.</p>
+<p>The platform is implemented as a React 19 single-page application built on TanStack Start,
+communicating over a JSON REST API with a Python FastAPI backend, and persisting to a Supabase
+PostgreSQL database with Row Level Security. Beyond image analysis it provides a bilingual
+(English/Urdu) health chatbot with voice input, a clinically guard-railed seven-day diet planner, a
+GPS-based clinic locator backed by OpenStreetMap, dashboard analytics, and PDF/JSON report export. A
+design constraint throughout was that the entire system must remain deployable on free-tier cloud
+infrastructure and must run inference on CPU only.</p>
+<p>Two design principles distinguish this work from a straightforward model-serving application. The
+first is <strong>safety by construction</strong>: findings are grouped into three visible confidence tiers, any
+result below 60 % confidence triggers an explicit recommendation for radiologist review, negative
+detector outputs are never reported as evidence of normality, and an educational-use disclaimer is
+rendered from the application shell rather than left to individual pages. The second is <strong>graceful
+degradation</strong>: the failure of the language model, of object storage or of any single vision model
+downgrades the result rather than destroying it, so a user always receives whatever the system was
+able to determine.</p>
+<p>The system was specified against IEEE 830, designed against IEEE 1016, and verified against a test
+suite of 93 specified cases documented under IEEE 829. Seventeen cases were executed against the live
+deployment during documentation; the remainder are specified and pending execution. Two defects
+remain open and are reported honestly in Chapter 6. On the deployed instance, end-to-end analysis
+completes in approximately 8.4 seconds on average across 31 stored scans.</p>
+<p>The principal contribution of this work is not a new model architecture but a demonstration that
+clinically pretrained models, an LLM synthesis layer and disciplined safety framing can be integrated
+into a deployable, zero-cost web platform suitable for medical education. The thesis also documents,
+rather than conceals, the limitations discovered during evaluation — including an observed label
+leakage issue in the fracture detector — as a contribution to anyone attempting similar work.</p>
+<p><strong>Keywords:</strong> medical image analysis, computer-aided diagnosis, fracture detection, chest radiography,
+deep learning, DenseNet121, YOLOv8, Vision Transformer, large language models, clinical decision
+support, FastAPI, React, educational technology</p>
+<div class="pagebreak"></div>
+
+<div class="toc-note"><strong>Table of Contents</strong><br>The paginated contents table is generated in the Word edition (<code>XRayVision_AI_Thesis.docx</code>). In this HTML edition, use the chapter headings below to navigate.</div>
+
+<div class="pagebreak"></div>
+
+<h1>List of Figures</h1>
+<table>
+<thead>
+<tr>
+<th>Figure</th>
+<th>Title</th>
+<th>Chapter</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>3.1</td>
+<td>System context — XRayVision AI and its external actors</td>
+<td>3</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Product function decomposition</td>
+<td>3</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>Use case diagram — system overview</td>
+<td>3</td>
+</tr>
+<tr>
+<td>3.4</td>
+<td>Activity diagram — image analysis pipeline</td>
+<td>3</td>
+</tr>
+<tr>
+<td>4.1</td>
+<td>Three-tier layered architecture</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.2</td>
+<td>Component diagram</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.3</td>
+<td>Entity relationship diagram</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.4</td>
+<td>Row Level Security policy map</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.5</td>
+<td>Data Flow Diagram — Level 0 (context)</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.6</td>
+<td>Data Flow Diagram — Level 1 (major processes)</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.7</td>
+<td>Data Flow Diagram — Level 2 (analyse image)</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.8</td>
+<td>Class diagram — domain model</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.9</td>
+<td>Sequence diagram — registration and login</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.10</td>
+<td>Sequence diagram — image analysis</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.11</td>
+<td>Sequence diagram — bilingual chat</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.12</td>
+<td>Sequence diagram — PDF report export</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.13</td>
+<td>State diagram — scan lifecycle</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.14</td>
+<td>State diagram — authentication session</td>
+<td>4</td>
+</tr>
+<tr>
+<td>5.1</td>
+<td>Authentication and authorisation flow</td>
+<td>5</td>
+</tr>
+<tr>
+<td>5.2</td>
+<td>Error handling and degradation decision tree</td>
+<td>5</td>
+</tr>
+<tr>
+<td>5.3</td>
+<td>Deployment diagram</td>
+<td>5</td>
+</tr>
+<tr>
+<td>5.4</td>
+<td>Backend startup sequence</td>
+<td>5</td>
+</tr>
+<tr>
+<td>7.1</td>
+<td>Landing page</td>
+<td>7</td>
+</tr>
+<tr>
+<td>7.2</td>
+<td>Dashboard with analytics</td>
+<td>7</td>
+</tr>
+<tr>
+<td>7.3</td>
+<td>Three-step analysis wizard</td>
+<td>7</td>
+</tr>
+<tr>
+<td>7.4</td>
+<td>Diagnostic report with bounding-box overlays</td>
+<td>7</td>
+</tr>
+<tr>
+<td>7.5</td>
+<td>Bilingual health chatbot</td>
+<td>7</td>
+</tr>
+<tr>
+<td>7.6</td>
+<td>Clinic locator</td>
+<td>7</td>
+</tr>
+</tbody></table>
+<h1>List of Tables</h1>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Title</th>
+<th>Chapter</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1.1</td>
+<td>Project objectives and their success criteria</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2.1</td>
+<td>Comparison of related systems</td>
+<td>2</td>
+</tr>
+<tr>
+<td>2.2</td>
+<td>Identified research and engineering gaps</td>
+<td>2</td>
+</tr>
+<tr>
+<td>3.1</td>
+<td>Functional requirement groups</td>
+<td>3</td>
+</tr>
+<tr>
+<td>3.2</td>
+<td>Non-functional requirement targets</td>
+<td>3</td>
+</tr>
+<tr>
+<td>3.3</td>
+<td>Feasibility assessment summary</td>
+<td>3</td>
+</tr>
+<tr>
+<td>4.1</td>
+<td>Layer responsibilities and prohibitions</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.2</td>
+<td>Database tables and their purpose</td>
+<td>4</td>
+</tr>
+<tr>
+<td>4.3</td>
+<td>Key design decisions and rationale</td>
+<td>4</td>
+</tr>
+<tr>
+<td>5.1</td>
+<td>Development environment and tools</td>
+<td>5</td>
+</tr>
+<tr>
+<td>5.2</td>
+<td>AI model inventory</td>
+<td>5</td>
+</tr>
+<tr>
+<td>5.3</td>
+<td>REST API endpoint summary</td>
+<td>5</td>
+</tr>
+<tr>
+<td>5.4</td>
+<td>Rate limiting configuration</td>
+<td>5</td>
+</tr>
+<tr>
+<td>5.5</td>
+<td>Implementation challenges and solutions</td>
+<td>5</td>
+</tr>
+<tr>
+<td>6.1</td>
+<td>Test case distribution by module</td>
+<td>6</td>
+</tr>
+<tr>
+<td>6.2</td>
+<td>Executed test results</td>
+<td>6</td>
+</tr>
+<tr>
+<td>6.3</td>
+<td>Open defects</td>
+<td>6</td>
+</tr>
+<tr>
+<td>7.1</td>
+<td>Observed system metrics on the deployed instance</td>
+<td>7</td>
+</tr>
+<tr>
+<td>7.2</td>
+<td>Objectives achieved against Chapter 1 criteria</td>
+<td>7</td>
+</tr>
+<tr>
+<td>8.1</td>
+<td>Future work priorities</td>
+<td>8</td>
+</tr>
+</tbody></table>
+<h1>List of Abbreviations</h1>
+<table>
+<thead>
+<tr>
+<th>Abbreviation</th>
+<th>Expansion</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>API</td>
+<td>Application Programming Interface</td>
+</tr>
+<tr>
+<td>BSSE</td>
+<td>Bachelor of Science in Software Engineering</td>
+</tr>
+<tr>
+<td>CLAHE</td>
+<td>Contrast Limited Adaptive Histogram Equalisation</td>
+</tr>
+<tr>
+<td>CNN</td>
+<td>Convolutional Neural Network</td>
+</tr>
+<tr>
+<td>CORS</td>
+<td>Cross-Origin Resource Sharing</td>
+</tr>
+<tr>
+<td>CPU</td>
+<td>Central Processing Unit</td>
+</tr>
+<tr>
+<td>DFD</td>
+<td>Data Flow Diagram</td>
+</tr>
+<tr>
+<td>DICOM</td>
+<td>Digital Imaging and Communications in Medicine</td>
+</tr>
+<tr>
+<td>ERD</td>
+<td>Entity Relationship Diagram</td>
+</tr>
+<tr>
+<td>FYP</td>
+<td>Final Year Project</td>
+</tr>
+<tr>
+<td>GPU</td>
+<td>Graphics Processing Unit</td>
+</tr>
+<tr>
+<td>HTTP / HTTPS</td>
+<td>Hypertext Transfer Protocol (Secure)</td>
+</tr>
+<tr>
+<td>ICD-10</td>
+<td>International Classification of Diseases, 10th Revision</td>
+</tr>
+<tr>
+<td>JSON</td>
+<td>JavaScript Object Notation</td>
+</tr>
+<tr>
+<td>JWT</td>
+<td>JSON Web Token</td>
+</tr>
+<tr>
+<td>LLM</td>
+<td>Large Language Model</td>
+</tr>
+<tr>
+<td>ML</td>
+<td>Machine Learning</td>
+</tr>
+<tr>
+<td>PACS</td>
+<td>Picture Archiving and Communication System</td>
+</tr>
+<tr>
+<td>REST</td>
+<td>Representational State Transfer</td>
+</tr>
+<tr>
+<td>RLS</td>
+<td>Row Level Security</td>
+</tr>
+<tr>
+<td>SDD</td>
+<td>Software Design Document</td>
+</tr>
+<tr>
+<td>SPA</td>
+<td>Single Page Application</td>
+</tr>
+<tr>
+<td>SRS</td>
+<td>Software Requirements Specification</td>
+</tr>
+<tr>
+<td>SSR</td>
+<td>Server Side Rendering</td>
+</tr>
+<tr>
+<td>UI / UX</td>
+<td>User Interface / User Experience</td>
+</tr>
+<tr>
+<td>UUID</td>
+<td>Universally Unique Identifier</td>
+</tr>
+<tr>
+<td>ViT</td>
+<td>Vision Transformer</td>
+</tr>
+<tr>
+<td>YOLO</td>
+<td>You Only Look Once</td>
+</tr>
+</tbody></table>
+<div class="pagebreak"></div>
+
+<h1>Chapter 1: Introduction</h1>
+<h2>1.1 Background</h2>
+<p>Medical imaging is one of the highest-volume diagnostic activities in modern healthcare. A chest
+radiograph is among the most frequently ordered imaging studies in the world, and plain radiography
+remains the first-line investigation for suspected fractures. Every one of these images requires
+interpretation by a trained radiologist or an appropriately experienced clinician.</p>
+<p>The supply of such expertise does not scale with demand. This is a global problem, and a particularly
+sharp one in Pakistan, where the number of trained radiologists is small relative to population and
+is concentrated in major urban centres. In district and tehsil-level facilities, radiographs are
+frequently interpreted by clinicians whose primary training is not radiology, or are queued for
+remote reporting with a delay that can be clinically significant.</p>
+<p>At the same time, deep learning applied to medical imaging has matured considerably. Since Litjens et
+al. surveyed the field in 2017 [11], convolutional architectures have been demonstrated at or near
+specialist-level performance on constrained diagnostic tasks — Esteva et al. on dermatological
+classification [12], Rajpurkar et al. on pneumonia detection from chest radiographs [1] and
+subsequently across fourteen pathology classes [13]. Large annotated datasets such as ChestX-ray8 [3]
+and CheXpert [4] made this progress possible, and libraries such as TorchXRayVision [5] have since
+made clinically pretrained weights freely available to anyone with an internet connection.</p>
+<p>A gap remains between this research capability and its practical availability. Published models are
+distributed as research artefacts — checkpoints, notebooks and evaluation scripts. Turning one into
+something a medical student can actually use requires preprocessing pipelines, an inference service,
+authentication, storage, a user interface, and — critically — a presentation layer that communicates
+uncertainty honestly rather than presenting a probability vector as a verdict.</p>
+<p>There is also a communication gap. A model that outputs eighteen floating-point probabilities is not
+useful to a third-year MBBS student. Recent large language models are capable of taking structured
+findings and expressing them as coherent clinical prose with recommended next steps — a translation
+layer between numerical model output and human clinical reasoning.</p>
+<h2>1.2 Problem Statement</h2>
+<blockquote>
+<p>Clinically capable medical imaging models exist and are freely available, but they remain
+inaccessible to the medical students and junior clinicians who would benefit most from them. The
+obstacles are not primarily algorithmic: they are the absence of an integrated, deployable system;
+the absence of a presentation layer that makes model uncertainty visible; and the cost of the
+infrastructure normally assumed by such systems.</p>
+</blockquote>
+<p>Decomposed into specific problems:</p>
+<p><strong>P1 — Integration gap.</strong> Pretrained models are research artefacts, not usable applications. No
+preprocessing, serving, storage, authentication or interface layer is provided with them.</p>
+<p><strong>P2 — Interpretation gap.</strong> Raw multi-label probability outputs are not actionable for a learner. A
+list of eighteen numbers does not indicate what matters, how urgent it is, or what to do next.</p>
+<p><strong>P3 — Safety gap.</strong> Systems that present AI output as authoritative are dangerous in a clinical
+context. Confidence must be visible, low-confidence results must be flagged, and the absence of a
+detection must never be presented as proof of normality.</p>
+<p><strong>P4 — Cost gap.</strong> GPU inference, managed databases and commercial LLM APIs place such systems beyond
+the reach of a student project or a resource-constrained teaching institution.</p>
+<p><strong>P5 — Language gap.</strong> Health information tools in Pakistan are overwhelmingly English-only, which
+excludes a substantial proportion of the population who would benefit from them.</p>
+<h2>1.3 Motivation</h2>
+<p>Three observations motivated this project.</p>
+<p>First, during our clinical-adjacent coursework we observed that medical students learning to read
+radiographs receive feedback slowly and unevenly. A tool offering an immediate, structured second
+opinion — explicitly framed as a study aid rather than an authority — fills a genuine pedagogical
+need.</p>
+<p>Second, we found that the individual components required to build such a tool are all available at no
+cost: pretrained clinical models, free LLM inference tiers, free managed PostgreSQL, and free
+application hosting. What did not exist was an integration of them. Building that integration is a
+software engineering contribution well matched to a final year project in software engineering.</p>
+<p>Third, we were conscious that the failure mode of a badly built medical AI tool is not a bad user
+experience — it is a user acting on a false negative. This gave the project an unusually clear design
+discipline: every ambiguity should be resolved in the direction of visible uncertainty and explicit
+deferral to human expertise.</p>
+<h2>1.4 Objectives</h2>
+<p>The project set the following objectives.</p>
+<p><strong>Primary objective.</strong> To design, implement and deploy a web-based platform that accepts a medical
+image, routes it to an appropriate deep learning model, and returns a structured, confidence-tiered
+clinical report that is safe to use in an educational setting.</p>
+<p><strong>Secondary objectives.</strong></p>
+<ol>
+<li>To implement a routed multi-model ensemble covering chest pathology, fracture localisation and
+wound classification.</li>
+<li>To integrate a large language model that synthesises structured model output into readable
+clinical prose with an urgency rating and recommended actions.</li>
+<li>To design a results presentation that makes model uncertainty structurally visible.</li>
+<li>To provide supporting features that extend the platform's educational utility: scan history with
+report export, dashboard analytics, a bilingual health chatbot, a diet planner and a clinic
+locator.</li>
+<li>To implement authentication and per-user data isolation enforced at two independent layers.</li>
+<li>To achieve all of the above within a strictly zero-cost, CPU-only deployment envelope.</li>
+<li>To document the system to professional standards (IEEE 830, 1016 and 829) and to report
+verification results and defects honestly.</li>
+</ol>
+<p><strong>Table 1.1 — Project objectives and their success criteria</strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Objective</th>
+<th>Success criterion</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>O1</td>
+<td>Routed multi-model ensemble</td>
+<td>Three scan types dispatch correctly to their models; the wrong model is never run</td>
+</tr>
+<tr>
+<td>O2</td>
+<td>LLM clinical synthesis</td>
+<td>Every analysis returns an urgency rating, prose summary, actions and a specialist</td>
+</tr>
+<tr>
+<td>O3</td>
+<td>Visible uncertainty</td>
+<td>Findings tiered by confidence; sub-60 % results trigger a review recommendation</td>
+</tr>
+<tr>
+<td>O4</td>
+<td>Supporting features</td>
+<td>History, exports, analytics, chatbot, diet planner and clinic locator all functional</td>
+</tr>
+<tr>
+<td>O5</td>
+<td>Data isolation</td>
+<td>A user cannot read or delete another user's data through any endpoint</td>
+</tr>
+<tr>
+<td>O6</td>
+<td>Zero-cost deployment</td>
+<td>Entire system runs on free tiers with CPU-only inference</td>
+</tr>
+<tr>
+<td>O7</td>
+<td>Professional documentation</td>
+<td>SRS, SDD, test documentation and user manual delivered; defects reported</td>
+</tr>
+</tbody></table>
+<h2>1.5 Scope</h2>
+<p><strong>Within scope.</strong> User account management; chest pathology screening across eighteen classes;
+fracture localisation with bounding boxes and image-level screening; external wound classification;
+LLM report synthesis; permanent scan history with PDF and JSON export; dashboard analytics; a
+bilingual English/Urdu chatbot with voice input; a seven-day diet planner with condition-specific
+guardrails; a GPS clinic locator; and deployment to public cloud infrastructure.</p>
+<p><strong>Outside scope.</strong> Regulatory certification of any kind. Integration with hospital PACS, HL7 or FHIR
+systems. Multi-tenant hospital administration, billing or appointment scheduling. Collaborative
+multi-reader review workflows. Training or fine-tuning of new models from user-supplied data.
+Clinical validation of diagnostic accuracy — the models are third-party pretrained artefacts used as
+supplied, and this project does not claim to have validated them for clinical use.</p>
+<h2>1.6 Limitations</h2>
+<p>We state the project's limitations at the outset rather than in the conclusion, because they
+constrain how the results in Chapter 7 should be read.</p>
+<ol>
+<li><strong>The system is not a medical device</strong> and is not certified for clinical use. It is an educational
+decision-support tool.</li>
+<li><strong>Diagnostic accuracy was not independently validated.</strong> We report the models' behaviour as
+integrated, not their clinical sensitivity or specificity, which would require a labelled
+evaluation set and clinical supervision beyond the scope of an undergraduate project.</li>
+<li><strong>CPU-only inference</strong> limits throughput and adds latency, particularly on cold starts.</li>
+<li><strong>Free-tier hosting</strong> means the backend sleeps when idle; the first request after inactivity is
+substantially slower.</li>
+<li><strong>A defect in the fracture detector's label handling</strong> was observed during evaluation and is
+documented in Chapter 6; it is not resolved in the submitted version.</li>
+<li><strong>Test execution is incomplete.</strong> Ninety-three cases are specified; seventeen were executed.</li>
+</ol>
+<h2>1.7 Thesis Organisation</h2>
+<p><strong>Chapter 2</strong> reviews the relevant literature in medical image analysis, object detection, vision
+transformers and LLM-assisted report generation, and compares existing systems to identify the gap
+this project addresses.</p>
+<p><strong>Chapter 3</strong> presents the requirement analysis: elicitation method, functional and non-functional
+requirements, the use case model and the feasibility study.</p>
+<p><strong>Chapter 4</strong> presents the system design: architecture, database design, data flow decomposition,
+class model, behavioural models and the design decisions with their rationale.</p>
+<p><strong>Chapter 5</strong> documents the implementation: environment, backend, frontend, model integration,
+security, deployment, and the challenges encountered.</p>
+<p><strong>Chapter 6</strong> presents the testing strategy, executed results, performance measurements and open
+defects.</p>
+<p><strong>Chapter 7</strong> discusses the results, evaluates them against the Chapter 1 objectives, compares the
+system to related work, and addresses ethical and safety considerations.</p>
+<p><strong>Chapter 8</strong> concludes the thesis and sets out future work.</p>
+<div class="pagebreak"></div>
+
+<h1>Chapter 2: Literature Review</h1>
+<h2>2.1 Deep Learning in Medical Image Analysis</h2>
+<p>The application of deep learning to medical imaging accelerated sharply after 2012. Litjens et al.
+[11] surveyed over three hundred contributions and identified classification, detection, segmentation
+and registration as the dominant task families, with convolutional neural networks the dominant
+architecture across all of them. Their survey also identified the field's persistent constraint: the
+scarcity of large, expertly labelled datasets, and the consequent reliance on transfer learning from
+natural-image corpora.</p>
+<p>Esteva et al. [12] demonstrated in <em>Nature</em> that a CNN trained on clinical images could match board-
+certified dermatologists on skin lesion classification. The result was significant less for the
+architecture than for the demonstration that specialist-level performance on a constrained task was
+achievable with then-current methods and sufficient data — a finding that motivated similar efforts
+across radiology.</p>
+<h2>2.2 Chest Radiograph Classification</h2>
+<p>Progress in chest radiography was enabled by dataset releases. Wang et al. [3] published ChestX-ray8,
+comprising over 100,000 frontal chest radiographs labelled with eight (later fourteen) disease
+categories mined from radiology reports using natural language processing. Irvin et al. [4] followed
+with CheXpert, a dataset of over 200,000 studies whose labelling scheme explicitly modelled
+<em>uncertainty</em> — a design choice directly relevant to this project, since it acknowledges that
+radiological findings are frequently equivocal.</p>
+<p>Rajpurkar et al. [1] introduced CheXNet, a 121-layer DenseNet trained on ChestX-ray14 for pneumonia
+detection, reporting performance exceeding that of practising radiologists on the F1 metric for that
+specific task. The architecture itself was DenseNet [2], whose dense connectivity pattern — each
+layer receiving the feature maps of all preceding layers — improves gradient flow and parameter
+efficiency, properties well suited to the relatively small datasets available in medical imaging. The
+authors later extended the work to CheXNeXt [13], comparing algorithmic performance to practising
+radiologists across fourteen pathologies.</p>
+<p>Cohen et al. [5] made this line of work practically accessible with <strong>TorchXRayVision</strong>, a library
+providing a unified interface to multiple chest radiograph datasets and, critically, pretrained
+DenseNet121 weights trained across a union of large public datasets. This is the model our system
+uses for chest analysis. The decision to use it as supplied, rather than fine-tune it, is discussed
+in Chapter 4.</p>
+<h2>2.3 Object Detection and Fracture Localisation</h2>
+<p>Classification answers <em>whether</em>; fracture assessment requires <em>where</em>. Redmon et al. [6] introduced
+YOLO, reframing object detection as a single regression problem over a grid rather than a
+region-proposal pipeline, achieving real-time performance. Successive versions improved accuracy and
+training ergonomics; YOLOv8 [7] is the version used in this project, chosen for its mature tooling,
+CPU-viable inference and permissive availability.</p>
+<p>Object detection is a natural fit for fracture assessment because a bounding box communicates
+<em>localisation</em> to the viewer — a student can see which region the model considered abnormal and
+assess that judgement against the image. This transparency is a pedagogical advantage over a
+whole-image classification score.</p>
+<p>However, detection introduces a specific hazard that this project treats as a first-class design
+concern. A detector that outputs no positive box has not established that the study is normal; it has
+established only that it found nothing it recognised. Interpreting a negative detector output as
+evidence of normality is a category error with clinical consequences. Section 4.8 describes the
+design rule adopted in response.</p>
+<h2>2.4 Vision Transformers</h2>
+<p>Vaswani et al. [8] introduced the transformer architecture for sequence modelling, replacing
+recurrence with self-attention. Dosovitskiy et al. [9] adapted it to vision with the Vision
+Transformer, which partitions an image into fixed-size patches, embeds them as a sequence, and
+applies standard transformer encoding. ViT demonstrated that convolution is not a necessary inductive
+bias for image classification given sufficient data or suitable pretraining.</p>
+<p>For wound classification — where lesion appearance is dominated by colour, texture and tissue
+composition rather than fine spatial structure — a ViT-based classifier is a reasonable choice, and a
+publicly available wound classifier [16] was adopted for this component.</p>
+<h2>2.5 Preprocessing for Radiographic Images</h2>
+<p>Radiographic images vary widely in exposure and contrast. Zuiderveld [10] introduced Contrast Limited
+Adaptive Histogram Equalisation (CLAHE), which performs histogram equalisation on local tiles while
+clipping the histogram to limit noise amplification. CLAHE is standard practice in radiographic
+preprocessing and is applied in our pipeline before inference, as described in Section 5.4.</p>
+<h2>2.6 Language Models for Clinical Report Generation</h2>
+<p>The translation of structured findings into clinical prose is a natural language generation task.
+Modern instruction-following language models can accept a structured description of findings and
+produce a coherent summary, an urgency assessment and recommended next steps.</p>
+<p>This capability is genuinely useful and genuinely hazardous. A fluent, confident paragraph is
+persuasive independently of whether it is correct, and a language model has no access to the image —
+it can only reason over the findings it is given. Our system therefore constrains the model's role
+strictly: it receives structured findings and produces prose, an urgency label from a closed
+five-value vocabulary, a list of actions and a specialist suggestion. It is never permitted to
+introduce findings, and its output is always displayed alongside the numerical confidences it was
+derived from, so a reader can check the prose against the evidence.</p>
+<h2>2.7 Comparison of Existing Systems</h2>
+<p><strong>Table 2.1 — Comparison of related systems</strong></p>
+<table>
+<thead>
+<tr>
+<th>System / category</th>
+<th>Task coverage</th>
+<th>Localisation</th>
+<th>Report synthesis</th>
+<th>Uncertainty shown</th>
+<th>Cost</th>
+<th>Deployable by a student</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>CheXNet / CheXNeXt [1][13]</td>
+<td>Chest only</td>
+<td>Heatmap (CAM)</td>
+<td>No</td>
+<td>Score only</td>
+<td>Research</td>
+<td>No — research artefact</td>
+</tr>
+<tr>
+<td>TorchXRayVision [5]</td>
+<td>Chest only</td>
+<td>No</td>
+<td>No</td>
+<td>Score only</td>
+<td>Free</td>
+<td>Library, not an application</td>
+</tr>
+<tr>
+<td>Commercial radiology AI</td>
+<td>Varies, often single-modality</td>
+<td>Yes</td>
+<td>Limited</td>
+<td>Varies</td>
+<td>High, licensed</td>
+<td>No</td>
+</tr>
+<tr>
+<td>General LLM chat with image upload</td>
+<td>Broad, unspecialised</td>
+<td>No</td>
+<td>Yes</td>
+<td>No</td>
+<td>Freemium</td>
+<td>Not purpose-built; no clinical model</td>
+</tr>
+<tr>
+<td>Typical FYP model demonstrator</td>
+<td>Usually one model</td>
+<td>Sometimes</td>
+<td>No</td>
+<td>Rarely</td>
+<td>Free</td>
+<td>Local only, not deployed</td>
+</tr>
+<tr>
+<td><strong>XRayVision AI (this work)</strong></td>
+<td><strong>Chest, fracture, wound</strong></td>
+<td><strong>Yes, bounding boxes</strong></td>
+<td><strong>Yes, LLM</strong></td>
+<td><strong>Three visible tiers + review flag</strong></td>
+<td><strong>Zero</strong></td>
+<td><strong>Yes, publicly deployed</strong></td>
+</tr>
+</tbody></table>
+<h2>2.8 Identified Gap</h2>
+<p><strong>Table 2.2 — Identified research and engineering gaps</strong></p>
+<table>
+<thead>
+<tr>
+<th>Gap</th>
+<th>Description</th>
+<th>How this project addresses it</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>G1 — Integration</strong></td>
+<td>Capable models exist as artefacts, not applications</td>
+<td>A complete deployed platform with preprocessing, serving, auth, storage and UI</td>
+</tr>
+<tr>
+<td><strong>G2 — Multi-modality routing</strong></td>
+<td>Existing tools handle one imaging modality</td>
+<td>Routed ensemble across three modalities with correct model dispatch</td>
+</tr>
+<tr>
+<td><strong>G3 — Interpretability for learners</strong></td>
+<td>Probability vectors are not actionable</td>
+<td>LLM synthesis with urgency, actions and specialist referral</td>
+</tr>
+<tr>
+<td><strong>G4 — Uncertainty presentation</strong></td>
+<td>Confidence typically shown as a bare number, if at all</td>
+<td>Three confidence tiers, sub-60 % review flag, full confidence table</td>
+</tr>
+<tr>
+<td><strong>G5 — Negative-evidence safety</strong></td>
+<td>Detector negatives casually treated as normality</td>
+<td>Explicit design rule: negative detector boxes are discarded, never reported as normal</td>
+</tr>
+<tr>
+<td><strong>G6 — Accessibility</strong></td>
+<td>GPU and licence costs exclude teaching institutions</td>
+<td>Zero-cost, CPU-only architecture</td>
+</tr>
+<tr>
+<td><strong>G7 — Language</strong></td>
+<td>Health tools are English-only</td>
+<td>Bilingual English/Urdu chatbot with RTL rendering and voice input</td>
+</tr>
+</tbody></table>
+<p>The contribution of this project is therefore <strong>integrative and design-oriented rather than
+algorithmic</strong>. We do not propose a new architecture or claim improved accuracy. We demonstrate that
+existing clinically pretrained models, a language model synthesis layer and disciplined safety
+framing can be combined into a deployable system within a zero-cost envelope — and we document what
+breaks when you try.</p>
+<div class="pagebreak"></div>
+
+<h1>Chapter 3: Requirement Analysis</h1>
+<h2>3.1 Requirement Elicitation</h2>
+<p>Requirements were elicited through four activities:</p>
+<ol>
+<li><strong>Domain study.</strong> Review of the literature in Chapter 2 to establish what is technically
+achievable and what safety obligations follow from the domain.</li>
+<li><strong>Supervisor consultation.</strong> Iterative review with the project supervisor, which established the
+safety framing requirements and the insistence on documented design rationale.</li>
+<li><strong>User scenario analysis.</strong> Construction of concrete usage scenarios for each user class (medical
+student, clinician, allied health professional) to derive functional requirements.</li>
+<li><strong>Constraint analysis.</strong> Assessment of available infrastructure, which produced the hard
+zero-cost and CPU-only constraints that shaped the architecture.</li>
+</ol>
+<p>The output was a full Software Requirements Specification conforming to IEEE 830 [17]. This chapter
+summarises it; the complete specification with all sixty-plus numbered requirements is provided as a
+companion document and in Appendix B.</p>
+<h2>3.2 User Classes</h2>
+<table>
+<thead>
+<tr>
+<th>User class</th>
+<th>Characteristics</th>
+<th>Primary functions</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Medical student</strong> (default role)</td>
+<td>Moderate technical skill; learning radiographic interpretation</td>
+<td>Analysis, history, chatbot</td>
+</tr>
+<tr>
+<td><strong>Radiologist / clinician</strong></td>
+<td>Domain expert, not a developer</td>
+<td>Analysis, PDF export, clinic locator</td>
+</tr>
+<tr>
+<td><strong>Allied health professional</strong></td>
+<td>Basic technical skill</td>
+<td>Chatbot, diet planner, clinics</td>
+</tr>
+<tr>
+<td><strong>Evaluator / examiner</strong></td>
+<td>Any</td>
+<td>Demo account across all features</td>
+</tr>
+<tr>
+<td><strong>System administrator</strong></td>
+<td>Developer</td>
+<td>Deployment and configuration only</td>
+</tr>
+</tbody></table>
+<p>The system deliberately implements <strong>no role-based access control</strong>. The <code>role</code> attribute is
+descriptive and appears in the interface and on reports, but every authenticated user has identical
+permissions over their own data and no permissions over anyone else's. Introducing privilege tiers
+without a governance model would create a false impression of clinical authorisation.</p>
+<h2>3.3 Functional Requirements</h2>
+<p>Sixty-one functional requirements were specified across nine modules.</p>
+<p><strong>Table 3.1 — Functional requirement groups</strong></p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>IDs</th>
+<th>Count</th>
+<th>Representative requirement</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Authentication and account</td>
+<td>FR-001 – FR-010a</td>
+<td>11</td>
+<td>Issue HS256 JWTs expiring after 24 hours</td>
+</tr>
+<tr>
+<td>Image analysis</td>
+<td>FR-011 – FR-025a</td>
+<td>16</td>
+<td>Route the image to the model(s) matching its scan type</td>
+</tr>
+<tr>
+<td>Results and records</td>
+<td>FR-026 – FR-033</td>
+<td>12</td>
+<td>Group findings into three confidence tiers</td>
+</tr>
+<tr>
+<td>Dashboard analytics</td>
+<td>FR-034 – FR-037</td>
+<td>5</td>
+<td>Compute all statistics from the signed-in user's scans only</td>
+</tr>
+<tr>
+<td>Health chatbot</td>
+<td>FR-038 – FR-043a</td>
+<td>8</td>
+<td>Support English and Urdu with language-specific system prompts</td>
+</tr>
+<tr>
+<td>Diet planner</td>
+<td>FR-044 – FR-048</td>
+<td>6</td>
+<td>Apply condition-specific clinical guardrails</td>
+</tr>
+<tr>
+<td>Clinic locator</td>
+<td>FR-049 – FR-052a</td>
+<td>6</td>
+<td>Sort results by Haversine distance ascending</td>
+</tr>
+<tr>
+<td>Settings</td>
+<td>FR-053 – FR-056</td>
+<td>4</td>
+<td>Persist preferences server-side</td>
+</tr>
+<tr>
+<td>Cross-cutting</td>
+<td>FR-057 – FR-060</td>
+<td>5</td>
+<td>Accept requests before model loading completes</td>
+</tr>
+</tbody></table>
+<p>Four requirements deserve individual emphasis because they encode the project's safety position:</p>
+<ul>
+<li><strong>FR-021</strong> — a chest analysis returns at most the six highest-confidence findings. Presenting all
+eighteen near-threshold probabilities buries the signal.</li>
+<li><strong>FR-022</strong> — for fracture scans, only <em>positive</em> detections are reported. Negative detector boxes
+are discarded, because they do not establish that the study is normal.</li>
+<li><strong>FR-024</strong> — if language model synthesis fails, the analysis still returns successfully with a
+fallback summary. The findings are the valuable output; losing the prose must not lose the analysis.</li>
+<li><strong>FR-028b</strong> — if any finding falls below 60 % confidence, the results page displays an explicit
+recommendation for radiologist review.</li>
+</ul>
+<h2>3.4 Non-Functional Requirements</h2>
+<p><strong>Table 3.2 — Non-functional requirement targets</strong></p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>ID</th>
+<th>Requirement</th>
+<th>Target</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Performance</td>
+<td>NFR-P1</td>
+<td>End-to-end analysis, warm backend</td>
+<td>≤ 15 s</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>NFR-P2</td>
+<td>Time to first accepted request after startup</td>
+<td>≤ 5 s</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>NFR-P3</td>
+<td>Non-AI endpoint latency</td>
+<td>≤ 1 s at p95</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>NFR-P6</td>
+<td>Maximum upload size</td>
+<td>20 MB</td>
+</tr>
+<tr>
+<td>Safety</td>
+<td>NFR-S1</td>
+<td>Educational-use disclaimer on all AI output</td>
+<td>Always visible</td>
+</tr>
+<tr>
+<td>Safety</td>
+<td>NFR-S4</td>
+<td>Negative detections never reported as normality</td>
+<td>Absolute</td>
+</tr>
+<tr>
+<td>Safety</td>
+<td>NFR-S7</td>
+<td>Sub-60 % confidence triggers review recommendation</td>
+<td>Absolute</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>NFR-SEC2</td>
+<td>JWT signing</td>
+<td>HS256, ≥ 32-character secret</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>NFR-SEC3</td>
+<td>Row Level Security</td>
+<td>Enabled on all four tables</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>NFR-SEC5</td>
+<td>Rate limiting</td>
+<td>200/min global; 10/min analyse; 20/min chat</td>
+</tr>
+<tr>
+<td>Reliability</td>
+<td>NFR-Q1</td>
+<td>Graceful degradation</td>
+<td>No single dependency failure prevents a result</td>
+</tr>
+<tr>
+<td>Maintainability</td>
+<td>NFR-Q5</td>
+<td>Layer discipline</td>
+<td>No ML logic in routers; no SQL in services</td>
+</tr>
+<tr>
+<td>Portability</td>
+<td>NFR-Q7</td>
+<td>Containerised backend</td>
+<td>Single <code>docker run</code> with an env file</td>
+</tr>
+<tr>
+<td>Accessibility</td>
+<td>NFR-Q11</td>
+<td>Urgency never conveyed by colour alone</td>
+<td>Text label always present</td>
+</tr>
+</tbody></table>
+<h2>3.5 Use Case Model</h2>
+<p>Twelve use cases were specified with full main, alternative and exception flows.</p>
+<p><img src="diagrams/01-SRS-diagram-01.png" alt="Figure 3.1 — System context and external actors"></p>
+<p><strong>Figure 3.1</strong> — System context: XRayVision AI and its external actors.</p>
+<p><img src="diagrams/01-SRS-diagram-02.png" alt="Figure 3.2 — Product function decomposition"></p>
+<p><strong>Figure 3.2</strong> — Product function decomposition.</p>
+<p><img src="diagrams/01-SRS-diagram-03.png" alt="Figure 3.3 — Use case diagram"></p>
+<p><strong>Figure 3.3</strong> — Use case diagram, system overview.</p>
+<p>The primary use case is <strong>UC-03, Analyse Medical Image</strong>. Its exception handling illustrates the
+system's degradation philosophy: of eight specified exception flows, only four are treated as
+failures. LLM synthesis failure and image upload failure are explicitly <em>not</em> errors — the flow
+continues and a complete result is still returned to the user.</p>
+<p><img src="diagrams/01-SRS-diagram-04.png" alt="Figure 3.4 — Analysis pipeline activity diagram"></p>
+<p><strong>Figure 3.4</strong> — Activity diagram for the image analysis pipeline, showing validation gates
+(red), degradation branches and the success path (green).</p>
+<h2>3.6 Feasibility Study</h2>
+<p><strong>Table 3.3 — Feasibility assessment summary</strong></p>
+<table>
+<thead>
+<tr>
+<th>Dimension</th>
+<th>Assessment</th>
+<th>Basis</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Technical</strong></td>
+<td>Feasible</td>
+<td>All required models are publicly available and run on CPU. The team had prior experience with Python, React and REST design. The principal technical risk — CPU inference latency — was mitigated by routing rather than ensembling.</td>
+</tr>
+<tr>
+<td><strong>Economic</strong></td>
+<td>Feasible at zero cost</td>
+<td>Vercel, Hugging Face Spaces, Supabase and OpenRouter all provide sufficient free tiers. No licence, GPU or hosting expenditure was incurred.</td>
+</tr>
+<tr>
+<td><strong>Operational</strong></td>
+<td>Feasible</td>
+<td>The target users are already fluent with web applications. The interface requires no training; the analysis workflow is three steps.</td>
+</tr>
+<tr>
+<td><strong>Legal / ethical</strong></td>
+<td>Feasible with constraints</td>
+<td>The system must not be presented as a medical device, must carry disclaimers, and must not request or store patient-identifying information. These became requirements C-4, C-6 and NFR-S1.</td>
+</tr>
+<tr>
+<td><strong>Schedule</strong></td>
+<td>Feasible</td>
+<td>Delivered within the two-semester FYP window. The principal schedule risk was model integration, which was front-loaded.</td>
+</tr>
+</tbody></table>
+<div class="pagebreak"></div>
+
+<h1>Chapter 4: System Design</h1>
+<h2>4.1 Architectural Overview</h2>
+<p>XRayVision AI is a <strong>three-tier layered architecture</strong> deployed as a client–server system. Internally
+the backend follows a <strong>router → service → repository</strong> layering, with strict rules about what each
+layer may do.</p>
+<p><img src="diagrams/02-SDD-diagram-01.png" alt="Figure 4.1 — Three-tier layered architecture"></p>
+<p><strong>Figure 4.1</strong> — Three-tier layered architecture with external service integrations.</p>
+<p><strong>Table 4.1 — Layer responsibilities and prohibitions</strong></p>
+<table>
+<thead>
+<tr>
+<th>Layer</th>
+<th>Module pattern</th>
+<th>Permitted</th>
+<th>Prohibited</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Route component</td>
+<td><code>src/routes/*.tsx</code></td>
+<td>Render UI, call hooks</td>
+<td>Calling <code>fetch</code> directly</td>
+</tr>
+<tr>
+<td>Query hook</td>
+<td><code>src/hooks/use-*.ts</code></td>
+<td>Wrap TanStack Query around the API client</td>
+<td>Containing business rules</td>
+</tr>
+<tr>
+<td>HTTP client</td>
+<td><code>src/lib/api.ts</code></td>
+<td>Build requests, attach JWT, normalise errors</td>
+<td>Rendering anything</td>
+</tr>
+<tr>
+<td>Router</td>
+<td><code>backend/app/routers/*.py</code></td>
+<td>Validate input, enforce auth and rate limits</td>
+<td>Running ML, writing SQL</td>
+</tr>
+<tr>
+<td>Service</td>
+<td><code>backend/app/services/*.py</code></td>
+<td>ML inference, LLM prompting, business rules</td>
+<td>Knowing about HTTP</td>
+</tr>
+<tr>
+<td>Repository</td>
+<td><code>backend/app/utils/supabase_client.py</code></td>
+<td>All database and storage access</td>
+<td>Containing domain logic</td>
+</tr>
+</tbody></table>
+<p>These prohibitions are not stylistic. Keeping ML logic out of routers means every model can be
+invoked and tested without an HTTP client; keeping SQL out of services means the persistence
+technology can be replaced without touching business logic.</p>
+<p><img src="diagrams/02-SDD-diagram-02.png" alt="Figure 4.2 — Component diagram"></p>
+<p><strong>Figure 4.2</strong> — Component diagram showing module-level dependencies.</p>
+<h2>4.2 Database Design</h2>
+<p>The data model comprises four tables. Supabase's <code>auth.users</code> table is managed by the authentication
+service; <code>profiles</code> extends it one-to-one.</p>
+<p><img src="diagrams/02-SDD-diagram-03.png" alt="Figure 4.3 — Entity relationship diagram"></p>
+<p><strong>Figure 4.3</strong> — Entity relationship diagram.</p>
+<p><strong>Table 4.2 — Database tables and their purpose</strong></p>
+<table>
+<thead>
+<tr>
+<th>Table</th>
+<th>Purpose</th>
+<th>Key design note</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>profiles</code></td>
+<td>Extends <code>auth.users</code> with display name, role, avatar and preferences</td>
+<td><code>settings</code> is JSONB so new preferences need no migration</td>
+</tr>
+<tr>
+<td><code>scans</code></td>
+<td>One row per completed analysis</td>
+<td><code>findings</code>, <code>agent_actions</code> and <code>model_results</code> are JSONB</td>
+</tr>
+<tr>
+<td><code>chat_sessions</code></td>
+<td>One row per chatbot conversation</td>
+<td>Cascades from <code>profiles</code></td>
+</tr>
+<tr>
+<td><code>chat_messages</code></td>
+<td>One row per message</td>
+<td>Cascades from <code>chat_sessions</code></td>
+</tr>
+</tbody></table>
+<p><strong>Why JSONB for findings.</strong> Findings are always read as a complete set alongside their parent scan and
+are never queried across scans. Normalising them into a separate table would introduce a join with no
+functional benefit. The trade-off — losing the ability to index individual finding attributes — is
+accepted because no requirement needs it.</p>
+<p><strong>Cascade design.</strong> Every foreign key to <code>profiles</code> uses <code>ON DELETE CASCADE</code>, so deleting a user
+account removes their profile, scans, chat sessions and chat messages in a single operation. This
+satisfies the data retention requirement without application-level cleanup logic.</p>
+<p>Four indexes support the access patterns: <code>user_id</code> on <code>scans</code> and <code>chat_sessions</code>, <code>created_at DESC</code>
+on <code>scans</code> for reverse-chronological history, and <code>session_id</code> on <code>chat_messages</code>.</p>
+<p><img src="diagrams/02-SDD-diagram-04.png" alt="Figure 4.4 — Row Level Security policy map"></p>
+<p><strong>Figure 4.4</strong> — Row Level Security policy design.</p>
+<p>Row Level Security is enabled on all four tables. Read policies restrict <code>SELECT</code> to rows owned by
+<code>auth.uid()</code>. Writes are performed by the backend using the service-role key, after the backend has
+independently verified the JWT and resolved the owning user. Ownership is therefore checked twice —
+once in the application handler and once by the database — so a single missed <code>WHERE</code> clause cannot
+become a data breach.</p>
+<h2>4.3 Data Flow Design</h2>
+<p><img src="diagrams/02-SDD-diagram-05.png" alt="Figure 4.5 — DFD Level 0"></p>
+<p><strong>Figure 4.5</strong> — Data Flow Diagram, Level 0 (context diagram).</p>
+<p><img src="diagrams/02-SDD-diagram-06.png" alt="Figure 4.6 — DFD Level 1"></p>
+<p><strong>Figure 4.6</strong> — Data Flow Diagram, Level 1: seven major processes and five data stores.</p>
+<p><img src="diagrams/02-SDD-diagram-07.png" alt="Figure 4.7 — DFD Level 2"></p>
+<p><strong>Figure 4.7</strong> — Data Flow Diagram, Level 2: decomposition of Process 2.0, "Analyse Image", into
+seven sub-processes from validation through persistence.</p>
+<h2>4.4 Class Design</h2>
+<p><img src="diagrams/02-SDD-diagram-08.png" alt="Figure 4.8 — Domain class diagram"></p>
+<p><strong>Figure 4.8</strong> — Class diagram of the domain model as expressed in Pydantic schemas.</p>
+<p>The domain model is defined once, in Pydantic, and mirrored in TypeScript for the frontend. <code>Finding</code>
+is the central abstraction: every model, regardless of architecture, must express its output as a
+<code>Finding</code> with a name, confidence, severity, originating model and optional bounding box. This
+uniform contract is what allows the routed ensemble to add or replace models without changing the
+results page.</p>
+<h2>4.5 Behavioural Design</h2>
+<p><img src="diagrams/02-SDD-diagram-09.png" alt="Figure 4.9 — Registration and login sequence"></p>
+<p><strong>Figure 4.9</strong> — Sequence diagram: registration and login, including the database trigger that
+creates the profile row.</p>
+<p><img src="diagrams/02-SDD-diagram-10.png" alt="Figure 4.10 — Image analysis sequence"></p>
+<p><strong>Figure 4.10</strong> — Sequence diagram: the image analysis pipeline, showing both degradation branches
+(LLM failure and storage failure) that continue rather than abort.</p>
+<p><img src="diagrams/02-SDD-diagram-11.png" alt="Figure 4.11 — Bilingual chat sequence"></p>
+<p><strong>Figure 4.11</strong> — Sequence diagram: bilingual chat with context window and structured field
+extraction.</p>
+<p><img src="diagrams/02-SDD-diagram-12.png" alt="Figure 4.12 — PDF export sequence"></p>
+<p><strong>Figure 4.12</strong> — Sequence diagram: PDF report export with ownership verification.</p>
+<p><img src="diagrams/02-SDD-diagram-13.png" alt="Figure 4.13 — Scan lifecycle state diagram"></p>
+<p><strong>Figure 4.13</strong> — State diagram: the lifecycle of a scan from draft to deletion.</p>
+<p><img src="diagrams/02-SDD-diagram-14.png" alt="Figure 4.14 — Authentication session state diagram"></p>
+<p><strong>Figure 4.14</strong> — State diagram: authentication session lifecycle including 24-hour expiry.</p>
+<h2>4.6 Interface Design</h2>
+<p>The API exposes twenty-one endpoints. All communication is JSON over HTTPS except image upload
+(<code>multipart/form-data</code>) and PDF export (<code>application/pdf</code>). Authenticated requests carry an
+<code>Authorization: Bearer</code> header.</p>
+<p>Seven HTTP status codes carry defined meanings: 200 success; 400 malformed domain input; 401
+authentication failure; 404 resource not found or not owned; 422 input failed quality validation; 429
+rate limit exceeded; 500 unrecoverable server error. The distinction between 400 and 422 is
+deliberate — 400 signals a malformed request, 422 signals a well-formed request whose <em>image</em> failed
+quality checks, which is a different corrective action for the user.</p>
+<h2>4.7 User Interface Design</h2>
+<p>Two layout shells are used. <code>AuthShell</code> presents a split layout for unauthenticated pages.
+<code>AppShell</code> provides the authenticated layout: a collapsible sidebar with eight destinations, a header
+with page title and account menu, and — pinned at the bottom of the sidebar — a permanent
+<strong>EDUCATIONAL USE ONLY</strong> badge.</p>
+<p>Placing the disclaimer in the shell rather than on individual pages is a deliberate design decision.
+A disclaimer that must be added to each new page will eventually be forgotten on one; a disclaimer
+rendered by the shell cannot be.</p>
+<p>The results page implements the confidence tiering that Chapter 1 identified as central: <strong>Primary
+Findings</strong> at 65 % confidence and above, <strong>Secondary Findings</strong> between 50 % and 65 %, and
+<strong>Borderline</strong> findings below 50 % collapsed behind an expander. A banner appears whenever any
+finding falls below 60 %.</p>
+<h2>4.8 Design Decisions and Rationale</h2>
+<p><strong>Table 4.3 — Key design decisions and rationale</strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Decision</th>
+<th>Alternative considered</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>D-1</td>
+<td>Routed ensemble</td>
+<td>Run all models, merge outputs</td>
+<td>A chest model applied to a wound photograph produces noise. Routing cuts CPU cost roughly threefold and keeps reports focused.</td>
+</tr>
+<tr>
+<td>D-2</td>
+<td>LLM synthesis layer</td>
+<td>Display raw model scores</td>
+<td>Multi-label probability vectors are not actionable for the target user.</td>
+</tr>
+<tr>
+<td>D-3</td>
+<td>Fallback synthesis on LLM failure</td>
+<td>Return HTTP 503</td>
+<td>The findings are the valuable output; the prose is an enhancement.</td>
+</tr>
+<tr>
+<td>D-4</td>
+<td>Non-blocking image upload</td>
+<td>Abort on storage failure</td>
+<td>The report is worth more than the thumbnail. <code>image_url</code> is nullable by design.</td>
+</tr>
+<tr>
+<td>D-5</td>
+<td>Discard negative detector boxes</td>
+<td>Report them as "normal"</td>
+<td>A negative box covers a region, not the study. Reporting it as normal would be clinically unsafe.</td>
+</tr>
+<tr>
+<td>D-6</td>
+<td>Background model preloading</td>
+<td>Synchronous load at startup</td>
+<td>Free-tier health checks time out during a multi-model synchronous load.</td>
+</tr>
+<tr>
+<td>D-7</td>
+<td>Stateless JWT</td>
+<td>Server-side sessions</td>
+<td>The backend may scale to zero; in-memory sessions would be lost on cold start.</td>
+</tr>
+<tr>
+<td>D-8</td>
+<td>Ownership checked in handler <em>and</em> RLS</td>
+<td>Handler check alone</td>
+<td>Defence in depth.</td>
+</tr>
+<tr>
+<td>D-9</td>
+<td>Single HTTP client module</td>
+<td><code>fetch</code> inside components</td>
+<td>One place for JWT attachment, URL normalisation and 401 handling.</td>
+</tr>
+<tr>
+<td>D-10</td>
+<td>Confidence tiering in the UI</td>
+<td>Flat sorted list</td>
+<td>Uncertainty must be structurally visible, not left to the reader.</td>
+</tr>
+<tr>
+<td>D-11</td>
+<td>Cap chest findings at six</td>
+<td>Report all eighteen classes</td>
+<td>Eighteen near-threshold labels bury the signal.</td>
+</tr>
+<tr>
+<td>D-12</td>
+<td>Hard-coded fallback diet plan</td>
+<td>Return malformed LLM output</td>
+<td>Condition-specific nutrition advice must never be partially generated.</td>
+</tr>
+<tr>
+<td>D-13</td>
+<td>Three Overpass mirrors</td>
+<td>A single endpoint</td>
+<td>Public Overpass instances rate-limit aggressively.</td>
+</tr>
+<tr>
+<td>D-14</td>
+<td>JSONB for findings</td>
+<td>Normalised findings table</td>
+<td>Always read whole with the parent scan; a join would add nothing.</td>
+</tr>
+<tr>
+<td>D-15</td>
+<td>Public storage buckets</td>
+<td>Signed URLs</td>
+<td>Simplifies rendering while the backend may be cold. <strong>Recorded as a known limitation</strong> — see §6.5.</td>
+</tr>
+</tbody></table>
+<div class="pagebreak"></div>
+
+<h1>Chapter 5: Implementation</h1>
+<h2>5.1 Development Environment and Tools</h2>
+<p><strong>Table 5.1 — Development environment and tools</strong></p>
+<table>
+<thead>
+<tr>
+<th>Category</th>
+<th>Technology</th>
+<th>Version</th>
+<th>Role</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Frontend framework</td>
+<td>React</td>
+<td>19</td>
+<td>UI rendering</td>
+</tr>
+<tr>
+<td>Frontend meta-framework</td>
+<td>TanStack Start</td>
+<td>—</td>
+<td>SSR, file-based routing</td>
+</tr>
+<tr>
+<td>Routing / data</td>
+<td>TanStack Router, TanStack Query</td>
+<td>—</td>
+<td>Navigation, server state caching</td>
+</tr>
+<tr>
+<td>Styling</td>
+<td>TailwindCSS, Shadcn/ui, Radix</td>
+<td>—</td>
+<td>Design system and accessible primitives</td>
+</tr>
+<tr>
+<td>Language (frontend)</td>
+<td>TypeScript</td>
+<td>5.x</td>
+<td>Type safety</td>
+</tr>
+<tr>
+<td>Backend framework</td>
+<td>FastAPI</td>
+<td>0.115</td>
+<td>REST API, OpenAPI generation</td>
+</tr>
+<tr>
+<td>Language (backend)</td>
+<td>Python</td>
+<td>3.13</td>
+<td>Backend runtime</td>
+</tr>
+<tr>
+<td>ASGI server</td>
+<td>Uvicorn</td>
+<td>—</td>
+<td>HTTP serving</td>
+</tr>
+<tr>
+<td>Validation</td>
+<td>Pydantic</td>
+<td>v2</td>
+<td>Request/response schemas, settings</td>
+</tr>
+<tr>
+<td>Rate limiting</td>
+<td>SlowAPI</td>
+<td>0.1.9</td>
+<td>Per-IP request limiting</td>
+</tr>
+<tr>
+<td>ML runtime</td>
+<td>PyTorch</td>
+<td>—</td>
+<td>Model inference</td>
+</tr>
+<tr>
+<td>Chest model library</td>
+<td>TorchXRayVision</td>
+<td>—</td>
+<td>Pretrained DenseNet121</td>
+</tr>
+<tr>
+<td>Detection</td>
+<td>Ultralytics YOLOv8</td>
+<td>—</td>
+<td>Fracture localisation</td>
+</tr>
+<tr>
+<td>Transformers</td>
+<td>Hugging Face Transformers</td>
+<td>—</td>
+<td>ViT wound classifier</td>
+</tr>
+<tr>
+<td>Image processing</td>
+<td>OpenCV, Pillow, pydicom</td>
+<td>—</td>
+<td>CLAHE, decoding, DICOM support</td>
+</tr>
+<tr>
+<td>Database</td>
+<td>Supabase PostgreSQL</td>
+<td>15+</td>
+<td>Persistence with RLS</td>
+</tr>
+<tr>
+<td>Storage</td>
+<td>Supabase Storage</td>
+<td>—</td>
+<td>Image and avatar objects</td>
+</tr>
+<tr>
+<td>LLM</td>
+<td>OpenRouter GLM 4.5 Air (free tier)</td>
+<td>—</td>
+<td>Clinical synthesis, chatbot, diet</td>
+</tr>
+<tr>
+<td>Frontend hosting</td>
+<td>Vercel</td>
+<td>—</td>
+<td>Static + SSR deployment</td>
+</tr>
+<tr>
+<td>Backend hosting</td>
+<td>Hugging Face Spaces (Docker)</td>
+<td>—</td>
+<td>Containerised API on port 7860</td>
+</tr>
+<tr>
+<td>Version control</td>
+<td>Git / GitHub</td>
+<td>—</td>
+<td>Source management</td>
+</tr>
+<tr>
+<td>Editor</td>
+<td>Visual Studio Code</td>
+<td>—</td>
+<td>Development</td>
+</tr>
+</tbody></table>
+<h2>5.2 Backend Implementation</h2>
+<p>The backend is organised into four packages under <code>backend/app/</code>: <code>routers</code> (HTTP boundary),
+<code>services</code> (business and ML logic), <code>models</code> (Pydantic schemas) and <code>utils</code> (persistence).</p>
+<p><strong>Application factory.</strong> <code>main.py</code> exposes <code>create_app()</code>, which configures CORS, installs the rate
+limiter, registers seven routers and declares two unauthenticated health endpoints. Configuration is
+read through a cached Pydantic <code>Settings</code> object, so no environment variable is read at more than one
+place in the codebase.</p>
+<p><strong>Startup strategy.</strong> A FastAPI lifespan handler starts model loading in a daemon background thread
+and returns immediately, so the server accepts requests while models are still loading.</p>
+<p><img src="diagrams/02-SDD-diagram-18.png" alt="Figure 5.4 — Backend startup sequence"></p>
+<p><strong>Figure 5.4</strong> — Backend startup sequence. Health checks pass during model loading.</p>
+<p>This was not an optimisation but a necessity: free-tier platforms apply a startup health-check
+timeout that a synchronous multi-model load exceeds. When <code>DISABLE_PRELOAD=true</code>, preloading is
+skipped entirely and models load lazily on first use, allowing the platform to run on hosts with
+512 MB of memory — authentication, chat and diet remain available even where image analysis would
+exhaust memory.</p>
+<p><strong>Rate limiting.</strong> SlowAPI applies a 200 requests/minute global default, with stricter per-endpoint
+limits on the LLM-backed routes.</p>
+<p><strong>Table 5.4 — Rate limiting configuration</strong></p>
+<table>
+<thead>
+<tr>
+<th>Scope</th>
+<th>Limit</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Global default</td>
+<td>200 / minute</td>
+<td>General abuse protection</td>
+</tr>
+<tr>
+<td><code>POST /analyze</code></td>
+<td>10 / minute</td>
+<td>CPU inference is the scarcest resource</td>
+</tr>
+<tr>
+<td><code>POST /chat</code></td>
+<td>20 / minute</td>
+<td>Conversational pacing, LLM quota protection</td>
+</tr>
+<tr>
+<td><code>POST /diet</code></td>
+<td>10 / minute</td>
+<td>LLM quota protection</td>
+</tr>
+</tbody></table>
+<h2>5.3 Frontend Implementation</h2>
+<p>The frontend uses file-based routing: each file in <code>src/routes/</code> maps to one URL. State is separated
+into two categories — server state, owned by TanStack Query and accessed through hooks in
+<code>src/hooks/</code>; and authentication state, held in a React context in <code>src/lib/auth-context.tsx</code>.</p>
+<p><strong>The single-client rule.</strong> Every network call passes through <code>src/lib/api.ts</code>. No component calls
+<code>fetch</code> directly. This module attaches the bearer token, normalises the base URL (stripping a
+trailing slash to prevent double-slash 404s), and centralises 401 handling: any 401 clears the stored
+token and redirects to the sign-in page, so an expired session recovers automatically.</p>
+<p><strong>The analysis wizard.</strong> <code>analyze.tsx</code> implements a three-step flow — upload, route selection,
+context — with the accepted formats and size limits stated on screen rather than discovered through
+an error message.</p>
+<p><strong>The results page.</strong> <code>results.$scanId.tsx</code> is the most involved component. It scales bounding boxes
+from normalised coordinates to rendered image dimensions at any viewport size, implements the three
+confidence tiers, provides layer toggles for findings, heatmap and labels, and supports zoom between
+0.5× and 2.5×.</p>
+<h2>5.4 Preprocessing Pipeline</h2>
+<p>Every uploaded image passes through validation before any model sees it:</p>
+<pre><code>size &lt; 100 KB           → reject (insufficient pixel data)
+size &gt; 20 MB            → reject (exceeds upload limit)
+not decodable as image  → reject (unless DICOM)
+width or height &lt; 200px → reject (unreliable at this resolution)
+</code></pre>
+<p>DICOM files bypass the PIL-based dimension check and are decoded by <code>pydicom</code> at preprocessing time.
+Validated images then receive CLAHE contrast enhancement [10], are resized to the target model's
+input dimensions and are normalised.</p>
+<p>Rejecting low-quality input is itself a safety measure. A model will return a confident-looking score
+for a 150 × 150 pixel thumbnail; the score will be meaningless. Refusing the input is more honest
+than processing it.</p>
+<h2>5.5 AI Model Integration</h2>
+<p><strong>Table 5.2 — AI model inventory</strong></p>
+<table>
+<thead>
+<tr>
+<th>Model</th>
+<th>Source</th>
+<th>Task</th>
+<th>Input</th>
+<th>Output</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DenseNet121</td>
+<td>TorchXRayVision [5]</td>
+<td>18 chest pathology classes</td>
+<td>224×224 grayscale</td>
+<td>Per-class probabilities, capped at top 6</td>
+</tr>
+<tr>
+<td>YOLOv8</td>
+<td>Ultralytics [7], custom weights</td>
+<td>Fracture localisation</td>
+<td>Original-size BGR</td>
+<td>Positive bounding boxes only</td>
+</tr>
+<tr>
+<td>Fracture classifier</td>
+<td>Hugging Face [15]</td>
+<td>Image-level fracture screening</td>
+<td>224×224 RGB</td>
+<td>Fracture / normal probability</td>
+</tr>
+<tr>
+<td>ViT</td>
+<td>Hugging Face [16]</td>
+<td>Wound classification</td>
+<td>RGB PIL image</td>
+<td>Top-1 wound category</td>
+</tr>
+<tr>
+<td>GLM 4.5 Air</td>
+<td>OpenRouter</td>
+<td>Clinical synthesis</td>
+<td>Structured findings</td>
+<td>Urgency, prose, actions, specialist</td>
+</tr>
+</tbody></table>
+<p><strong>Routing.</strong> The dispatch function selects models by scan type: <code>chest</code> invokes DenseNet121;
+<code>fracture</code> invokes both YOLOv8 and the screening classifier; <code>wound</code> invokes the ViT. Each invocation
+is wrapped individually in exception handling, and inference runs in a worker thread via
+<code>asyncio.to_thread</code> so the event loop is never blocked. A model that fails records its error in
+<code>model_results.model_errors</code> and the pipeline continues.</p>
+<p><strong>The two-stage fracture workflow.</strong> Fracture assessment uses detection <em>and</em> classification
+together. YOLOv8 localises where it can; the classifier provides an image-level fracture suspicion
+independent of localisation. Critically, <code>Not_Fracture</code> detector boxes are discarded, as established
+in §4.8 (D-5) — a negative box covers a region, not the study.</p>
+<p><strong>Model models are used as supplied.</strong> No fine-tuning was performed. Fine-tuning without a properly
+labelled, clinically supervised dataset would risk degrading models that were trained on far more
+data than we could assemble, while creating a false impression of domain adaptation.</p>
+<h2>5.6 LLM Synthesis</h2>
+<p>The synthesis service constructs a prompt from the structured findings, the scan type and the user's
+clinical notes, and requests a response containing four fields: an urgency label from the closed set
+{critical, high, medium, low, clear}, a synthesis paragraph, a list of recommended actions and a
+specialist suggestion.</p>
+<p>Three constraints are enforced:</p>
+<ol>
+<li><strong>The model receives findings, not the image.</strong> It cannot introduce a finding that no vision model
+produced.</li>
+<li><strong>Urgency comes from a closed vocabulary.</strong> Free-text urgency would be unparseable and
+incomparable across scans.</li>
+<li><strong>Failure is non-fatal.</strong> If the call fails or the response cannot be parsed, a fallback synthesis
+is substituted with <code>urgency: "medium"</code> and the recommendation to consult a radiologist.</li>
+</ol>
+<p>The same client serves the chatbot and diet planner. The chatbot applies a language-specific system
+prompt, includes the previous ten messages as context, and extracts <code>DOCTOR_TYPE</code> and <code>HOME_REMEDIES</code>
+fields for display as structured cards. The diet service applies condition-specific guardrails — DASH
+principles for hypertension, low-glycaemic-index guidance for diabetes, and a renal-dietitian
+referral note for kidney disease — and validates that the returned plan contains exactly seven
+complete days, substituting a pre-validated fallback plan if it does not.</p>
+<h2>5.7 Clinic Locator</h2>
+<p>The locator queries the OpenStreetMap Overpass API [14] for facilities tagged <code>hospital</code>, <code>clinic</code>,
+<code>doctors</code>, <code>pharmacy</code> or <code>health_centre</code> within a radius, then ranks results by great-circle distance
+computed with the Haversine formula:</p>
+<pre><code>d = 2R * arcsin( sqrt( sin^2(dphi/2) + cos(phi1) * cos(phi2) * sin^2(dlambda/2) ) )
+
+where R = 6371 km, phi = latitude in radians, lambda = longitude in radians
+</code></pre>
+<p>where $R = 6371$ km. Three Overpass mirrors are attempted in sequence, because the public instances
+rate-limit aggressively and a single endpoint made the feature unreliable in testing.</p>
+<h2>5.8 Security Implementation</h2>
+<p><img src="diagrams/02-SDD-diagram-15.png" alt="Figure 5.1 — Authentication and authorisation flow"></p>
+<p><strong>Figure 5.1</strong> — Authentication and authorisation flow with double ownership verification.</p>
+<p>Security is implemented in eight layers: HTTPS transport; a CORS allowlist restricted to configured
+origins in production; per-IP rate limiting; stateless HS256 JWTs with 24-hour expiry and a minimum
+32-character secret; Pydantic validation of every request body; Row Level Security on all four
+tables; environment-variable secret management; and storage paths keyed by opaque UUIDs so no
+patient-identifying filename is ever required.</p>
+<p>Password hashing is delegated entirely to Supabase Auth. Implementing password storage ourselves
+would have added risk without adding capability.</p>
+<h2>5.9 Error Handling and Degradation</h2>
+<p><img src="diagrams/02-SDD-diagram-16.png" alt="Figure 5.2 — Degradation decision tree"></p>
+<p><strong>Figure 5.2</strong> — Error handling and degradation decision tree. Red paths fail fast; amber paths
+degrade and continue; green is the returned result.</p>
+<p>The governing principle is that <strong>a partial result is more useful than an error page</strong>. Failures are
+classified into three categories:</p>
+<ul>
+<li><strong>Fail fast</strong> — invalid input. Return 400 or 422 immediately with a specific, actionable message.</li>
+<li><strong>Degrade</strong> — a non-essential dependency failed. Continue and record what was lost.</li>
+<li><strong>Hard failure</strong> — every model failed. Return 500 with the underlying error.</li>
+</ul>
+<h2>5.10 Deployment</h2>
+<p><img src="diagrams/02-SDD-diagram-17.png" alt="Figure 5.3 — Deployment diagram"></p>
+<p><strong>Figure 5.3</strong> — Deployment diagram across four hosting environments.</p>
+<p>The frontend builds to static assets plus an SSR bundle and deploys to Vercel. The backend builds to
+a Docker image listening on port 7860 — the Hugging Face Spaces convention — with all configuration
+supplied as environment secrets. The repository additionally contains a Render configuration and a
+Cloudflare Workers configuration, retained as portability evidence.</p>
+<h2>5.11 Implementation Challenges</h2>
+<p><strong>Table 5.5 — Implementation challenges and solutions</strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Challenge</th>
+<th>Solution</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>C1</td>
+<td>Free-tier health checks timed out while loading four models</td>
+<td>Background daemon thread loading; server accepts requests immediately (D-6)</td>
+</tr>
+<tr>
+<td>C2</td>
+<td>Memory exhaustion on 512 MB hosts</td>
+<td><code>DISABLE_PRELOAD</code> flag for lazy per-model loading</td>
+</tr>
+<tr>
+<td>C3</td>
+<td>CPU inference latency when running all models</td>
+<td>Routed ensemble — one or two models per request instead of four (D-1)</td>
+</tr>
+<tr>
+<td>C4</td>
+<td>Event loop blocked during synchronous inference</td>
+<td><code>asyncio.to_thread</code> for all model calls</td>
+</tr>
+<tr>
+<td>C5</td>
+<td>LLM free tier intermittently unavailable</td>
+<td>Fallback synthesis path; analysis never fails on LLM error (D-3)</td>
+</tr>
+<tr>
+<td>C6</td>
+<td>Malformed LLM JSON for diet plans</td>
+<td>Strict seven-day validation with a pre-validated fallback (D-12)</td>
+</tr>
+<tr>
+<td>C7</td>
+<td>Public Overpass endpoints rate-limiting</td>
+<td>Three-mirror sequential fallback (D-13)</td>
+</tr>
+<tr>
+<td>C8</td>
+<td>Bounding boxes misaligned across viewport sizes</td>
+<td>Normalised coordinates scaled at render time against actual image dimensions</td>
+</tr>
+<tr>
+<td>C9</td>
+<td>Double-slash 404s from a trailing slash in the API base URL</td>
+<td>Centralised URL normalisation in the single HTTP client</td>
+</tr>
+<tr>
+<td>C10</td>
+<td>Avatar updates not visible after upload due to caching</td>
+<td>Cache-busting timestamp query parameter on the returned URL</td>
+</tr>
+<tr>
+<td>C11</td>
+<td>Detector emitting non-anatomical class labels</td>
+<td><strong>Not resolved.</strong> Documented as defect DEF-03 in §6.5</td>
+</tr>
+</tbody></table>
+<div class="pagebreak"></div>
+
+<h1>Chapter 6: Testing and Evaluation</h1>
+<h2>6.1 Testing Strategy</h2>
+<p>Testing was specified under IEEE 829 [19] across five levels: unit (individual service functions),
+integration (router → service → repository chains, exercised through the generated Swagger UI),
+system (end-to-end browser journeys), security (crafted requests probing authentication and
+isolation), and acceptance (supervisor demonstration).</p>
+<p>Ninety-three test cases were specified, each with a requirement reference, preconditions, test data,
+numbered steps and an expected result. Coverage was verified against the requirements traceability
+matrix: <strong>every functional requirement has at least one corresponding test case</strong>.</p>
+<p><strong>Table 6.1 — Test case distribution by module</strong></p>
+<table>
+<thead>
+<tr>
+<th>Module</th>
+<th>Cases</th>
+<th>Executed</th>
+<th>Pending</th>
+<th>Failed</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Authentication</td>
+<td>11</td>
+<td>1</td>
+<td>10</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Image analysis</td>
+<td>16</td>
+<td>2</td>
+<td>14</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Scans and records</td>
+<td>12</td>
+<td>4</td>
+<td>8</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Dashboard</td>
+<td>5</td>
+<td>4</td>
+<td>1</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Chatbot</td>
+<td>8</td>
+<td>0</td>
+<td>8</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Diet planner</td>
+<td>6</td>
+<td>0</td>
+<td>6</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Clinic locator</td>
+<td>6</td>
+<td>2</td>
+<td>4</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Settings and profile</td>
+<td>4</td>
+<td>0</td>
+<td>4</td>
+<td>0</td>
+</tr>
+<tr>
+<td>System</td>
+<td>5</td>
+<td>0</td>
+<td>5</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Security</td>
+<td>9</td>
+<td>0</td>
+<td>8</td>
+<td>1</td>
+</tr>
+<tr>
+<td>Performance</td>
+<td>5</td>
+<td>0</td>
+<td>5</td>
+<td>0</td>
+</tr>
+<tr>
+<td>Usability</td>
+<td>6</td>
+<td>4</td>
+<td>2</td>
+<td>0</td>
+</tr>
+<tr>
+<td><strong>Total</strong></td>
+<td><strong>93</strong></td>
+<td><strong>17</strong></td>
+<td><strong>75</strong></td>
+<td><strong>1</strong></td>
+</tr>
+</tbody></table>
+<h2>6.2 Statement on Execution Status</h2>
+<p>We report execution status without inflation. Of ninety-three specified cases, <strong>seventeen were
+executed</strong> against the live deployment using an automated browser session signed in to the
+demonstration account, with screenshot evidence retained for each. <strong>Seventy-five remain pending</strong> —
+principally those requiring real medical image fixtures, deliberate negative-path inputs,
+instrumented timing measurements, or multiple accounts for isolation testing. <strong>One case failed</strong>,
+and is reported in §6.5.</p>
+<p>A test case that has not been run is not a passing test case. Presenting the specification as though
+it were an execution report would be a misrepresentation, and we have not done so.</p>
+<h2>6.3 Executed Test Results</h2>
+<p><strong>Table 6.2 — Executed test results</strong></p>
+<table>
+<thead>
+<tr>
+<th>Test ID</th>
+<th>Requirement</th>
+<th>Verified behaviour</th>
+<th>Result</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>TC-AUTH-05</td>
+<td>FR-005, FR-006</td>
+<td>Valid credentials authenticate and land on the dashboard with populated data</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-ANLZ-02</td>
+<td>FR-020, FR-022</td>
+<td>Fracture scan renders bounding boxes; no <code>Not_Fracture</code> finding appears in the response or UI</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-ANLZ-12</td>
+<td>FR-023</td>
+<td>A scan with no findings above threshold stores urgency <code>clear</code> and renders an empty-findings state</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-SCAN-01</td>
+<td>FR-029</td>
+<td>History lists the user's scans in reverse-chronological order</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-SCAN-03</td>
+<td>FR-027, FR-028</td>
+<td>Opening a scan renders image, overlays, findings and synthesis for that scan</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-SCAN-04</td>
+<td>FR-028a</td>
+<td>Findings grouped as Primary (≥65 %), Secondary (50–65 %) and collapsed Borderline (&lt;50 %)</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-SCAN-05</td>
+<td>FR-028b</td>
+<td>A sub-60 % finding triggers the radiologist-review banner</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-DASH-01</td>
+<td>FR-034</td>
+<td>Four headline statistics render with correct values</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-DASH-02</td>
+<td>FR-035</td>
+<td>Finding distribution renders as a ranked frequency list</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-DASH-03</td>
+<td>FR-036</td>
+<td>Recent analyses list links through to full reports</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-DASH-04</td>
+<td>FR-036a</td>
+<td>Per-model average confidence renders for all three vision models</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-CLIN-02</td>
+<td>FR-049</td>
+<td>Radius slider spans 1–20 km with a 5 km default</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-CLIN-04</td>
+<td>UI-5</td>
+<td>Pre-search empty state renders with OpenStreetMap attribution</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-UI-01</td>
+<td>UI-1</td>
+<td>All six landing page sections render without blank regions</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-UI-03</td>
+<td>NFR-S1, LR-1</td>
+<td>Educational-use badge present in the shell on every authenticated page; full disclaimer on reports</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-UI-04</td>
+<td>NFR-Q3</td>
+<td>Analysis wizard states accepted formats and size limits on screen</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-UI-05</td>
+<td>UI-4, NFR-Q11</td>
+<td>Every urgency badge carries a text label alongside its colour</td>
+<td>Pass</td>
+</tr>
+<tr>
+<td>TC-SEC-09</td>
+<td>NFR-SEC8</td>
+<td>Repository scanned for tracked secrets</td>
+<td><strong>Fail</strong> — see DEF-01</td>
+</tr>
+</tbody></table>
+<p>The safety-critical behaviours verified here are worth emphasising: TC-ANLZ-02 confirms the
+negative-detection rule (D-5) holds in the deployed system; TC-SCAN-04 and TC-SCAN-05 confirm that
+confidence tiering and the low-confidence review flag operate as designed; and TC-UI-03 confirms the
+disclaimer is genuinely unconditional.</p>
+<h2>6.4 Observed System Metrics</h2>
+<p>Measurements taken from the deployed instance's dashboard across 31 stored analyses:</p>
+<p><strong>Table 7.1 — Observed system metrics on the deployed instance</strong></p>
+<table>
+<thead>
+<tr>
+<th>Metric</th>
+<th>Observed value</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>Total stored analyses</td>
+<td>31</td>
+</tr>
+<tr>
+<td>Analyses rated high or critical urgency</td>
+<td>15</td>
+</tr>
+<tr>
+<td>Mean finding confidence across all scans</td>
+<td>63.2 %</td>
+</tr>
+<tr>
+<td>Mean end-to-end report time</td>
+<td>8.4 s</td>
+</tr>
+<tr>
+<td>Mean DenseNet121 confidence</td>
+<td>84.7 %</td>
+</tr>
+<tr>
+<td>Mean YOLOv8 confidence</td>
+<td>89.1 %</td>
+</tr>
+<tr>
+<td>Mean ViT confidence</td>
+<td>82.3 %</td>
+</tr>
+</tbody></table>
+<p>The 8.4-second mean report time satisfies target NFR-P1 (≤ 15 s) on a warm backend. Most frequent
+findings across the stored set were Lung Opacity (10 occurrences), Lung Lesion (8), and Nodule, Mass
+and Enlarged Cardiomediastinum (3 each).</p>
+<p>These are operational metrics from the system's own analytics, not a controlled experiment. They
+describe the system's behaviour on the images it has processed; they are <strong>not</strong> measurements of
+diagnostic accuracy, which was outside this project's scope (§1.6).</p>
+<h2>6.5 Defects</h2>
+<p><strong>Table 6.3 — Open defects</strong></p>
+<table>
+<thead>
+<tr>
+<th>ID</th>
+<th>Severity</th>
+<th>Description</th>
+<th>Status</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>DEF-01</td>
+<td>Medium</td>
+<td>The root <code>.env</code> file is tracked in version control. It contains the API base URL, the Supabase project URL and the Supabase <strong>publishable</strong> anon key. No service-role key, LLM key or JWT secret is exposed, so this is a hygiene defect rather than a credential compromise — but the file is listed in <code>.gitignore</code> and should not be tracked. <strong>Remediation:</strong> <code>git rm --cached .env</code>.</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>DEF-02</td>
+<td>Low</td>
+<td><code>backend/README.md</code> instructs the operator to create the <code>xray-images</code> storage bucket as <em>private</em>, while the implementation creates it with <code>public: True</code> and serves images through public URLs. The root README is correct; the backend README contradicts it. <strong>Remediation:</strong> correct the backend README.</td>
+<td>Open</td>
+</tr>
+<tr>
+<td>DEF-03</td>
+<td>Medium</td>
+<td>The fracture detector was observed emitting a non-anatomical class label (<code>Vase</code>) as a low-confidence secondary finding on a wrist radiograph, alongside a correct high-confidence fracture finding from the screening classifier. This indicates that generic detector classes are reaching the findings list rather than being filtered to the fracture vocabulary. The <code>ALLOW_GENERIC_YOLO_WEIGHTS</code> configuration guard exists for precisely this condition but did not prevent it in the deployed instance. <strong>Impact:</strong> confusing, non-clinical labels appear in the Secondary and Borderline tiers. The confidence tiering limits the harm — the spurious labels appeared at 52.7 % and below, and the correct finding dominated the Primary tier — but the behaviour is incorrect. <strong>Remediation:</strong> constrain reported detector classes to an explicit fracture label vocabulary and verify the deployed weights.</td>
+<td>Open</td>
+</tr>
+</tbody></table>
+<p>DEF-03 is the most substantive finding of the evaluation, and we report it deliberately. It
+illustrates a general hazard in multi-model systems: a model integrated correctly at the API level
+can still be wrong at the <em>semantic</em> level, and no amount of exception handling detects a
+confidently-returned nonsense label. It also demonstrates the value of the confidence tiering design
+— the spurious output was automatically relegated below the correct finding rather than presented as
+equally authoritative.</p>
+<div class="pagebreak"></div>
+
+<h1>Chapter 7: Results and Discussion</h1>
+<h2>7.1 Delivered System</h2>
+<p>The system is publicly deployed and operational. The following figures show the delivered interface.</p>
+<p><img src="screenshots/01a-landing-hero.png" alt="Figure 7.1 — Landing page"></p>
+<p><strong>Figure 7.1</strong> — Public landing page.</p>
+<p><img src="screenshots/05-dashboard.png" alt="Figure 7.2 — Dashboard"></p>
+<p><strong>Figure 7.2</strong> — Dashboard showing per-user analytics, recent analyses, finding distribution and
+per-model confidence.</p>
+<p><img src="screenshots/06-analyze-upload.png" alt="Figure 7.3 — Analysis wizard"></p>
+<p><strong>Figure 7.3</strong> — Three-step analysis wizard with format and size constraints stated on screen.</p>
+<p><img src="screenshots/13-results.png" alt="Figure 7.4 — Diagnostic report"></p>
+<p><strong>Figure 7.4</strong> — Diagnostic report: bounding-box overlays, tiered findings, low-confidence review
+banner, LLM synthesis, recommended actions, specialist referral and full confidence table.</p>
+<p><img src="screenshots/08-chat.png" alt="Figure 7.5 — Health chatbot"></p>
+<p><strong>Figure 7.5</strong> — Bilingual health chatbot with English/Urdu toggle.</p>
+<p><img src="screenshots/10-clinics.png" alt="Figure 7.6 — Clinic locator"></p>
+<p><strong>Figure 7.6</strong> — GPS clinic locator with radius control and OpenStreetMap attribution.</p>
+<p>Figure 7.4 is worth reading closely, because it demonstrates several design decisions operating
+together. The scan carries a <strong>HIGH</strong> urgency badge with a text label, not colour alone (D-10,
+NFR-Q11). A blue banner warns that findings below 60 % confidence are present. The Primary tier
+contains a single high-confidence fracture finding at 96.7 % with an ICD-10 code; the Secondary tier
+contains a 52.7 % finding; three further findings below 50 % are collapsed. The LLM synthesis
+explicitly identifies the low-confidence findings as probable false positives and closes by stating
+that the analysis is educational and should not replace evaluation by a qualified radiologist. A full
+confidence table lists every finding with its originating model.</p>
+<p>It also shows DEF-03: the spurious <code>Vase</code> labels are visible in the Secondary and Borderline tiers.
+We have not cropped them out of this thesis.</p>
+<h2>7.2 Achievement Against Objectives</h2>
+<p><strong>Table 7.2 — Objectives achieved against Chapter 1 criteria</strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Objective</th>
+<th>Criterion</th>
+<th>Outcome</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>O1</td>
+<td>Routed ensemble</td>
+<td>Correct dispatch; wrong model never run</td>
+<td><strong>Achieved.</strong> Three routes dispatch correctly; verified in TC-ANLZ-02</td>
+</tr>
+<tr>
+<td>O2</td>
+<td>LLM synthesis</td>
+<td>Urgency, prose, actions, specialist on every analysis</td>
+<td><strong>Achieved.</strong> Present on all stored scans; fallback path preserves the analysis on failure</td>
+</tr>
+<tr>
+<td>O3</td>
+<td>Visible uncertainty</td>
+<td>Tiering plus sub-60 % review flag</td>
+<td><strong>Achieved.</strong> Verified in TC-SCAN-04 and TC-SCAN-05</td>
+</tr>
+<tr>
+<td>O4</td>
+<td>Supporting features</td>
+<td>History, exports, analytics, chatbot, diet, clinics</td>
+<td><strong>Achieved.</strong> All implemented and deployed; export payloads pending verification</td>
+</tr>
+<tr>
+<td>O5</td>
+<td>Data isolation</td>
+<td>No cross-user access through any endpoint</td>
+<td><strong>Partially verified.</strong> Implemented at two layers; cross-account test (TC-SEC-04) pending execution</td>
+</tr>
+<tr>
+<td>O6</td>
+<td>Zero-cost deployment</td>
+<td>Free tiers, CPU-only</td>
+<td><strong>Achieved.</strong> No expenditure incurred</td>
+</tr>
+<tr>
+<td>O7</td>
+<td>Professional documentation</td>
+<td>SRS, SDD, tests, manual; defects reported</td>
+<td><strong>Achieved.</strong> All four documents delivered; three defects reported openly</td>
+</tr>
+</tbody></table>
+<p>Six of seven objectives were fully achieved. O5 is marked <em>partially verified</em> rather than achieved:
+the two-layer isolation mechanism is implemented and the code path is straightforward, but the
+adversarial cross-account test has not been executed, and we do not claim verification we have not
+performed.</p>
+<h2>7.3 Discussion</h2>
+<p><strong>On routing versus ensembling.</strong> The decision to route rather than ensemble (D-1) was made for
+performance under a CPU-only constraint, but its more valuable consequence turned out to be
+diagnostic focus. Running a chest pathology model on a wound photograph produces output that is not
+merely useless but actively misleading — plausible-looking labels with real confidence scores.
+Routing eliminates a whole class of confusing output.</p>
+<p><strong>On the LLM as a translation layer.</strong> The synthesis layer is the component that turns model output
+into something a student can act on. Constraining it to reason only over findings it is given — never
+over the image — keeps it a translator rather than a second, unvalidated diagnostician. The fallback
+path (D-3) proved its worth in practice: free-tier LLM availability is intermittent, and without the
+fallback a substantial fraction of analyses would have failed outright.</p>
+<p><strong>On making uncertainty structural.</strong> The confidence tiering was designed to communicate uncertainty
+to users. It turned out to also contain model errors. When DEF-03 caused spurious labels to enter the
+findings list, tiering automatically relegated them below the correct finding. A flat sorted list
+would have presented them with equal visual weight. Design decisions made for user comprehension had
+a defensive benefit we did not anticipate.</p>
+<p><strong>On the cost of free infrastructure.</strong> Zero cost is not free of consequence. Cold starts add 30–60
+seconds to the first request after inactivity. Memory limits forced the <code>DISABLE_PRELOAD</code> path. LLM
+quota required rate limiting. Every one of these constraints shaped the architecture, and the
+resulting design is arguably more robust for having been forced to assume that dependencies fail.</p>
+<p><strong>On what we did not do.</strong> We did not fine-tune the models, and we did not evaluate their diagnostic
+accuracy. Both were deliberate. Fine-tuning without a properly labelled, clinically supervised dataset
+would risk degrading models trained on vastly more data than we could assemble, while creating a
+false impression of domain adaptation. Claiming accuracy figures without a validation set and
+clinical supervision would be worse — it would be the exact overclaiming that makes medical AI tools
+hazardous.</p>
+<h2>7.4 Comparison with Related Work</h2>
+<p>Relative to the systems surveyed in §2.7, this work is distinguished by breadth of integration rather
+than depth of any single component. CheXNet-class research systems exceed our chest component in
+rigour of evaluation, but are not deployable applications. TorchXRayVision provides the model we use
+but no application layer. Commercial systems offer clinical validation we cannot match, at a cost
+that excludes the users we target. General-purpose LLM chat interfaces accept images but bring no
+specialist clinical model and present no calibrated confidence.</p>
+<p>Our contribution is the working combination: three imaging modalities, correct routing, LLM
+synthesis, structurally visible uncertainty, and public deployment at zero cost.</p>
+<h2>7.5 Ethical and Safety Considerations</h2>
+<p><strong>Framing.</strong> The system is presented as an educational tool throughout — in the application shell, on
+every report, in the repository README and in this thesis. This framing is not a disclaimer bolted on
+at the end; it determined design decisions D-5, D-10 and D-11.</p>
+<p><strong>The false-negative hazard.</strong> The most dangerous outcome is a user concluding from a <code>clear</code> result
+that a study is normal. Three mitigations address this: negative detector boxes are discarded rather
+than reported as normality (D-5); confidence is always displayed; and low-confidence results trigger
+an explicit review recommendation. None of these eliminates the hazard. It is inherent to the
+category of tool, and honesty about it is the only responsible position.</p>
+<p><strong>Privacy.</strong> No patient-identifying information is requested or stored. Storage paths are keyed by
+opaque UUIDs. Users may delete any scan permanently, and account deletion cascades to all associated
+data. We note against this that the storage buckets are public (D-15) — an unguessable URL is not the
+same as an access-controlled one, and §8.3 lists this as a limitation to be remediated.</p>
+<p><strong>Automation bias.</strong> A fluent, confident paragraph is persuasive independently of correctness. The
+system counters this by always displaying the numerical confidences the prose was derived from, by
+tiering findings, and by instructing the language model to state its own limitations — which, as
+Figure 7.4 shows, it does.</p>
+<p><strong>Language access.</strong> Urdu support with right-to-left rendering and voice input was included because
+health information tools in Pakistan are overwhelmingly English-only. The same safety constraints
+apply to both languages.</p>
+<div class="pagebreak"></div>
+
+<h1>Chapter 8: Conclusion and Future Work</h1>
+<h2>8.1 Conclusion</h2>
+<p>This thesis presented XRayVision AI, a deployed web platform that integrates three clinically
+pretrained vision models and a large language model into an educational medical imaging tool
+operating entirely on free-tier infrastructure with CPU-only inference.</p>
+<p>The work set out to close an accessibility gap. Capable medical imaging models are freely available,
+but they are research artefacts rather than usable systems, they present output in a form learners
+cannot act on, they rarely communicate uncertainty adequately, and the infrastructure normally assumed
+around them is beyond the reach of a teaching institution. The delivered system addresses each of
+these: it provides the full application layer, translates model output into clinical prose through a
+constrained LLM, makes uncertainty structurally visible through three confidence tiers and an
+explicit review flag, and does so at zero cost.</p>
+<p>Two design principles proved more valuable than anticipated. <strong>Safety by construction</strong> — encoding
+safety into structure rather than into warnings — meant that when a model produced incorrect output
+(DEF-03), the confidence tiering automatically contained it. <strong>Graceful degradation</strong> — treating
+dependency failure as a reason to downgrade rather than to abort — meant the system remained useful
+on infrastructure that fails routinely.</p>
+<p>The system was specified, designed and verified to professional standards, and its limitations are
+documented rather than concealed. Seventeen of ninety-three test cases were executed and three
+defects remain open, including one substantive semantic defect in the fracture detector's label
+handling. We report these because a thesis that presents only what worked teaches less than one that
+also reports what did not.</p>
+<h2>8.2 Contributions</h2>
+<ol>
+<li><strong>An integrated, publicly deployed multi-modal medical imaging platform</strong> combining chest
+pathology screening, fracture localisation and wound classification with LLM report synthesis.</li>
+<li><strong>A routed ensemble architecture</strong> that dispatches by declared scan type rather than executing all
+models, making multi-model inference viable on CPU-only free-tier infrastructure.</li>
+<li><strong>A confidence tiering presentation</strong> that makes model uncertainty structurally visible and, as
+demonstrated in §7.3, provides incidental containment of model error.</li>
+<li><strong>An explicit negative-evidence safety rule</strong> — that a detector's absence of detection is never
+reported as normality — implemented and verified.</li>
+<li><strong>A degradation architecture</strong> in which the failure of the language model, of object storage or of
+any individual vision model downgrades rather than destroys the result.</li>
+<li><strong>A complete professional documentation set</strong> (IEEE 830, 1016 and 829) with honest reporting of
+verification status and open defects.</li>
+<li><strong>Bilingual English/Urdu health information access</strong> with right-to-left rendering and voice input.</li>
+</ol>
+<h2>8.3 Limitations</h2>
+<ol>
+<li>Diagnostic accuracy was not independently validated; no clinical performance claim is made.</li>
+<li>DEF-03 — non-anatomical detector labels reach the findings list — is unresolved.</li>
+<li>Seventy-five of ninety-three test cases remain unexecuted.</li>
+<li>Storage buckets are public; URL obscurity is not access control.</li>
+<li>Rate limiting is per-IP and in-memory, so it resets on restart and is shared by users behind NAT.</li>
+<li>No refresh-token rotation; users must re-authenticate every 24 hours.</li>
+<li>No audit log; deletions are not traceable.</li>
+<li>Uploaded files are not scanned for malicious content before decoding.</li>
+<li>Cold starts add 30–60 seconds to the first request after inactivity.</li>
+<li>Cross-browser verification was performed on Chromium only.</li>
+</ol>
+<h2>8.4 Future Work</h2>
+<p><strong>Table 8.1 — Future work priorities</strong></p>
+<table>
+<thead>
+<tr>
+<th>Priority</th>
+<th>Item</th>
+<th>Rationale</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong>Immediate</strong></td>
+<td>Resolve DEF-03 by constraining detector output to an explicit fracture label vocabulary</td>
+<td>Incorrect labels currently reach users</td>
+</tr>
+<tr>
+<td><strong>Immediate</strong></td>
+<td>Execute the remaining 75 test cases</td>
+<td>Verification is incomplete</td>
+</tr>
+<tr>
+<td><strong>Immediate</strong></td>
+<td>Close DEF-01 and DEF-02</td>
+<td>Repository hygiene and documentation correctness</td>
+</tr>
+<tr>
+<td><strong>High</strong></td>
+<td>Migrate storage to private buckets with short-lived signed URLs</td>
+<td>Removes reliance on URL obscurity</td>
+</tr>
+<tr>
+<td><strong>High</strong></td>
+<td>Add an automated test suite (pytest, Vitest) integrated into CI</td>
+<td>Currently no automated regression protection exists</td>
+</tr>
+<tr>
+<td><strong>High</strong></td>
+<td>Clinical validation against a labelled evaluation set under supervision</td>
+<td>Required before any accuracy claim</td>
+</tr>
+<tr>
+<td><strong>Medium</strong></td>
+<td>Redis-backed rate limiting keyed by user identity</td>
+<td>Survives restarts; fairer behind NAT</td>
+</tr>
+<tr>
+<td><strong>Medium</strong></td>
+<td>Refresh-token rotation</td>
+<td>Removes the 24-hour re-authentication burden</td>
+</tr>
+<tr>
+<td><strong>Medium</strong></td>
+<td>Append-only audit log</td>
+<td>Traceability for deletions</td>
+</tr>
+<tr>
+<td><strong>Medium</strong></td>
+<td>Explainability overlays (Grad-CAM) for the chest model</td>
+<td>Localisation for chest findings, matching the fracture route</td>
+</tr>
+<tr>
+<td><strong>Medium</strong></td>
+<td>Malware scanning of uploads before decoding</td>
+<td>Defence against crafted files</td>
+</tr>
+<tr>
+<td><strong>Lower</strong></td>
+<td>GPU inference tier for reduced latency</td>
+<td>Requires funding</td>
+</tr>
+<tr>
+<td><strong>Lower</strong></td>
+<td>Additional imaging modalities (CT, MRI)</td>
+<td>Substantial scope extension</td>
+</tr>
+<tr>
+<td><strong>Lower</strong></td>
+<td>PACS / DICOM-network integration</td>
+<td>Required for any real clinical deployment</td>
+</tr>
+<tr>
+<td><strong>Lower</strong></td>
+<td>Additional regional languages</td>
+<td>Broadens access further</td>
+</tr>
+</tbody></table>
+<h2>8.5 Closing Remarks</h2>
+<p>The most useful lesson from this project was not technical. It was that in a domain where being wrong
+has consequences, the discipline of designing for uncertainty and for failure produces a better
+system than designing for the success case and adding warnings afterwards. The confidence tiering
+that contained a model defect, and the fallback path that kept the system useful through intermittent
+LLM availability, were both consequences of assuming things would go wrong.</p>
+<p>We hope the system is useful to students learning to read radiographs, and that the documentation —
+including its account of what did not work — is useful to anyone attempting similar work.</p>
+<div class="pagebreak"></div>
+
+<h1>References</h1>
+<p>[1] P. Rajpurkar, J. Irvin, K. Zhu, B. Yang, H. Mehta, T. Duan, D. Ding, A. Bagul, C. Langlotz, K. Shpanskaya, M. P. Lungren, and A. Y. Ng, "CheXNet: Radiologist-level pneumonia detection on chest X-rays with deep learning," <em>arXiv preprint arXiv:1711.05225</em>, 2017.</p>
+<p>[2] G. Huang, Z. Liu, L. van der Maaten, and K. Q. Weinberger, "Densely connected convolutional networks," in <em>Proc. IEEE Conf. Computer Vision and Pattern Recognition (CVPR)</em>, 2017, pp. 4700–4708.</p>
+<p>[3] X. Wang, Y. Peng, L. Lu, Z. Lu, M. Bagheri, and R. M. Summers, "ChestX-ray8: Hospital-scale chest X-ray database and benchmarks on weakly-supervised classification and localization of common thorax diseases," in <em>Proc. IEEE Conf. Computer Vision and Pattern Recognition (CVPR)</em>, 2017, pp. 2097–2106.</p>
+<p>[4] J. Irvin, P. Rajpurkar, M. Ko, Y. Yu, S. Ciurea-Ilcus, C. Chute, H. Marklund, B. Haghgoo, R. Ball, K. Shpanskaya, et al., "CheXpert: A large chest radiograph dataset with uncertainty labels and expert comparison," in <em>Proc. AAAI Conf. Artificial Intelligence</em>, vol. 33, 2019, pp. 590–597.</p>
+<p>[5] J. P. Cohen, J. D. Viviano, P. Bertin, P. Morrison, P. Torabian, M. Guarrera, M. P. Lungren, A. Chaudhari, R. Brooks, M. Hashir, and H. Bertrand, "TorchXRayVision: A library of chest X-ray datasets and models," in <em>Proc. Medical Imaging with Deep Learning (MIDL)</em>, 2022. [Online]. Available: <a href="https://github.com/mlmed/torchxrayvision">https://github.com/mlmed/torchxrayvision</a></p>
+<p>[6] J. Redmon, S. Divvala, R. Girshick, and A. Farhadi, "You only look once: Unified, real-time object detection," in <em>Proc. IEEE Conf. Computer Vision and Pattern Recognition (CVPR)</em>, 2016, pp. 779–788.</p>
+<p>[7] G. Jocher, A. Chaurasia, and J. Qiu, "Ultralytics YOLOv8," 2023. [Online]. Available: <a href="https://docs.ultralytics.com">https://docs.ultralytics.com</a></p>
+<p>[8] A. Vaswani, N. Shazeer, N. Parmar, J. Uszkoreit, L. Jones, A. N. Gomez, Ł. Kaiser, and I. Polosukhin, "Attention is all you need," in <em>Advances in Neural Information Processing Systems (NeurIPS)</em>, 2017, pp. 5998–6008.</p>
+<p>[9] A. Dosovitskiy, L. Beyer, A. Kolesnikov, D. Weissenborn, X. Zhai, T. Unterthiner, M. Dehghani, M. Minderer, G. Heigold, S. Gelly, J. Uszkoreit, and N. Houlsby, "An image is worth 16x16 words: Transformers for image recognition at scale," in <em>Proc. Int. Conf. Learning Representations (ICLR)</em>, 2021.</p>
+<p>[10] K. Zuiderveld, "Contrast limited adaptive histogram equalization," in <em>Graphics Gems IV</em>, P. S. Heckbert, Ed. San Diego, CA: Academic Press, 1994, pp. 474–485.</p>
+<p>[11] G. Litjens, T. Kooi, B. E. Bejnordi, A. A. A. Setio, F. Ciompi, M. Ghafoorian, J. A. W. M. van der Laak, B. van Ginneken, and C. I. Sánchez, "A survey on deep learning in medical image analysis," <em>Medical Image Analysis</em>, vol. 42, pp. 60–88, 2017.</p>
+<p>[12] A. Esteva, B. Kuprel, R. A. Novoa, J. Ko, S. M. Swetter, H. M. Blau, and S. Thrun, "Dermatologist-level classification of skin cancer with deep neural networks," <em>Nature</em>, vol. 542, no. 7639, pp. 115–118, 2017.</p>
+<p>[13] P. Rajpurkar, J. Irvin, R. L. Ball, K. Zhu, B. Yang, H. Mehta, T. Duan, D. Ding, A. Bagul, C. P. Langlotz, et al., "Deep learning for chest radiograph diagnosis: A retrospective comparison of the CheXNeXt algorithm to practicing radiologists," <em>PLoS Medicine</em>, vol. 15, no. 11, e1002686, 2018.</p>
+<p>[14] OpenStreetMap Foundation, "Overpass API." [Online]. Available: <a href="https://wiki.openstreetmap.org/wiki/Overpass_API">https://wiki.openstreetmap.org/wiki/Overpass_API</a></p>
+<p>[15] prithivMLmods, "Bone-Fracture-Detection," Hugging Face Model Hub. [Online]. Available: <a href="https://huggingface.co/prithivMLmods/Bone-Fracture-Detection">https://huggingface.co/prithivMLmods/Bone-Fracture-Detection</a></p>
+<p>[16] PayamFard123, "dermaintel-wound-classifier," Hugging Face Model Hub. [Online]. Available: <a href="https://huggingface.co/PayamFard123/dermaintel-wound-classifier">https://huggingface.co/PayamFard123/dermaintel-wound-classifier</a></p>
+<p>[17] <em>IEEE Recommended Practice for Software Requirements Specifications</em>, IEEE Std 830-1998, IEEE, 1998.</p>
+<p>[18] <em>IEEE Standard for Information Technology — Systems Design — Software Design Descriptions</em>, IEEE Std 1016-2009, IEEE, 2009.</p>
+<p>[19] <em>IEEE Standard for Software and System Test Documentation</em>, IEEE Std 829-2008, IEEE, 2008.</p>
+<p>[20] World Health Organization, <em>International Statistical Classification of Diseases and Related Health Problems, 10th Revision (ICD-10)</em>. Geneva, Switzerland: WHO, 2016.</p>
+<p>[21] S. Ramírez, "FastAPI documentation." [Online]. Available: <a href="https://fastapi.tiangolo.com">https://fastapi.tiangolo.com</a></p>
+<p>[22] TanStack, "TanStack Start, Router and Query documentation." [Online]. Available: <a href="https://tanstack.com">https://tanstack.com</a></p>
+<p>[23] Supabase Inc., "Supabase documentation." [Online]. Available: <a href="https://supabase.com/docs">https://supabase.com/docs</a></p>
+<p>[24] OpenRouter, "OpenRouter API documentation." [Online]. Available: <a href="https://openrouter.ai/docs">https://openrouter.ai/docs</a></p>
+<p>[25] Hugging Face, "Transformers documentation." [Online]. Available: <a href="https://huggingface.co/docs/transformers">https://huggingface.co/docs/transformers</a></p>
+<div class="pagebreak"></div>
+
+<h1>Appendix A: System Screenshots</h1>
+<p>Additional interface screenshots captured from the live deployment.</p>
+<p><img src="screenshots/03-register.png" alt="Registration page"></p>
+<p><strong>Figure A.1</strong> — Account registration.</p>
+<p><img src="screenshots/02-login.png" alt="Sign-in page"></p>
+<p><strong>Figure A.2</strong> — Sign-in, including the one-click demonstration account.</p>
+<p><img src="screenshots/07-history.png" alt="Scan history"></p>
+<p><strong>Figure A.3</strong> — Scan history.</p>
+<p><img src="screenshots/09-diet.png" alt="Diet planner"></p>
+<p><strong>Figure A.4</strong> — Diet plan generator.</p>
+<p><img src="screenshots/11-profile.png" alt="Profile"></p>
+<p><strong>Figure A.5</strong> — User profile.</p>
+<p><img src="screenshots/12-settings.png" alt="Settings"></p>
+<p><strong>Figure A.6</strong> — Settings: appearance, analysis preferences and notifications.</p>
+<p><img src="screenshots/14-landing-mobile.png" alt="Mobile view"></p>
+<p><strong>Figure A.7</strong> — Responsive layout at 390 × 844 pixels.</p>
+<div class="pagebreak"></div>
+
+<h1>Appendix B: API Reference</h1>
+<p><strong>Table 5.3 — REST API endpoint summary</strong></p>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Method</th>
+<th>Endpoint</th>
+<th>Auth</th>
+<th>Rate limit</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>1</td>
+<td>POST</td>
+<td><code>/auth/register</code></td>
+<td>—</td>
+<td>200/min</td>
+<td>Create an account</td>
+</tr>
+<tr>
+<td>2</td>
+<td>POST</td>
+<td><code>/auth/login</code></td>
+<td>—</td>
+<td>200/min</td>
+<td>Authenticate, return JWT</td>
+</tr>
+<tr>
+<td>3</td>
+<td>POST</td>
+<td><code>/auth/forgot-password</code></td>
+<td>—</td>
+<td>200/min</td>
+<td>Trigger a reset email</td>
+</tr>
+<tr>
+<td>4</td>
+<td>GET</td>
+<td><code>/auth/me</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>Current user profile</td>
+</tr>
+<tr>
+<td>5</td>
+<td>POST</td>
+<td><code>/auth/avatar</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>Upload a profile picture</td>
+</tr>
+<tr>
+<td>6</td>
+<td>PATCH</td>
+<td><code>/auth/profile</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>Update name and role</td>
+</tr>
+<tr>
+<td>7</td>
+<td>PATCH</td>
+<td><code>/auth/settings</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>Update preferences</td>
+</tr>
+<tr>
+<td>8</td>
+<td>POST</td>
+<td><code>/analyze</code></td>
+<td>JWT</td>
+<td><strong>10/min</strong></td>
+<td>Upload and analyse an image</td>
+</tr>
+<tr>
+<td>9</td>
+<td>GET</td>
+<td><code>/scans</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>List scan history</td>
+</tr>
+<tr>
+<td>10</td>
+<td>GET</td>
+<td><code>/scans/{id}</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>Retrieve one scan</td>
+</tr>
+<tr>
+<td>11</td>
+<td>DELETE</td>
+<td><code>/scans/{id}</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>Delete a scan and its image</td>
+</tr>
+<tr>
+<td>12</td>
+<td>GET</td>
+<td><code>/scans/{id}/report.pdf</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>Download a PDF report</td>
+</tr>
+<tr>
+<td>13</td>
+<td>GET</td>
+<td><code>/scans/{id}/export.json</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>Export raw findings</td>
+</tr>
+<tr>
+<td>14</td>
+<td>POST</td>
+<td><code>/chat</code></td>
+<td>JWT</td>
+<td><strong>20/min</strong></td>
+<td>Send a chatbot message</td>
+</tr>
+<tr>
+<td>15</td>
+<td>GET</td>
+<td><code>/chat/sessions</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>List chat sessions</td>
+</tr>
+<tr>
+<td>16</td>
+<td>GET</td>
+<td><code>/chat/sessions/{id}/messages</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>Retrieve a conversation</td>
+</tr>
+<tr>
+<td>17</td>
+<td>POST</td>
+<td><code>/diet</code></td>
+<td>JWT</td>
+<td><strong>10/min</strong></td>
+<td>Generate a diet plan</td>
+</tr>
+<tr>
+<td>18</td>
+<td>GET</td>
+<td><code>/stats</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>Dashboard statistics</td>
+</tr>
+<tr>
+<td>19</td>
+<td>GET</td>
+<td><code>/clinics</code></td>
+<td>JWT</td>
+<td>200/min</td>
+<td>Find nearby facilities</td>
+</tr>
+<tr>
+<td>20</td>
+<td>GET</td>
+<td><code>/</code></td>
+<td>—</td>
+<td>200/min</td>
+<td>Service metadata</td>
+</tr>
+<tr>
+<td>21</td>
+<td>GET</td>
+<td><code>/health</code></td>
+<td>—</td>
+<td>200/min</td>
+<td>Health check</td>
+</tr>
+</tbody></table>
+<p>Interactive documentation is generated automatically and available at <code>/docs</code> (Swagger UI) and
+<code>/redoc</code> (ReDoc) on the running backend.</p>
+<div class="pagebreak"></div>
+
+<h1>Appendix C: Database Schema</h1>
+<p>The complete schema is provided in <code>backend/supabase_schema.sql</code>. Its structure is summarised below.</p>
+<p><strong>Tables.</strong> <code>profiles</code> (extends <code>auth.users</code> one-to-one), <code>scans</code>, <code>chat_sessions</code>, <code>chat_messages</code>.</p>
+<p><strong>Constraints.</strong> <code>scans.scan_type</code> is constrained to <code>chest | fracture | wound</code>; <code>scans.urgency</code> to
+<code>critical | high | medium | low | clear</code>; <code>chat_messages.role</code> to <code>user | assistant</code>. Every foreign
+key referencing <code>profiles</code> specifies <code>ON DELETE CASCADE</code>.</p>
+<p><strong>Indexes.</strong> <code>idx_scans_user_id</code>, <code>idx_scans_created_at</code> (descending), <code>idx_chat_sessions_user_id</code>,
+<code>idx_chat_messages_session_id</code>.</p>
+<p><strong>Row Level Security.</strong> Enabled on all four tables. <code>SELECT</code> policies restrict access to rows owned by
+<code>auth.uid()</code>; <code>INSERT</code> is performed by the backend service role after independent JWT verification.</p>
+<p><strong>Trigger.</strong> <code>handle_new_user()</code> fires <code>AFTER INSERT ON auth.users</code> and creates the corresponding
+<code>profiles</code> row, defaulting <code>role</code> to <code>Medical Student</code>.</p>
+<p><strong>Storage buckets.</strong> <code>xray-images</code> (path <code>{user_id}/{scan_id}.{ext}</code>) and <code>avatars</code> (path
+<code>{user_id}.{ext}</code>), both created idempotently at first use.</p>
+<div class="pagebreak"></div>
+
+<h1>Appendix D: Configuration Reference</h1>
+<table>
+<thead>
+<tr>
+<th>Variable</th>
+<th>Default</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><code>SUPABASE_URL</code></td>
+<td>—</td>
+<td>Supabase project URL</td>
+</tr>
+<tr>
+<td><code>SUPABASE_KEY</code></td>
+<td>—</td>
+<td>Service-role key (server-side only)</td>
+</tr>
+<tr>
+<td><code>SUPABASE_ANON_KEY</code></td>
+<td>—</td>
+<td>Public anon key</td>
+</tr>
+<tr>
+<td><code>OPENROUTER_API_KEY</code></td>
+<td>—</td>
+<td>LLM API key</td>
+</tr>
+<tr>
+<td><code>OPENROUTER_MODEL</code></td>
+<td><code>z-ai/glm-4.5-air:free</code></td>
+<td>LLM model identifier</td>
+</tr>
+<tr>
+<td><code>OPENROUTER_TIMEOUT_SECONDS</code></td>
+<td><code>60</code></td>
+<td>LLM request timeout</td>
+</tr>
+<tr>
+<td><code>HF_TOKEN</code></td>
+<td>—</td>
+<td>Hugging Face read token</td>
+</tr>
+<tr>
+<td><code>JWT_SECRET</code></td>
+<td>—</td>
+<td>HS256 signing secret, minimum 32 characters</td>
+</tr>
+<tr>
+<td><code>JWT_ALGORITHM</code></td>
+<td><code>HS256</code></td>
+<td>Token signing algorithm</td>
+</tr>
+<tr>
+<td><code>JWT_EXPIRY_HOURS</code></td>
+<td><code>24</code></td>
+<td>Token lifetime</td>
+</tr>
+<tr>
+<td><code>YOLO_WEIGHTS_PATH</code></td>
+<td><code>models/fracture_yolov8.pt</code></td>
+<td>Fracture detector weights</td>
+</tr>
+<tr>
+<td><code>ALLOW_GENERIC_YOLO_WEIGHTS</code></td>
+<td><code>false</code></td>
+<td>Guard against non-medical checkpoints — see DEF-03</td>
+</tr>
+<tr>
+<td><code>FRACTURE_CLASSIFIER_ENABLED</code></td>
+<td><code>true</code></td>
+<td>Enable image-level fracture screening</td>
+</tr>
+<tr>
+<td><code>FRACTURE_CLASSIFIER_MODEL_NAME</code></td>
+<td><code>prithivMLmods/Bone-Fracture-Detection</code></td>
+<td>HF fracture classifier</td>
+</tr>
+<tr>
+<td><code>WOUND_MODEL_NAME</code></td>
+<td><code>PayamFard123/dermaintel-wound-classifier</code></td>
+<td>HF ViT wound classifier</td>
+</tr>
+<tr>
+<td><code>CONFIDENCE_THRESHOLD</code></td>
+<td><code>0.40</code></td>
+<td>Minimum confidence for a reported finding</td>
+</tr>
+<tr>
+<td><code>FRONTEND_URL</code></td>
+<td><code>http://localhost:5173</code></td>
+<td>Primary CORS origin</td>
+</tr>
+<tr>
+<td><code>ALLOWED_ORIGINS</code></td>
+<td>—</td>
+<td>Additional comma-separated production origins</td>
+</tr>
+<tr>
+<td><code>DISABLE_PRELOAD</code></td>
+<td><code>false</code></td>
+<td>Skip preloading on memory-constrained hosts</td>
+</tr>
+</tbody></table>
+<div class="pagebreak"></div>
+
+<div class="center">
+
+<p>&nbsp;</p>
+<p><strong>XRayVision AI</strong></p>
+<p><em>A Web-Based AI-Assisted Platform for Automated X-Ray Fracture Detection,
+Chest Pathology Screening and Clinical Report Generation</em></p>
+<p>&nbsp;</p>
+<p>School of Software Engineering</p>
+<p>Minhaj University Lahore</p>
+<p>August 2026</p>
+<p>&nbsp;</p>
+<hr>
+<p><strong>Educational use only.</strong></p>
+<p>This system is not a certified medical device.</p>
+<p>All outputs are AI-generated estimates intended to support, not replace,
+the clinical judgement of a qualified radiologist.</p>
+</div>
+</div>
+</body></html>
