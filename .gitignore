@@ -245,3 +245,6 @@ yolov8s.pt
 yolov8m.pt
 yolov8l.pt
 yolov8x.pt
+
+# Handover archive, rebuilt by docs/tools/make_package.py
+XRayVision_AI_FYP_Documentation.zip

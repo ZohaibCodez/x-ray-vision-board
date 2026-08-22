@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Handover — Read This First — XRayVision AI</title>
+<style>
+:root{--fg:#1a2028;--muted:#5b6672;--bg:#ffffff;--line:#e2e8f0;--accent:#0E7490;
+      --code-bg:#f6f8fa;--th:#f1f5f9;--note:#f0f9ff}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--fg);
+     font:16px/1.65 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif}
+.wrap{max-width:1080px;margin:0 auto;padding:48px 32px 96px}
+h1{font-size:2.1rem;line-height:1.2;margin:0 0 .6em;padding-bottom:.35em;border-bottom:3px solid var(--accent)}
+h2{font-size:1.55rem;margin:2.2em 0 .7em;padding-bottom:.3em;border-bottom:1px solid var(--line)}
+h3{font-size:1.2rem;margin:1.8em 0 .5em;color:var(--accent)}
+h4{font-size:1.02rem;margin:1.4em 0 .4em}
+p{margin:.7em 0}
+a{color:var(--accent)}
+hr{border:0;border-top:1px solid var(--line);margin:2.4em 0}
+table{border-collapse:collapse;width:100%;margin:1.1em 0;font-size:.9rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:8px 11px;text-align:left;vertical-align:top}
+th{background:var(--th);font-weight:600}
+tr:nth-child(even) td{background:#fafbfc}
+code{background:var(--code-bg);padding:.15em .4em;border-radius:4px;font-size:.86em;
+     font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:8px;padding:14px 16px;overflow-x:auto}
+pre code{background:none;padding:0;font-size:.84rem;line-height:1.5}
+blockquote{margin:1.2em 0;padding:.9em 1.2em;background:var(--note);
+           border-left:4px solid var(--accent);border-radius:0 8px 8px 0}
+blockquote > :first-child{margin-top:0} blockquote > :last-child{margin-bottom:0}
+ul,ol{padding-left:1.5em}
+img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;margin:.8em 0;display:block}
+.mermaid-figure{margin:1.6em 0;padding:20px;border:1px solid var(--line);border-radius:10px;
+                background:#fcfdfe;overflow-x:auto;text-align:center}
+.mermaid-figure svg{max-width:100%;height:auto}
+.docnav{background:var(--th);border:1px solid var(--line);border-radius:10px;
+        padding:12px 18px;margin-bottom:32px;font-size:.9rem}
+.docnav a{margin-right:18px;font-weight:600;text-decoration:none}
+.center{text-align:center}
+.center h1,.center h2,.center h3{border:0;text-align:center}
+.pagebreak{border-top:1px dashed var(--line);margin:44px 0}
+.toc-note{background:var(--note);border:1px solid var(--line);border-radius:8px;padding:14px 18px;font-size:.92rem}
+@media print{
+  .pagebreak{page-break-after:always;border:0;margin:0}
+  .docnav{display:none}
+  body{font-size:11pt}
+  .wrap{max-width:none;padding:0}
+  h1,h2,h3{page-break-after:avoid}
+  pre,.mermaid-figure,img{page-break-inside:avoid}
+  /* A figure taller than the page cannot break, so cap it and let the
+     browser scale proportionally instead of slicing it in half. */
+  img{max-height:210mm;width:auto}
+  .mermaid-figure{padding:8px}
+  .mermaid-figure svg{max-height:205mm}
+  /* On screen the tables scroll sideways (display:block). For print that stops
+     Chromium paginating them, so a long table gets pushed whole onto the next
+     page and leaves a blank one behind. Restore real table layout, let rows
+     flow across pages, and repeat the header row on each page it spans. */
+  table{display:table;width:100%;overflow:visible;font-size:8.5pt}
+  thead{display:table-header-group}
+  tr{page-break-inside:avoid}
+  th,td{padding:5px 7px}
+}
+</style>
+</head>
+<body>
+<div class="docnav"><strong>XRayVision AI docs:</strong> <a href="HANDOVER.html">Start here</a><a href="README.html">Index</a><a href="01-SRS.html">SRS</a><a href="02-SDD.html">SDD</a><a href="03-Test-Cases.html">Tests</a><a href="04-User-Manual.html">User Manual</a><a href="05-Thesis.html">Thesis</a></div><div class="wrap"><h1>Handover — Read This First</h1>
+<p><strong>XRayVision AI — FYP documentation package</strong>
+Muhammad Ali Raza (2022F-MUL-BSSWE-017) · Hamza Afzal (2022F-MUL-BSSWE-027)
+Supervisor: Maam Misbah · School of Software Engineering, Minhaj University Lahore</p>
+<hr>
+<h2>1. What you have</h2>
+<table>
+<thead>
+<tr>
+<th>Folder / file</th>
+<th>What it is</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><strong><code>XRayVision_AI_Thesis.docx</code></strong></td>
+<td><strong>The submission copy.</strong> Formatted for binding.</td>
+</tr>
+<tr>
+<td><code>pdf/</code></td>
+<td>All six documents pre-printed to A4 PDF, page-numbered</td>
+</tr>
+<tr>
+<td><code>01-SRS.md</code> … <code>05-Thesis.md</code></td>
+<td>The source documents — <strong>edit these</strong></td>
+</tr>
+<tr>
+<td><code>*.html</code></td>
+<td>Same documents for reading in a browser, diagrams already rendered</td>
+</tr>
+<tr>
+<td><code>diagrams/</code></td>
+<td>22 diagrams as SVG (vector) and PNG (print) — paste into slides or a poster</td>
+</tr>
+<tr>
+<td><code>screenshots/</code></td>
+<td>19 screenshots from the live app</td>
+</tr>
+<tr>
+<td><code>tools/</code></td>
+<td>Scripts that regenerate everything</td>
+</tr>
+<tr>
+<td><code>README.md</code></td>
+<td>Full index — read it after this page</td>
+</tr>
+</tbody></table>
+<hr>
+<h2>2. Do these five things</h2>
+<ol>
+<li><strong>Open <code>XRayVision_AI_Thesis.docx</code> in Word. Click the Table of Contents and press F9</strong> →
+<em>Update entire table</em>. The contents page is intentionally empty until you do this — Word fills in
+the page numbers.</li>
+<li><strong>Sign the Certificate of Approval and the Declaration of Originality.</strong> The signature blocks are
+blank and waiting.</li>
+<li><strong>Compare against your department's thesis template.</strong> Certificate wording, logo placement and
+font rules differ between departments. Everything here is plain Word formatting, so adjust freely.</li>
+<li><strong>Read Chapter 6 before your viva.</strong> It reports that 17 of 93 test cases were executed and that
+three defects were found. Two are now fixed; one (DEF-03) is not. Know what it says — an examiner
+who reads it will ask.</li>
+<li><strong>Fix DEF-03 if you can.</strong> Root cause is identified in Chapter 6: the deployed backend was loading
+the generic COCO checkpoint <code>yolov8n.pt</code> (which has a <code>vase</code> class) instead of
+<code>models/fracture_yolov8.pt</code>. Correct <code>YOLO_WEIGHTS_PATH</code> on the deployed Space.</li>
+</ol>
+<hr>
+<h2>3. Do not do these</h2>
+<ul>
+<li><strong>Do not edit the <code>.docx</code> and the <code>.md</code> both.</strong> The <code>.md</code> files are the source; the <code>.docx</code>, <code>.html</code>
+and PDFs are generated from them. If you edit the Word file directly, stop rebuilding — or your
+edits get overwritten. Pick one and stick to it.</li>
+<li><strong>Do not panic if the diagrams look blank in VS Code.</strong> VS Code cannot render Mermaid on its own.
+Open the <code>.html</code> file instead, or install the free extension <code>bierner.markdown-mermaid</code>.</li>
+<li><strong>Do not submit <code>pdf/05-Thesis-browser-edition.pdf</code> as the thesis.</strong> It is the browser version — no
+binding margin, no paginated contents. Export the real PDF from the <code>.docx</code> after step 2.1 above.</li>
+</ul>
+<hr>
+<h2>4. If you change the documents</h2>
+<pre><code class="language-bash">cd tools
+pip install playwright &amp;&amp; python -m playwright install chromium
+npm install
+
+python build_html.py              # Markdown -&gt; HTML + diagrams/*.svg
+python render_diagrams_png.py     # SVG -&gt; print-quality PNG
+node build_thesis_docx.js         # Thesis Markdown -&gt; Word
+python build_pdf.py               # HTML -&gt; A4 PDFs
+</code></pre>
+<p>Then repeat step 2.1 (F9 in Word). Full details in <a href="tools/README.md"><code>tools/README.md</code></a>.</p>
+<hr>
+<h2>5. Honest status</h2>
+<p>The documents describe the system accurately, and where something is unverified or broken they say
+so rather than glossing over it:</p>
+<ul>
+<li><strong>93 test cases are specified; 17 were executed</strong> against the live deployment, with screenshot
+evidence. The other 76 are written up and ready to run, but they have <strong>not</strong> been run. Do not
+present them as passing.</li>
+<li><strong>Three defects were found.</strong> DEF-01 (<code>.env</code> tracked in git) and DEF-02 (backend README
+contradicting the code) are fixed. <strong>DEF-03 is open</strong> — see item 5 above.</li>
+<li><strong>Diagnostic accuracy was never validated.</strong> The AI models are third-party pretrained artefacts
+used as supplied. The thesis makes no clinical accuracy claim, and you should not make one either.</li>
+</ul>
+<p>If you run the remaining tests or fix DEF-03, update Chapter 6 and §16.1 of the test document, then
+rebuild.</p>
+<hr>
+<p><em>Educational use only. XRayVision AI is not a certified medical device.</em></p>
+</div>
+</body></html>

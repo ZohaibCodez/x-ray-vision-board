@@ -18,6 +18,7 @@ Final Year Project documentation set for **XRayVision AI**, a full-stack medical
 
 | # | Document | What it answers | Size |
 |---|---|---|---|
+| 0 | **[Handover note](HANDOVER.md)** | **Start here.** What you have, the five things to do, the three things not to do, and the honest status. | 1 page |
 | 1 | **[Software Requirements Specification](01-SRS.md)** | *What* must the system do? Scope, users, 60+ numbered functional requirements, use case model, non-functional targets, constraints. | IEEE 830 format |
 | 2 | **[Software Design Document](02-SDD.md)** | *How* is it built? Architecture, ERD, DFDs (levels 0–2), class diagram, sequence diagrams, state diagrams, algorithms, security design, deployment. | IEEE 1016 format |
 | 3 | **[Test Documentation](03-Test-Cases.md)** | *How was it verified?* Test plan, environment, test data, 93 test case specifications, traceability, defect log. | IEEE 829 format |
@@ -184,14 +185,15 @@ Every document is also pre-printed to A4 PDF in [`pdf/`](pdf/), with page number
 Nothing to install, nothing to render — email them, upload them, print them. The index PDF
 includes the full screenshot gallery.
 
-| File | Pages |
-|---|---|
-| [`00-Documentation-Index.pdf`](pdf/00-Documentation-Index.pdf) | 21 |
-| [`01-Software-Requirements-Specification.pdf`](pdf/01-Software-Requirements-Specification.pdf) | 25 |
-| [`02-Software-Design-Document.pdf`](pdf/02-Software-Design-Document.pdf) | 32 |
-| [`03-Test-Documentation.pdf`](pdf/03-Test-Documentation.pdf) | 43 |
-| [`04-User-Manual.pdf`](pdf/04-User-Manual.pdf) | 27 |
-| [`05-Thesis-browser-edition.pdf`](pdf/05-Thesis-browser-edition.pdf) | 79 |
+| File | Pages | Contents |
+|---|---|---|
+| [`00-START-HERE-Handover.pdf`](pdf/00-START-HERE-Handover.pdf) | 3 | Handover note — read first |
+| [`01-Documentation-Index.pdf`](pdf/01-Documentation-Index.pdf) | 21 | This index, including the screenshot gallery |
+| [`02-Software-Requirements-Specification.pdf`](pdf/02-Software-Requirements-Specification.pdf) | 25 | Requirements specification |
+| [`03-Software-Design-Document.pdf`](pdf/03-Software-Design-Document.pdf) | 32 | Design document |
+| [`04-Test-Documentation.pdf`](pdf/04-Test-Documentation.pdf) | 45 | Test documentation |
+| [`05-User-Manual.pdf`](pdf/05-User-Manual.pdf) | 27 | User manual |
+| [`06-Thesis-browser-edition.pdf`](pdf/06-Thesis-browser-edition.pdf) | 79 | Thesis, browser edition (not the submission copy) |
 
 > ⚠️ **Which thesis file do I submit?**
 > `05-Thesis-browser-edition.pdf` is convenient for reading and emailing, but it is **not** the
