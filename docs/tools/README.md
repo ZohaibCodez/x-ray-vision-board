@@ -11,6 +11,7 @@ generated `.html` or `.docx` by hand, or your changes will be overwritten on the
 | `build_html.py` | `docs/*.md` | `docs/*.html` (self-contained, diagrams inlined as SVG) and `docs/diagrams/*.svg` |
 | `render_diagrams_png.py` | `docs/diagrams/*.svg` | `docs/diagrams/*.png` (3× scale, for print and Word) |
 | `build_thesis_docx.js` | `docs/05-Thesis.md` | `docs/XRayVision_AI_Thesis.docx` |
+| `build_pdf.py` | `docs/*.html` | `docs/pdf/*.pdf` (A4, page-numbered) |
 
 ## Prerequisites
 
@@ -50,9 +51,14 @@ cd docs/tools
 python build_html.py              # 1. Markdown -> HTML, and writes diagrams/*.svg
 python render_diagrams_png.py     # 2. SVG -> PNG for print
 node build_thesis_docx.js         # 3. Thesis Markdown -> Word
+python build_pdf.py               # 4. HTML -> A4 PDFs
 ```
 
-If you only changed prose in `05-Thesis.md` and touched no diagrams, step 3 alone is enough.
+If you only changed prose in `05-Thesis.md` and touched no diagrams, steps 1, 3 and 4 are enough.
+
+`build_pdf.py` prints the **browser edition** of each document. The submission copy of the thesis is
+not produced here — export it from Word after pressing F9 on the contents field, so it keeps the
+Times New Roman / 1.5-spacing / binding-margin formatting and real contents pagination.
 
 ## After rebuilding the thesis
 

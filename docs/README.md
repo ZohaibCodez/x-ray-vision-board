@@ -115,9 +115,29 @@ SVG. **Just double-click it.** No extension, no internet connection, no build st
 | [`04-User-Manual.html`](04-User-Manual.html) | User manual with screenshots |
 | [`05-Thesis.html`](05-Thesis.html) | Thesis, browser edition |
 
-To turn any of these into a PDF, open it in a browser and press **Ctrl + P → Save as PDF**. The
-stylesheet includes print rules that stop tables, diagrams and screenshots from being split across
-pages. For the thesis specifically, prefer the Word edition — see below.
+### 📕 Or just take the PDFs
+
+Every document is also pre-printed to A4 PDF in [`pdf/`](pdf/), with page numbers in the footer.
+Nothing to install, nothing to render — email them, upload them, print them.
+
+| File | Pages |
+|---|---|
+| [`00-Documentation-Index.pdf`](pdf/00-Documentation-Index.pdf) | 8 |
+| [`01-Software-Requirements-Specification.pdf`](pdf/01-Software-Requirements-Specification.pdf) | 25 |
+| [`02-Software-Design-Document.pdf`](pdf/02-Software-Design-Document.pdf) | 32 |
+| [`03-Test-Documentation.pdf`](pdf/03-Test-Documentation.pdf) | 43 |
+| [`04-User-Manual.pdf`](pdf/04-User-Manual.pdf) | 27 |
+| [`05-Thesis-browser-edition.pdf`](pdf/05-Thesis-browser-edition.pdf) | 79 |
+
+> ⚠️ **Which thesis file do I submit?**
+> `05-Thesis-browser-edition.pdf` is convenient for reading and emailing, but it is **not** the
+> submission copy — it uses the web stylesheet and has no paginated contents table.
+> **The bound copy comes from [`XRayVision_AI_Thesis.docx`](XRayVision_AI_Thesis.docx):** open it in
+> Word, press **F9** on the contents field, then *File → Save as → PDF*. That version carries Times
+> New Roman, 1.5 spacing, the binding margin and real page numbers in the Table of Contents.
+
+You can also print any `.html` yourself with **Ctrl + P → Save as PDF** — the stylesheet has print
+rules that keep tables, diagrams and screenshots from being split across pages.
 
 ---
 

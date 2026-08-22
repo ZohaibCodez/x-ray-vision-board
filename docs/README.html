@@ -45,7 +45,20 @@ img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;ma
   body{font-size:11pt}
   .wrap{max-width:none;padding:0}
   h1,h2,h3{page-break-after:avoid}
-  table,pre,.mermaid-figure,img{page-break-inside:avoid}
+  pre,.mermaid-figure,img{page-break-inside:avoid}
+  /* A figure taller than the page cannot break, so cap it and let the
+     browser scale proportionally instead of slicing it in half. */
+  img{max-height:210mm;width:auto}
+  .mermaid-figure{padding:8px}
+  .mermaid-figure svg{max-height:205mm}
+  /* On screen the tables scroll sideways (display:block). For print that stops
+     Chromium paginating them, so a long table gets pushed whole onto the next
+     page and leaves a blank one behind. Restore real table layout, let rows
+     flow across pages, and repeat the header row on each page it spans. */
+  table{display:table;width:100%;overflow:visible;font-size:8.5pt}
+  thead{display:table-header-group}
+  tr{page-break-inside:avoid}
+  th,td{padding:5px 7px}
 }
 </style>
 </head>
@@ -324,9 +337,51 @@ SVG. <strong>Just double-click it.</strong> No extension, no internet connection
 <td>Thesis, browser edition</td>
 </tr>
 </tbody></table>
-<p>To turn any of these into a PDF, open it in a browser and press <strong>Ctrl + P → Save as PDF</strong>. The
-stylesheet includes print rules that stop tables, diagrams and screenshots from being split across
-pages. For the thesis specifically, prefer the Word edition — see below.</p>
+<h3>📕 Or just take the PDFs</h3>
+<p>Every document is also pre-printed to A4 PDF in <a href="pdf/"><code>pdf/</code></a>, with page numbers in the footer.
+Nothing to install, nothing to render — email them, upload them, print them.</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Pages</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="pdf/00-Documentation-Index.pdf"><code>00-Documentation-Index.pdf</code></a></td>
+<td>8</td>
+</tr>
+<tr>
+<td><a href="pdf/01-Software-Requirements-Specification.pdf"><code>01-Software-Requirements-Specification.pdf</code></a></td>
+<td>25</td>
+</tr>
+<tr>
+<td><a href="pdf/02-Software-Design-Document.pdf"><code>02-Software-Design-Document.pdf</code></a></td>
+<td>32</td>
+</tr>
+<tr>
+<td><a href="pdf/03-Test-Documentation.pdf"><code>03-Test-Documentation.pdf</code></a></td>
+<td>43</td>
+</tr>
+<tr>
+<td><a href="pdf/04-User-Manual.pdf"><code>04-User-Manual.pdf</code></a></td>
+<td>27</td>
+</tr>
+<tr>
+<td><a href="pdf/05-Thesis-browser-edition.pdf"><code>05-Thesis-browser-edition.pdf</code></a></td>
+<td>79</td>
+</tr>
+</tbody></table>
+<blockquote>
+<p>⚠️ <strong>Which thesis file do I submit?</strong>
+<code>05-Thesis-browser-edition.pdf</code> is convenient for reading and emailing, but it is <strong>not</strong> the
+submission copy — it uses the web stylesheet and has no paginated contents table.
+<strong>The bound copy comes from <a href="XRayVision_AI_Thesis.docx"><code>XRayVision_AI_Thesis.docx</code></a>:</strong> open it in
+Word, press <strong>F9</strong> on the contents field, then <em>File → Save as → PDF</em>. That version carries Times
+New Roman, 1.5 spacing, the binding margin and real page numbers in the Table of Contents.</p>
+</blockquote>
+<p>You can also print any <code>.html</code> yourself with <strong>Ctrl + P → Save as PDF</strong> — the stylesheet has print
+rules that keep tables, diagrams and screenshots from being split across pages.</p>
 <hr>
 <h2>Printing and Binding</h2>
 <p>The submission copy is <strong><a href="XRayVision_AI_Thesis.docx"><code>XRayVision_AI_Thesis.docx</code></a></strong> (about 11 MB,

@@ -45,7 +45,20 @@ img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;ma
   body{font-size:11pt}
   .wrap{max-width:none;padding:0}
   h1,h2,h3{page-break-after:avoid}
-  table,pre,.mermaid-figure,img{page-break-inside:avoid}
+  pre,.mermaid-figure,img{page-break-inside:avoid}
+  /* A figure taller than the page cannot break, so cap it and let the
+     browser scale proportionally instead of slicing it in half. */
+  img{max-height:210mm;width:auto}
+  .mermaid-figure{padding:8px}
+  .mermaid-figure svg{max-height:205mm}
+  /* On screen the tables scroll sideways (display:block). For print that stops
+     Chromium paginating them, so a long table gets pushed whole onto the next
+     page and leaves a blank one behind. Restore real table layout, let rows
+     flow across pages, and repeat the header row on each page it spans. */
+  table{display:table;width:100%;overflow:visible;font-size:8.5pt}
+  thead{display:table-header-group}
+  tr{page-break-inside:avoid}
+  th,td{padding:5px 7px}
 }
 </style>
 </head>
