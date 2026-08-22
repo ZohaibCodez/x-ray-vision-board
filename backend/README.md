@@ -56,7 +56,7 @@ Fracture scans use a safer two-stage workflow:
 
 1. Create a Supabase project at https://supabase.com
 2. Run `supabase_schema.sql` in the SQL Editor
-3. Create a storage bucket named `xray-images` (private)
+3. Create a storage bucket named `xray-images` (public — the app renders images directly via their public URL)
 4. Copy the project URL and keys into `.env`
 
 ## Docker Deployment (HF Spaces)

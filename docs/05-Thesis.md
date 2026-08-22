@@ -1244,12 +1244,13 @@ diagnostic accuracy, which was outside this project's scope (§1.6).
 |---|---|---|---|
 | DEF-01 | Medium | The root `.env` file is tracked in version control. It contains the API base URL, the Supabase project URL and the Supabase **publishable** anon key. No service-role key, LLM key or JWT secret is exposed, so this is a hygiene defect rather than a credential compromise — but the file is listed in `.gitignore` and should not be tracked. **Remediation:** `git rm --cached .env`. | Open |
 | DEF-02 | Low | `backend/README.md` instructs the operator to create the `xray-images` storage bucket as *private*, while the implementation creates it with `public: True` and serves images through public URLs. The root README is correct; the backend README contradicts it. **Remediation:** correct the backend README. | Open |
-| DEF-03 | Medium | The fracture detector was observed emitting a non-anatomical class label (`Vase`) as a low-confidence secondary finding on a wrist radiograph, alongside a correct high-confidence fracture finding from the screening classifier. This indicates that generic detector classes are reaching the findings list rather than being filtered to the fracture vocabulary. The `ALLOW_GENERIC_YOLO_WEIGHTS` configuration guard exists for precisely this condition but did not prevent it in the deployed instance. **Impact:** confusing, non-clinical labels appear in the Secondary and Borderline tiers. The confidence tiering limits the harm — the spurious labels appeared at 52.7 % and below, and the correct finding dominated the Primary tier — but the behaviour is incorrect. **Remediation:** constrain reported detector classes to an explicit fracture label vocabulary and verify the deployed weights. | Open |
+| DEF-03 | Medium | The fracture detector was observed emitting a non-anatomical class label (`Vase`) as a low-confidence secondary finding on a wrist radiograph, alongside a correct high-confidence fracture finding from the screening classifier. **Root cause identified:** the bundled `backend/models/fracture_yolov8.pt` is correct — its class vocabulary is `Fracture` / `Not_Fracture` and contains no COCO labels. A generic COCO checkpoint, `backend/yolov8n.pt`, was also present in the repository, and its vocabulary does contain `vase`, `person` and `toothbrush`. The deployed instance was therefore running the generic checkpoint rather than the fracture model. The `ALLOW_GENERIC_YOLO_WEIGHTS` guard did not prevent this because it matches on the weight *filename* only, so a generic checkpoint reached through a misconfigured `YOLO_WEIGHTS_PATH` still loads. **Impact:** non-clinical labels appear in the Secondary and Borderline tiers. Confidence tiering limited the harm — the spurious labels appeared at 52.7 % and below while the correct finding held the Primary tier — but the behaviour is incorrect. **Remediation:** verify `YOLO_WEIGHTS_PATH` and `ALLOW_GENERIC_YOLO_WEIGHTS` on the deployed backend; strengthen the guard to inspect the loaded model's class vocabulary instead of its filename; the stray `yolov8n.pt` has been removed from version control. | Open |
 
 DEF-03 is the most substantive finding of the evaluation, and we report it deliberately. It
 illustrates a general hazard in multi-model systems: a model integrated correctly at the API level
 can still be wrong at the *semantic* level, and no amount of exception handling detects a
-confidently-returned nonsense label. It also demonstrates the value of the confidence tiering design
+confidently-returned nonsense label. It also shows that a filename-based safety guard is not a
+safety guard: the only reliable check is to inspect what the loaded model actually predicts. It also demonstrates the value of the confidence tiering design
 — the spurious output was automatically relegated below the correct finding rather than presented as
 equally authoritative.
 
@@ -1453,7 +1454,7 @@ also reports what did not.
 
 | Priority | Item | Rationale |
 |---|---|---|
-| **Immediate** | Resolve DEF-03 by constraining detector output to an explicit fracture label vocabulary | Incorrect labels currently reach users |
+| **Immediate** | Resolve DEF-03: correct the deployed `YOLO_WEIGHTS_PATH`, and validate the loaded model's class vocabulary at startup rather than trusting its filename | Incorrect labels currently reach users |
 | **Immediate** | Execute the remaining 75 test cases | Verification is incomplete |
 | **Immediate** | Close DEF-01 and DEF-02 | Repository hygiene and documentation correctness |
 | **High** | Migrate storage to private buckets with short-lived signed URLs | Removes reliance on URL obscurity |

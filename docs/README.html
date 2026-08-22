@@ -611,9 +611,9 @@ any print size.</p>
 <ol>
 <li><strong>Update the Table of Contents field</strong> in the <code>.docx</code> (select it and press F9) and sign the certificate and declaration pages.</li>
 <li><strong>Execute the pending test cases</strong> and fill in the Actual Result columns — see <a href="03-Test-Cases.html#161-coverage-by-module">§16.1</a>. Then update Chapter 6 of the thesis, which currently reports 17 of 93 executed.</li>
-<li><strong>Close DEF-01</strong> — the root <code>.env</code> is tracked in git; run <code>git rm --cached .env</code> and commit.</li>
-<li><strong>Close DEF-02</strong> — <code>backend/README.md</code> says the <code>xray-images</code> bucket is private; the code creates it public.</li>
-<li><strong>Investigate DEF-03</strong> — the fracture detector emits non-anatomical class labels (a <code>Vase</code> label was observed on a wrist radiograph). Constrain reported detector classes to the fracture vocabulary and verify the deployed weights.</li>
+<li><del>Close DEF-01</del> — <strong>done.</strong> The root <code>.env</code> has been untracked (<code>git rm --cached .env</code>); the local file is untouched.</li>
+<li><del>Close DEF-02</del> — <strong>done.</strong> <code>backend/README.md</code> now states the <code>xray-images</code> bucket is public, matching the implementation.</li>
+<li><strong>Fix DEF-03</strong> — root cause found: the bundled <code>backend/models/fracture_yolov8.pt</code> is correct (<code>Fracture</code>/<code>Not_Fracture</code>), but the deployed backend was loading the generic COCO checkpoint <code>yolov8n.pt</code> (which contains <code>vase</code>). Correct <code>YOLO_WEIGHTS_PATH</code> on the deployed Space, and validate the loaded model's class vocabulary at startup instead of trusting its filename.</li>
 <li><strong>Check the thesis against your department's template</strong> — certificate wording, logo placement and font requirements vary by department.</li>
 </ol>
 <hr>

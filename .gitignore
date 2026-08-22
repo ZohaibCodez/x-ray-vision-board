@@ -235,3 +235,13 @@ coverage/
 tmp/
 temp/
 .claude
+
+# Stray ultralytics training artifacts. yolov8n.pt is only the *base* model for
+# train_fracture_model.py and is re-downloaded automatically. Runtime inference uses
+# backend/models/fracture_yolov8.pt, so a generic checkpoint sitting here is a hazard:
+# it is what a misconfigured YOLO_WEIGHTS_PATH ends up loading (see DEF-03).
+yolov8n.pt
+yolov8s.pt
+yolov8m.pt
+yolov8l.pt
+yolov8x.pt

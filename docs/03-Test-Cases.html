@@ -3727,16 +3727,24 @@ specified in full and are ready to execute. <strong>Do not present a Pending row
 <td>TC-SEC-09</td>
 <td><strong>Medium</strong></td>
 <td>The root <code>.env</code> file is tracked in git. It contains <code>VITE_API_URL</code>, <code>VITE_SUPABASE_URL</code> and the Supabase <strong>publishable</strong> anon key. No service-role key, LLM key or JWT secret is exposed, so this is a hygiene issue rather than a credential compromise — but the file is listed in <code>.gitignore</code> and should not be tracked.</td>
-<td>Open</td>
-<td><code>git rm --cached .env</code> and commit</td>
+<td><strong>Fixed</strong></td>
+<td><code>.env</code> untracked with <code>git rm --cached .env</code></td>
 </tr>
 <tr>
 <td><strong>DEF-02</strong></td>
 <td>Documentation review</td>
 <td><strong>Low</strong></td>
 <td><code>backend/README.md</code> instructs the operator to create the <code>xray-images</code> bucket as <strong>private</strong>, but <code>supabase_client.py</code> creates it with <code>public: True</code> and serves images via <code>get_public_url()</code>. The root <code>README.md</code> correctly says public.</td>
+<td><strong>Fixed</strong></td>
+<td>Backend README corrected to say the bucket is public</td>
+</tr>
+<tr>
+<td><strong>DEF-03</strong></td>
+<td><strong>Medium</strong></td>
+<td>The fracture detector was observed emitting a non-anatomical class label (<code>Vase</code>) as a low-confidence secondary finding on a wrist radiograph, alongside a correct high-confidence fracture finding from the screening classifier. <strong>Root cause identified:</strong> the bundled <code>backend/models/fracture_yolov8.pt</code> is correct — its class vocabulary is <code>Fracture</code> / <code>Not_Fracture</code> and contains no COCO labels. A generic COCO checkpoint, <code>backend/yolov8n.pt</code>, was also present in the repository, and its vocabulary does contain <code>vase</code>, <code>person</code> and <code>toothbrush</code>. The deployed instance was therefore running the generic checkpoint rather than the fracture model. The <code>ALLOW_GENERIC_YOLO_WEIGHTS</code> guard did not prevent this because it matches on the weight <em>filename</em> only, so a generic checkpoint reached through a misconfigured <code>YOLO_WEIGHTS_PATH</code> still loads. <strong>Impact:</strong> non-clinical labels appear in the Secondary and Borderline tiers. Confidence tiering limited the harm — the spurious labels appeared at 52.7 % and below while the correct finding held the Primary tier — but the behaviour is incorrect. <strong>Remediation:</strong> verify <code>YOLO_WEIGHTS_PATH</code> and <code>ALLOW_GENERIC_YOLO_WEIGHTS</code> on the deployed backend; strengthen the guard to inspect the loaded model's class vocabulary instead of its filename; the stray <code>yolov8n.pt</code> has been removed from version control.</td>
 <td>Open</td>
-<td>Correct the backend README</td>
+<td>Fix deployed weights config; validate class vocabulary at load</td>
+<td></td>
 </tr>
 <tr>
 <td></td>

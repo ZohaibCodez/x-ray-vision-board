@@ -2329,14 +2329,15 @@ diagnostic accuracy, which was outside this project's scope (§1.6).</p>
 <tr>
 <td>DEF-03</td>
 <td>Medium</td>
-<td>The fracture detector was observed emitting a non-anatomical class label (<code>Vase</code>) as a low-confidence secondary finding on a wrist radiograph, alongside a correct high-confidence fracture finding from the screening classifier. This indicates that generic detector classes are reaching the findings list rather than being filtered to the fracture vocabulary. The <code>ALLOW_GENERIC_YOLO_WEIGHTS</code> configuration guard exists for precisely this condition but did not prevent it in the deployed instance. <strong>Impact:</strong> confusing, non-clinical labels appear in the Secondary and Borderline tiers. The confidence tiering limits the harm — the spurious labels appeared at 52.7 % and below, and the correct finding dominated the Primary tier — but the behaviour is incorrect. <strong>Remediation:</strong> constrain reported detector classes to an explicit fracture label vocabulary and verify the deployed weights.</td>
+<td>The fracture detector was observed emitting a non-anatomical class label (<code>Vase</code>) as a low-confidence secondary finding on a wrist radiograph, alongside a correct high-confidence fracture finding from the screening classifier. <strong>Root cause identified:</strong> the bundled <code>backend/models/fracture_yolov8.pt</code> is correct — its class vocabulary is <code>Fracture</code> / <code>Not_Fracture</code> and contains no COCO labels. A generic COCO checkpoint, <code>backend/yolov8n.pt</code>, was also present in the repository, and its vocabulary does contain <code>vase</code>, <code>person</code> and <code>toothbrush</code>. The deployed instance was therefore running the generic checkpoint rather than the fracture model. The <code>ALLOW_GENERIC_YOLO_WEIGHTS</code> guard did not prevent this because it matches on the weight <em>filename</em> only, so a generic checkpoint reached through a misconfigured <code>YOLO_WEIGHTS_PATH</code> still loads. <strong>Impact:</strong> non-clinical labels appear in the Secondary and Borderline tiers. Confidence tiering limited the harm — the spurious labels appeared at 52.7 % and below while the correct finding held the Primary tier — but the behaviour is incorrect. <strong>Remediation:</strong> verify <code>YOLO_WEIGHTS_PATH</code> and <code>ALLOW_GENERIC_YOLO_WEIGHTS</code> on the deployed backend; strengthen the guard to inspect the loaded model's class vocabulary instead of its filename; the stray <code>yolov8n.pt</code> has been removed from version control.</td>
 <td>Open</td>
 </tr>
 </tbody></table>
 <p>DEF-03 is the most substantive finding of the evaluation, and we report it deliberately. It
 illustrates a general hazard in multi-model systems: a model integrated correctly at the API level
 can still be wrong at the <em>semantic</em> level, and no amount of exception handling detects a
-confidently-returned nonsense label. It also demonstrates the value of the confidence tiering design
+confidently-returned nonsense label. It also shows that a filename-based safety guard is not a
+safety guard: the only reliable check is to inspect what the loaded model actually predicts. It also demonstrates the value of the confidence tiering design
 — the spurious output was automatically relegated below the correct finding rather than presented as
 equally authoritative.</p>
 <div class="pagebreak"></div>
@@ -2546,7 +2547,7 @@ verification status and open defects.</li>
 </thead>
 <tbody><tr>
 <td><strong>Immediate</strong></td>
-<td>Resolve DEF-03 by constraining detector output to an explicit fracture label vocabulary</td>
+<td>Resolve DEF-03: correct the deployed <code>YOLO_WEIGHTS_PATH</code>, and validate the loaded model's class vocabulary at startup rather than trusting its filename</td>
 <td>Incorrect labels currently reach users</td>
 </tr>
 <tr>

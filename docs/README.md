@@ -326,9 +326,9 @@ any print size.
 
 1. **Update the Table of Contents field** in the `.docx` (select it and press F9) and sign the certificate and declaration pages.
 2. **Execute the pending test cases** and fill in the Actual Result columns — see [§16.1](03-Test-Cases.md#161-coverage-by-module). Then update Chapter 6 of the thesis, which currently reports 17 of 93 executed.
-3. **Close DEF-01** — the root `.env` is tracked in git; run `git rm --cached .env` and commit.
-4. **Close DEF-02** — `backend/README.md` says the `xray-images` bucket is private; the code creates it public.
-5. **Investigate DEF-03** — the fracture detector emits non-anatomical class labels (a `Vase` label was observed on a wrist radiograph). Constrain reported detector classes to the fracture vocabulary and verify the deployed weights.
+3. ~~Close DEF-01~~ — **done.** The root `.env` has been untracked (`git rm --cached .env`); the local file is untouched.
+4. ~~Close DEF-02~~ — **done.** `backend/README.md` now states the `xray-images` bucket is public, matching the implementation.
+5. **Fix DEF-03** — root cause found: the bundled `backend/models/fracture_yolov8.pt` is correct (`Fracture`/`Not_Fracture`), but the deployed backend was loading the generic COCO checkpoint `yolov8n.pt` (which contains `vase`). Correct `YOLO_WEIGHTS_PATH` on the deployed Space, and validate the loaded model's class vocabulary at startup instead of trusting its filename.
 6. **Check the thesis against your department's template** — certificate wording, logo placement and font requirements vary by department.
 
 ---
