@@ -17,12 +17,13 @@ CHROME = os.environ.get("CHROME_PATH") or None
 
 FILES = [
     ("HANDOVER.html", "00-START-HERE-Handover.pdf"),
-    ("README.html", "01-Documentation-Index.pdf"),
-    ("01-SRS.html", "02-Software-Requirements-Specification.pdf"),
-    ("02-SDD.html", "03-Software-Design-Document.pdf"),
-    ("03-Test-Cases.html", "04-Test-Documentation.pdf"),
-    ("04-User-Manual.html", "05-User-Manual.pdf"),
-    ("05-Thesis.html", "06-Thesis-browser-edition.pdf"),
+    ("06-Simple-Guide.html", "01-Project-Explained-Simply.pdf"),
+    ("README.html", "02-Documentation-Index.pdf"),
+    ("01-SRS.html", "03-Software-Requirements-Specification.pdf"),
+    ("02-SDD.html", "04-Software-Design-Document.pdf"),
+    ("03-Test-Cases.html", "05-Test-Documentation.pdf"),
+    ("04-User-Manual.html", "06-User-Manual.pdf"),
+    ("05-Thesis.html", "07-Thesis-browser-edition.pdf"),
 ]
 
 HEADER = '<div style="font-size:7pt;color:#888;width:100%;padding:0 14mm;">&nbsp;</div>'

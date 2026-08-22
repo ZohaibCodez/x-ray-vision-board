@@ -11,12 +11,13 @@ Supervisor: Maam Misbah · School of Software Engineering, Minhaj University Lah
 | Folder / file | What it is |
 |---|---|
 | **`XRayVision_AI_Thesis.docx`** | **The submission copy.** Formatted for binding. |
-| `pdf/` | All six documents pre-printed to A4 PDF, page-numbered |
-| `01-SRS.md` … `05-Thesis.md` | The source documents — **edit these** |
+| `pdf/` | All 8 documents pre-printed to A4 PDF, page-numbered |
+| `01-SRS.md` … `06-Simple-Guide.md` | The source documents — **edit these** |
 | `*.html` | Same documents for reading in a browser, diagrams already rendered |
-| `diagrams/` | 22 diagrams as SVG (vector) and PNG (print) — paste into slides or a poster |
+| `diagrams/` | 25 diagrams as SVG (vector) and PNG (print) — paste into slides or a poster |
 | `screenshots/` | 19 screenshots from the live app |
 | `tools/` | Scripts that regenerate everything |
+| **`06-Simple-Guide.md`** | **Plain-language explanation** of the whole project and every technology in it, plus likely viva questions. Read this if any of the stack is unfamiliar. |
 | `README.md` | Full index — read it after this page |
 
 ---

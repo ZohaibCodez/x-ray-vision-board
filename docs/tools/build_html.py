@@ -10,7 +10,7 @@ DOCS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DIAG = os.path.join(DOCS, "diagrams")
 # Set CHROME_PATH only if Playwright cannot find its bundled Chromium.
 CHROME = os.environ.get("CHROME_PATH") or None
-FILES = ["HANDOVER.md", "README.md", "01-SRS.md", "02-SDD.md", "03-Test-Cases.md", "04-User-Manual.md", "05-Thesis.md"]
+FILES = ["HANDOVER.md", "README.md", "01-SRS.md", "02-SDD.md", "03-Test-Cases.md", "04-User-Manual.md", "05-Thesis.md", "06-Simple-Guide.md"]
 
 os.makedirs(DIAG, exist_ok=True)
 
@@ -75,7 +75,7 @@ img{max-width:100%;height:auto;border:1px solid var(--line);border-radius:8px;ma
 """
 
 NAV = ('<div class="docnav"><strong>XRayVision AI docs:</strong> '
-       '<a href="HANDOVER.html">Start here</a><a href="README.html">Index</a><a href="01-SRS.html">SRS</a>'
+       '<a href="HANDOVER.html">Start here</a><a href="06-Simple-Guide.html">Explained Simply</a><a href="README.html">Index</a><a href="01-SRS.html">SRS</a>'
        '<a href="02-SDD.html">SDD</a><a href="03-Test-Cases.html">Tests</a>'
        '<a href="04-User-Manual.html">User Manual</a><a href="05-Thesis.html">Thesis</a></div>')
 

@@ -19,6 +19,7 @@ Final Year Project documentation set for **XRayVision AI**, a full-stack medical
 | # | Document | What it answers | Size |
 |---|---|---|---|
 | 0 | **[Handover note](HANDOVER.md)** | **Start here.** What you have, the five things to do, the three things not to do, and the honest status. | 1 page |
+| ★ | **[Explained Simply](06-Simple-Guide.md)** | **No jargon.** What the project is, every technology explained one by one, how the AI works, and likely viva questions with answers. Start here if you are new to the project. | Plain language |
 | 1 | **[Software Requirements Specification](01-SRS.md)** | *What* must the system do? Scope, users, 60+ numbered functional requirements, use case model, non-functional targets, constraints. | IEEE 830 format |
 | 2 | **[Software Design Document](02-SDD.md)** | *How* is it built? Architecture, ERD, DFDs (levels 0–2), class diagram, sequence diagrams, state diagrams, algorithms, security design, deployment. | IEEE 1016 format |
 | 3 | **[Test Documentation](03-Test-Cases.md)** | *How was it verified?* Test plan, environment, test data, 93 test case specifications, traceability, defect log. | IEEE 829 format |
@@ -178,6 +179,7 @@ SVG. **Just double-click it.** No extension, no internet connection, no build st
 | [`03-Test-Cases.html`](03-Test-Cases.html) | Test documentation |
 | [`04-User-Manual.html`](04-User-Manual.html) | User manual with screenshots |
 | [`05-Thesis.html`](05-Thesis.html) | Thesis, browser edition |
+| [`06-Simple-Guide.html`](06-Simple-Guide.html) | Plain-language guide |
 
 ### 📕 Or just take the PDFs
 
@@ -188,12 +190,13 @@ includes the full screenshot gallery.
 | File | Pages | Contents |
 |---|---|---|
 | [`00-START-HERE-Handover.pdf`](pdf/00-START-HERE-Handover.pdf) | 3 | Handover note — read first |
-| [`01-Documentation-Index.pdf`](pdf/01-Documentation-Index.pdf) | 21 | This index, including the screenshot gallery |
-| [`02-Software-Requirements-Specification.pdf`](pdf/02-Software-Requirements-Specification.pdf) | 25 | Requirements specification |
-| [`03-Software-Design-Document.pdf`](pdf/03-Software-Design-Document.pdf) | 32 | Design document |
-| [`04-Test-Documentation.pdf`](pdf/04-Test-Documentation.pdf) | 45 | Test documentation |
-| [`05-User-Manual.pdf`](pdf/05-User-Manual.pdf) | 27 | User manual |
-| [`06-Thesis-browser-edition.pdf`](pdf/06-Thesis-browser-edition.pdf) | 79 | Thesis, browser edition (not the submission copy) |
+| [`01-Project-Explained-Simply.pdf`](pdf/01-Project-Explained-Simply.pdf) | 14 | **Plain-language guide** — the stack and the project, no jargon |
+| [`02-Documentation-Index.pdf`](pdf/02-Documentation-Index.pdf) | 21 | This index, including the screenshot gallery |
+| [`03-Software-Requirements-Specification.pdf`](pdf/03-Software-Requirements-Specification.pdf) | 25 | Requirements specification |
+| [`04-Software-Design-Document.pdf`](pdf/04-Software-Design-Document.pdf) | 32 | Design document |
+| [`05-Test-Documentation.pdf`](pdf/05-Test-Documentation.pdf) | 45 | Test documentation |
+| [`06-User-Manual.pdf`](pdf/06-User-Manual.pdf) | 27 | User manual |
+| [`07-Thesis-browser-edition.pdf`](pdf/07-Thesis-browser-edition.pdf) | 79 | Thesis, browser edition (not the submission copy) |
 
 > ⚠️ **Which thesis file do I submit?**
 > `05-Thesis-browser-edition.pdf` is convenient for reading and emailing, but it is **not** the
