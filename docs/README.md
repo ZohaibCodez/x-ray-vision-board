@@ -47,33 +47,96 @@ Supporting material also in the repository:
 
 ---
 
-## Screenshots
+## Screenshot Gallery
 
-All screenshots in [`screenshots/`](screenshots/) were captured from the **live deployment** at
+Every screenshot below was captured from the **live deployment** at
 `https://x-ray-vision-board.vercel.app` using an automated Chromium session signed in to the demo
-account.
+account. The source files are in [`screenshots/`](screenshots/).
 
-| File | Page |
-|---|---|
-| `01-landing.png` | Landing page, full length |
-| `01a-landing-hero.png` | Landing hero section |
-| `01b-landing-capabilities.png` | Capabilities section |
-| `01c-landing-workflow.png` | Workflow section |
-| `01d-landing-report.png` | Report-experience section |
-| `01e-landing-trust.png` | Trust/statistics section |
-| `02-login.png` | Sign-in page |
-| `03-register.png` | Registration page |
-| `04-forgot-password.png` | Password reset page |
-| `05-dashboard.png` | Dashboard with analytics |
-| `06-analyze-upload.png` | Three-step analysis wizard |
-| `07-history.png` | Scan history |
-| `08-chat.png` | Bilingual health chatbot |
-| `09-diet.png` | Diet planner |
-| `10-clinics.png` | Clinic locator |
-| `11-profile.png` | User profile |
-| `12-settings.png` | Settings |
-| `13-results.png` | Diagnostic report with bounding boxes |
-| `14-landing-mobile.png` | Landing page at 390×844 |
+### Public pages
+
+![Landing page hero](screenshots/01a-landing-hero.png)
+
+**Landing page** — `01a-landing-hero.png`
+
+![Capabilities section](screenshots/01b-landing-capabilities.png)
+
+**Capabilities section** — `01b-landing-capabilities.png`
+
+![Workflow section](screenshots/01c-landing-workflow.png)
+
+**Workflow section** — `01c-landing-workflow.png`
+
+![Report experience section](screenshots/01d-landing-report.png)
+
+**Report-experience section** — `01d-landing-report.png`
+
+![Landing page, full length](screenshots/01-landing.png)
+
+**Landing page, full length** — `01-landing.png`
+
+### Authentication
+
+![Sign-in page](screenshots/02-login.png)
+
+**Sign-in**, including the one-click demo account — `02-login.png`
+
+![Registration page](screenshots/03-register.png)
+
+**Registration** — `03-register.png`
+
+![Password reset page](screenshots/04-forgot-password.png)
+
+**Password reset** — `04-forgot-password.png`
+
+### The application
+
+![Dashboard](screenshots/05-dashboard.png)
+
+**Dashboard** — per-user analytics, recent analyses, finding distribution and per-model confidence —
+`05-dashboard.png`
+
+![Analysis wizard](screenshots/06-analyze-upload.png)
+
+**New Analysis** — the three-step upload wizard — `06-analyze-upload.png`
+
+![Diagnostic report](screenshots/13-results.png)
+
+**Diagnostic report** — bounding-box overlays, tiered findings, low-confidence banner, LLM synthesis,
+recommended actions and the full confidence table — `13-results.png`
+
+![Scan history](screenshots/07-history.png)
+
+**Scan history** — `07-history.png`
+
+![Health chatbot](screenshots/08-chat.png)
+
+**Health chatbot** — English/Urdu toggle with voice input — `08-chat.png`
+
+![Diet planner](screenshots/09-diet.png)
+
+**Diet planner** — `09-diet.png`
+
+![Clinic locator](screenshots/10-clinics.png)
+
+**Clinic locator** — radius control and OpenStreetMap attribution — `10-clinics.png`
+
+![User profile](screenshots/11-profile.png)
+
+**Profile** — `11-profile.png`
+
+![Settings](screenshots/12-settings.png)
+
+**Settings** — appearance, analysis preferences and notifications — `12-settings.png`
+
+### Responsive
+
+![Mobile layout](screenshots/14-landing-mobile.png)
+
+**Mobile layout** at 390 × 844 — `14-landing-mobile.png`
+
+*Also in [`screenshots/`](screenshots/) but not shown above: `01e-landing-trust.png` (the statistics
+strip, too wide and short to reproduce usefully at page scale).*
 
 ---
 
@@ -118,11 +181,12 @@ SVG. **Just double-click it.** No extension, no internet connection, no build st
 ### 📕 Or just take the PDFs
 
 Every document is also pre-printed to A4 PDF in [`pdf/`](pdf/), with page numbers in the footer.
-Nothing to install, nothing to render — email them, upload them, print them.
+Nothing to install, nothing to render — email them, upload them, print them. The index PDF
+includes the full screenshot gallery.
 
 | File | Pages |
 |---|---|
-| [`00-Documentation-Index.pdf`](pdf/00-Documentation-Index.pdf) | 8 |
+| [`00-Documentation-Index.pdf`](pdf/00-Documentation-Index.pdf) | 21 |
 | [`01-Software-Requirements-Specification.pdf`](pdf/01-Software-Requirements-Specification.pdf) | 25 |
 | [`02-Software-Design-Document.pdf`](pdf/02-Software-Design-Document.pdf) | 32 |
 | [`03-Test-Documentation.pdf`](pdf/03-Test-Documentation.pdf) | 43 |
