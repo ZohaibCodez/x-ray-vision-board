@@ -257,12 +257,55 @@ def _fallback_diet_plan(
     goals: str = "general health",
     language: str = "en",
 ) -> dict:
-    """Return a validated fallback plan when the model is unavailable."""
+    """Return a validated fallback plan when the model is unavailable or JSON parsing fails."""
     restrictions = restrictions or []
     context = f"{condition} {goals}".lower()
     restrictions_text = " ".join(restrictions).lower()
     dairy_free = "dairy" in restrictions_text or "lactose" in restrictions_text
     vegetarian = "vegetarian" in dietary_preferences.lower() or "vegan" in dietary_preferences.lower()
+    
+    if language == "ur":
+        return {
+            "title": "7 روزہ متوازن غذائی منصوبہ",
+            "summary": "یہ ایک عام متوازن غذائی منصوبہ ہے جس میں سبزیاں، پھل، دالیں، سالم اناج اور صحت بخش غذائیں شامل ہیں۔",
+            "plan": [
+                {
+                    "day": f"دن {i}",
+                    "breakfast": {
+                        "name": "جو کا دلیہ اور پھل",
+                        "description": "جو کا دلیہ (Oats) تازہ پھلوں کے ساتھ",
+                        "calories": 350,
+                        "nutrients": "فائبر، وٹامنز",
+                    },
+                    "lunch": {
+                        "name": "پروٹین اور سلاد",
+                        "description": "تازہ سبزیوں کا سلاد اور پروٹین (گوشت یا دالیں)",
+                        "calories": 450,
+                        "nutrients": "پروٹین، صحت مند چکنائی",
+                    },
+                    "dinner": {
+                        "name": "متوازن پلیٹ",
+                        "description": "سالم اناج، سبزیاں، اور مچھلی، چکن یا دال",
+                        "calories": 500,
+                        "nutrients": "پروٹین، فائبر",
+                    },
+                    "snacks": [
+                        {
+                            "name": "پھل یا بغیر نمک کے بیج",
+                            "description": "صحت بخش ہلکی غذا",
+                            "calories": 180,
+                            "nutrients": "فائبر، معدنیات",
+                        }
+                    ],
+                }
+                for i in range(1, 8)
+            ],
+            "tips": [
+                "پانی کا زیادہ استعمال کریں، الا یہ کہ ڈاکٹر نے منع کیا ہو۔",
+                "کھانے کے اوقات مقرر رکھیں اور ہر کھانے میں سبزیاں شامل کریں۔",
+                "یہ تعلیمی غذائی پلان ہے — اپنے ڈاکٹر یا ماہر غذائیت سے مشورہ کریں۔"
+            ]
+        }
 
     if _has_any(context, HYPERTENSION_TERMS):
         protein_lunch = "Lentil Quinoa Bowl" if vegetarian else "Grilled Chicken Brown Rice Bowl"
@@ -270,15 +313,11 @@ def _fallback_diet_plan(
         dinner_nutrients = "Fiber, magnesium, plant protein" if vegetarian else "Omega-3, protein, potassium"
         dairy_alt = "fortified unsweetened soy milk" if dairy_free else "low-fat yogurt"
         return {
-            "title": "7-Day Low-Sodium DASH-Style Diet Plan" if language != "ur" else "7 روزہ کم سوڈیم DASH غذائی منصوبہ",
-            "summary": (
-                "A blood-pressure-focused plan emphasizing vegetables, fruits, legumes, whole grains, lean proteins, unsalted nuts or seeds, and low-sodium preparation. It avoids salty sauces and highly processed foods while keeping dairy optional based on restrictions."
-                if language != "ur" else
-                "یہ بلڈ پریشر کے لیے ایک تعلیمی غذائی منصوبہ ہے جس میں سبزیاں، پھل، دالیں، سالم اناج، دبلا گوشت اور کم سوڈیم کھانے شامل ہیں۔"
-            ),
+            "title": "7-Day Low-Sodium DASH-Style Diet Plan",
+            "summary": "A blood-pressure-focused plan emphasizing vegetables, fruits, legumes, whole grains, lean proteins, unsalted nuts or seeds, and low-sodium preparation.",
             "plan": [
                 {
-                    "day": f"Day {i}" if language != "ur" else f"دن {i}",
+                    "day": f"Day {i}",
                     "breakfast": {
                         "name": "Oat Berry Bowl",
                         "description": f"Rolled oats with berries, chia seeds, cinnamon, and {dairy_alt}",
