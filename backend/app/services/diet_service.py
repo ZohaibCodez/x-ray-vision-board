@@ -76,10 +76,10 @@ Respond ONLY in this JSON format, with no markdown or extra text:
     try:
         response_text = complete_text(prompt, temperature=0.25, max_tokens=2600)
         parsed = _parse_diet_response(response_text)
-        return _normalize_diet_plan(parsed, condition_text, dietary_preferences, restrictions, goals)
+        return _normalize_diet_plan(parsed, condition_text, dietary_preferences, restrictions, goals, language)
     except Exception as exc:
         logger.error("Diet plan generation failed: %s", exc)
-        return _fallback_diet_plan(condition_text, dietary_preferences, restrictions, goals)
+        return _fallback_diet_plan(condition_text, dietary_preferences, restrictions, goals, language)
 
 
 def _has_any(text: str, terms: tuple[str, ...]) -> bool:
@@ -160,49 +160,73 @@ def _normalize_diet_plan(
     dietary_preferences: str = "balanced",
     restrictions: list[str] | None = None,
     goals: str = "general health",
+    language: str = "en",
 ) -> dict:
     """Keep generated plans complete and add condition-specific guardrails."""
     restrictions = restrictions or []
     days = plan.get("plan") if isinstance(plan.get("plan"), list) else []
     if len(days) != 7:
         logger.warning("Diet plan had %s days; using validated fallback", len(days))
-        return _fallback_diet_plan(condition, dietary_preferences, restrictions, goals)
+        return _fallback_diet_plan(condition, dietary_preferences, restrictions, goals, language)
 
     for idx, day in enumerate(days[:7], start=1):
         if not isinstance(day, dict):
-            return _fallback_diet_plan(condition, dietary_preferences, restrictions, goals)
+            return _fallback_diet_plan(condition, dietary_preferences, restrictions, goals, language)
         day["day"] = day.get("day") or f"Day {idx}"
         for meal_name in ("breakfast", "lunch", "dinner"):
             meal = day.get(meal_name)
             if not isinstance(meal, dict) or not meal.get("name"):
                 logger.warning("Diet plan missing %s on day %s; using fallback", meal_name, idx)
-                return _fallback_diet_plan(condition, dietary_preferences, restrictions, goals)
+                return _fallback_diet_plan(condition, dietary_preferences, restrictions, goals, language)
         if not isinstance(day.get("snacks"), list):
             day["snacks"] = []
 
     tips = [str(t) for t in plan.get("tips", []) if str(t).strip()]
     context = f"{condition} {goals}"
 
-    if _has_any(context, HYPERTENSION_TERMS):
-        tips = _merge_tips(tips, [
-            "Keep sodium under 2,300 mg/day; ask a clinician whether a 1,500 mg/day target is appropriate.",
-            "Use potassium-rich foods for blood pressure only if you do not have kidney disease and are not on potassium-raising medicines.",
-            "Choose no-salt-added foods and herbs/spices instead of salty sauces or packaged snacks.",
-        ])
-    if _has_any(context, DIABETES_TERMS):
-        tips = _merge_tips(tips, [
-            "Monitor blood glucose response and coordinate meal timing with prescribed diabetes medicines.",
-            "Pair carbohydrate foods with protein, fiber, and healthy fats to reduce glucose spikes.",
-        ])
-    if _has_any(context, KIDNEY_TERMS):
-        tips = _merge_tips(tips, [
-            "Kidney disease diets must be individualized for potassium, phosphorus, sodium, protein, and fluid limits.",
-            "Review this plan with a renal dietitian or clinician before following it.",
-        ])
-    if condition and condition.lower() != "general wellness":
-        tips = _merge_tips(tips, [
-            "This educational plan should be reviewed by a qualified clinician or dietitian for your diagnosis, medicines, labs, and allergies.",
-        ])
+    # Use Urdu safety tips when the user requested Urdu output
+    if language == "ur":
+        if _has_any(context, HYPERTENSION_TERMS):
+            tips = _merge_tips(tips, [
+                "سوڈیم 2,300 ملی گرام یومیہ سے کم رکھیں؛ ڈاکٹر سے پوچھیں کہ آیا 1,500 ملی گرام مناسب ہے۔",
+                "پوٹاشیم والی غذائیں صرف اس صورت میں استعمال کریں اگر گردے کی بیماری نہ ہو اور دوا میں پوٹاشیم نہ بڑھائی جاتی ہو۔",
+                "نمک والی چٹنیوں اور پیکٹ بند کھانوں کی بجائے بغیر نمک کی غذائیں اور جڑی بوٹیاں استعمال کریں۔",
+            ])
+        if _has_any(context, DIABETES_TERMS):
+            tips = _merge_tips(tips, [
+                "شوگر کی سطح کو مانیٹر کریں اور کھانوں کا وقت ذیابیطس کی دواؤں کے ساتھ مربوط رکھیں۔",
+                "کاربوہائیڈریٹ والی غذاؤں کو پروٹین، فائبر اور صحت مند چکنائی کے ساتھ کھائیں۔",
+            ])
+        if _has_any(context, KIDNEY_TERMS):
+            tips = _merge_tips(tips, [
+                "گردے کی بیماری میں پوٹاشیم، فاسفورس، سوڈیم، پروٹین اور پانی کی مقدار انفرادی طور پر طے کی جانی چاہیے۔",
+                "یہ پلان استعمال کرنے سے پہلے گردے کے ماہر غذائیت دان یا ڈاکٹر سے مشورہ کریں۔",
+            ])
+        if condition and condition.lower() != "general wellness":
+            tips = _merge_tips(tips, [
+                "یہ تعلیمی غذائی پلان ہے — اپنے ڈاکٹر یا ماہر غذائیت سے مشورہ کریں۔",
+            ])
+    else:
+        if _has_any(context, HYPERTENSION_TERMS):
+            tips = _merge_tips(tips, [
+                "Keep sodium under 2,300 mg/day; ask a clinician whether a 1,500 mg/day target is appropriate.",
+                "Use potassium-rich foods for blood pressure only if you do not have kidney disease and are not on potassium-raising medicines.",
+                "Choose no-salt-added foods and herbs/spices instead of salty sauces or packaged snacks.",
+            ])
+        if _has_any(context, DIABETES_TERMS):
+            tips = _merge_tips(tips, [
+                "Monitor blood glucose response and coordinate meal timing with prescribed diabetes medicines.",
+                "Pair carbohydrate foods with protein, fiber, and healthy fats to reduce glucose spikes.",
+            ])
+        if _has_any(context, KIDNEY_TERMS):
+            tips = _merge_tips(tips, [
+                "Kidney disease diets must be individualized for potassium, phosphorus, sodium, protein, and fluid limits.",
+                "Review this plan with a renal dietitian or clinician before following it.",
+            ])
+        if condition and condition.lower() != "general wellness":
+            tips = _merge_tips(tips, [
+                "This educational plan should be reviewed by a qualified clinician or dietitian for your diagnosis, medicines, labs, and allergies.",
+            ])
 
     return {
         "title": plan.get("title") or "Your Personalized Diet Plan",
@@ -231,6 +255,7 @@ def _fallback_diet_plan(
     dietary_preferences: str = "balanced",
     restrictions: list[str] | None = None,
     goals: str = "general health",
+    language: str = "en",
 ) -> dict:
     """Return a validated fallback plan when the model is unavailable."""
     restrictions = restrictions or []
@@ -245,11 +270,15 @@ def _fallback_diet_plan(
         dinner_nutrients = "Fiber, magnesium, plant protein" if vegetarian else "Omega-3, protein, potassium"
         dairy_alt = "fortified unsweetened soy milk" if dairy_free else "low-fat yogurt"
         return {
-            "title": "7-Day Low-Sodium DASH-Style Diet Plan",
-            "summary": "A blood-pressure-focused plan emphasizing vegetables, fruits, legumes, whole grains, lean proteins, unsalted nuts or seeds, and low-sodium preparation. It avoids salty sauces and highly processed foods while keeping dairy optional based on restrictions.",
+            "title": "7-Day Low-Sodium DASH-Style Diet Plan" if language != "ur" else "7 روزہ کم سوڈیم DASH غذائی منصوبہ",
+            "summary": (
+                "A blood-pressure-focused plan emphasizing vegetables, fruits, legumes, whole grains, lean proteins, unsalted nuts or seeds, and low-sodium preparation. It avoids salty sauces and highly processed foods while keeping dairy optional based on restrictions."
+                if language != "ur" else
+                "یہ بلڈ پریشر کے لیے ایک تعلیمی غذائی منصوبہ ہے جس میں سبزیاں، پھل، دالیں، سالم اناج، دبلا گوشت اور کم سوڈیم کھانے شامل ہیں۔"
+            ),
             "plan": [
                 {
-                    "day": f"Day {i}",
+                    "day": f"Day {i}" if language != "ur" else f"دن {i}",
                     "breakfast": {
                         "name": "Oat Berry Bowl",
                         "description": f"Rolled oats with berries, chia seeds, cinnamon, and {dairy_alt}",

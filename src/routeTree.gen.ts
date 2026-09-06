@@ -9,9 +9,11 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as SupportRouteImport } from './routes/support'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ProfileRouteImport } from './routes/profile'
 import { Route as HistoryRouteImport } from './routes/history'
+import { Route as DocsRouteImport } from './routes/docs'
 import { Route as DietRouteImport } from './routes/diet'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as ClinicsRouteImport } from './routes/clinics'
@@ -23,6 +25,11 @@ import { Route as AuthRegisterRouteImport } from './routes/auth.register'
 import { Route as AuthLoginRouteImport } from './routes/auth.login'
 import { Route as AuthForgotPasswordRouteImport } from './routes/auth.forgot-password'
 
+const SupportRoute = SupportRouteImport.update({
+  id: '/support',
+  path: '/support',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SettingsRoute = SettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -36,6 +43,11 @@ const ProfileRoute = ProfileRouteImport.update({
 const HistoryRoute = HistoryRouteImport.update({
   id: '/history',
   path: '/history',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const DietRoute = DietRouteImport.update({
@@ -96,9 +108,11 @@ export interface FileRoutesByFullPath {
   '/clinics': typeof ClinicsRoute
   '/dashboard': typeof DashboardRoute
   '/diet': typeof DietRoute
+  '/docs': typeof DocsRoute
   '/history': typeof HistoryRoute
   '/profile': typeof ProfileRoute
   '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -111,9 +125,11 @@ export interface FileRoutesByTo {
   '/clinics': typeof ClinicsRoute
   '/dashboard': typeof DashboardRoute
   '/diet': typeof DietRoute
+  '/docs': typeof DocsRoute
   '/history': typeof HistoryRoute
   '/profile': typeof ProfileRoute
   '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -127,9 +143,11 @@ export interface FileRoutesById {
   '/clinics': typeof ClinicsRoute
   '/dashboard': typeof DashboardRoute
   '/diet': typeof DietRoute
+  '/docs': typeof DocsRoute
   '/history': typeof HistoryRoute
   '/profile': typeof ProfileRoute
   '/settings': typeof SettingsRoute
+  '/support': typeof SupportRoute
   '/auth/forgot-password': typeof AuthForgotPasswordRoute
   '/auth/login': typeof AuthLoginRoute
   '/auth/register': typeof AuthRegisterRoute
@@ -144,9 +162,11 @@ export interface FileRouteTypes {
     | '/clinics'
     | '/dashboard'
     | '/diet'
+    | '/docs'
     | '/history'
     | '/profile'
     | '/settings'
+    | '/support'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -159,9 +179,11 @@ export interface FileRouteTypes {
     | '/clinics'
     | '/dashboard'
     | '/diet'
+    | '/docs'
     | '/history'
     | '/profile'
     | '/settings'
+    | '/support'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -174,9 +196,11 @@ export interface FileRouteTypes {
     | '/clinics'
     | '/dashboard'
     | '/diet'
+    | '/docs'
     | '/history'
     | '/profile'
     | '/settings'
+    | '/support'
     | '/auth/forgot-password'
     | '/auth/login'
     | '/auth/register'
@@ -190,9 +214,11 @@ export interface RootRouteChildren {
   ClinicsRoute: typeof ClinicsRoute
   DashboardRoute: typeof DashboardRoute
   DietRoute: typeof DietRoute
+  DocsRoute: typeof DocsRoute
   HistoryRoute: typeof HistoryRoute
   ProfileRoute: typeof ProfileRoute
   SettingsRoute: typeof SettingsRoute
+  SupportRoute: typeof SupportRoute
   AuthForgotPasswordRoute: typeof AuthForgotPasswordRoute
   AuthLoginRoute: typeof AuthLoginRoute
   AuthRegisterRoute: typeof AuthRegisterRoute
@@ -201,6 +227,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/support': {
+      id: '/support'
+      path: '/support'
+      fullPath: '/support'
+      preLoaderRoute: typeof SupportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/settings': {
       id: '/settings'
       path: '/settings'
@@ -220,6 +253,13 @@ declare module '@tanstack/react-router' {
       path: '/history'
       fullPath: '/history'
       preLoaderRoute: typeof HistoryRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/diet': {
@@ -302,9 +342,11 @@ const rootRouteChildren: RootRouteChildren = {
   ClinicsRoute: ClinicsRoute,
   DashboardRoute: DashboardRoute,
   DietRoute: DietRoute,
+  DocsRoute: DocsRoute,
   HistoryRoute: HistoryRoute,
   ProfileRoute: ProfileRoute,
   SettingsRoute: SettingsRoute,
+  SupportRoute: SupportRoute,
   AuthForgotPasswordRoute: AuthForgotPasswordRoute,
   AuthLoginRoute: AuthLoginRoute,
   AuthRegisterRoute: AuthRegisterRoute,
