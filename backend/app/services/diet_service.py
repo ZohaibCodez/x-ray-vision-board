@@ -320,6 +320,66 @@ HYPERTENSION_BANNED = (
 )
 
 
+# What each restriction actually rules out, in both the Roman-Urdu and Urdu
+# spellings the models produce. A stated restriction may be an allergy, so a
+# single violation rejects the plan — unlike the "unfamiliar food" check,
+# which tolerates a stray mention.
+RESTRICTION_FOODS: dict[str, tuple[str, ...]] = {
+    "egg": ("egg", "eggs", "anda", "ande", "omelette", "omelet", "bhurji",
+            "انڈا", "انڈے", "آملیٹ", "بھجیا"),
+    "dairy": ("milk", "yogurt", "yoghurt", "curd", "dahi", "paneer", "cheese",
+              "butter", "cream", "lassi", "raita", "karhi", "kheer", "doodh",
+              "دودھ", "دہی", "پنیر", "مکھن", "کریم", "لسی", "رائتہ", "رائتے",
+              "کڑھی", "کھیر"),
+    "gluten": ("wheat", "roti", "chapati", "chapatti", "naan", "paratha",
+               "bread", "suji", "semolina", "maida", "dalia",
+               "گندم", "روٹی", "چپاتی", "نان", "پراٹھا", "سوجی", "میدہ"),
+    "nuts": ("almond", "badam", "walnut", "akhrot", "peanut", "moongphali",
+             "cashew", "kaju", "pista", "pistachio",
+             "بادام", "اخروٹ", "مونگ پھلی", "کاجو", "پستہ"),
+}
+
+# Dishes that are gluten-free despite containing a word from the list above:
+# corn/rice/gram-flour breads, and dalia made from rice rather than wheat.
+GLUTEN_SAFE_PHRASES = (
+    "makai ki roti", "chawal ki roti", "besan ki roti", "corn roti",
+    "chawal ka dalia", "rice porridge",
+    "مکئی کی روٹی", "چاول کی روٹی", "بیسن کی روٹی", "چاول کا دلیہ",
+)
+
+RESTRICTION_ALIASES = {
+    "egg": "egg", "anda": "egg", "انڈا": "egg",
+    "dairy": "dairy", "lactose": "dairy", "milk": "dairy", "دودھ": "dairy",
+    "gluten": "gluten", "wheat": "gluten", "roti": "gluten", "گندم": "gluten",
+    "nut": "nuts", "nuts": "nuts", "peanut": "nuts", "badam": "nuts", "بادام": "nuts",
+}
+
+
+def _violates_restrictions(days: list, restrictions: list[str]) -> list[str]:
+    """Foods in the plan that the user said they cannot eat."""
+    if not restrictions:
+        return []
+
+    keys = set()
+    joined = " ".join(restrictions).lower()
+    for alias, key in RESTRICTION_ALIASES.items():
+        if alias in joined:
+            keys.add(key)
+    if not keys:
+        return []
+
+    found: list[str] = []
+    for text in _meal_texts(days):
+        cleaned = text
+        for safe in GLUTEN_SAFE_PHRASES:
+            cleaned = cleaned.replace(safe, " ")
+        for key in keys:
+            for food in RESTRICTION_FOODS[key]:
+                if re.search(rf"(?<!\w){re.escape(food)}(?!\w)", cleaned):
+                    found.append(f"{key}:{food}")
+    return found
+
+
 def _meal_texts(days: list) -> list[str]:
     """Every meal name + description in the plan, lowercased."""
     texts = []
@@ -453,6 +513,17 @@ def _normalize_diet_plan(
         logger.warning(
             "Diet plan contained food unsafe for '%s' (%s); using the validated fallback",
             condition, ", ".join(sorted(set(unsafe))[:5]),
+        )
+        return _fallback_diet_plan(condition, dietary_preferences, restrictions, goals, language)
+
+    # A stated restriction may be an allergy. The model does ignore these —
+    # a live run returned anda to someone who had excluded egg — so one
+    # violation is enough to reject the plan.
+    violations = _violates_restrictions(days, restrictions)
+    if violations:
+        logger.warning(
+            "Diet plan broke a stated restriction (%s); using the validated fallback",
+            ", ".join(sorted(set(violations))[:5]),
         )
         return _fallback_diet_plan(condition, dietary_preferences, restrictions, goals, language)
 
