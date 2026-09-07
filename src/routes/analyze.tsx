@@ -22,7 +22,6 @@ export const Route = createFileRoute("/analyze")({
   component: AnalyzePage,
 });
 
-const MIN_FILE_SIZE = 100 * 1024; // 100 KB — smaller images lack enough pixel data for reliable inference
 const MAX_FILE_SIZE = 20 * 1024 * 1024; // 20 MB
 const MIN_DIMENSION = 200; // px per side
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
@@ -50,10 +49,6 @@ async function validateImageFile(file: File): Promise<string | null> {
 
   if (!isDicom && !ALLOWED_TYPES.includes(file.type) && !ALLOWED_EXTENSIONS.includes(ext)) {
     return "Unsupported format. Upload a JPEG, PNG, or DICOM (.dcm) file.";
-  }
-
-  if (file.size < MIN_FILE_SIZE) {
-    return `File is too small (${(file.size / 1024).toFixed(0)} KB). Minimum is 100 KB — very small files lack enough pixel data for accurate inference.`;
   }
 
   if (file.size > MAX_FILE_SIZE) {
@@ -212,7 +207,7 @@ function AnalyzePage() {
                 <span className="mt-5 text-lg font-extrabold">{drag ? "Drop image to upload" : "Drag and drop your medical image"}</span>
                 <span className="mt-1 text-sm text-muted-foreground">or browse files from your device</span>
                 <span className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                  DICOM / PNG / JPG &nbsp;·&nbsp; Min 200×200 px &nbsp;·&nbsp; 100 KB – 20 MB
+                  DICOM / PNG / JPG &nbsp;·&nbsp; Min 200×200 px &nbsp;·&nbsp; Max 20 MB
                 </span>
               </button>
 

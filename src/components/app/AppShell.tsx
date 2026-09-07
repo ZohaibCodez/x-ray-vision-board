@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   Activity,
@@ -38,8 +38,8 @@ const navItems = [
 ] as const satisfies readonly { to: string; labelKey: StringKey; icon: typeof User }[];
 
 const secondaryNav = [
-  { to: "/dashboard", labelKey: "nav.docs", icon: BookOpen },
-  { to: "/dashboard", labelKey: "nav.support", icon: LifeBuoy },
+  { to: "/docs", labelKey: "nav.docs", icon: BookOpen },
+  { to: "/support", labelKey: "nav.support", icon: LifeBuoy },
 ] as const satisfies readonly { to: string; labelKey: StringKey; icon: typeof User }[];
 
 export function AppShell({
@@ -55,10 +55,25 @@ export function AppShell({
 }) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [notifOpen, setNotifOpen] = useState(false);
+  const notifRef = useRef<HTMLDivElement>(null);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+
+  // Close notification panel when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (notifRef.current && !notifRef.current.contains(event.target as Node)) {
+        setNotifOpen(false);
+      }
+    }
+    if (notifOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [notifOpen]);
 
   useEffect(() => {
     if (!isLoading && !isAuthenticated) {
@@ -106,7 +121,7 @@ export function AppShell({
         } ${mobileOpen ? "is-onscreen w-72 translate-x-0" : "is-offscreen w-72 -translate-x-full md:w-auto"}`}
       >
         <div className={`flex h-18 items-center border-b border-border ${collapsed ? "md:justify-center" : "px-5"}`}>
-          <Link to="/dashboard" className="group flex min-h-12 items-center gap-3" aria-label={t("shell.goToDashboard")}>
+          <Link to="/" className="group flex min-h-12 items-center gap-3" aria-label={t("shell.goToHome")}>
             <Logo size={30} />
             {!collapsed && (
               <span className="font-display text-lg font-extrabold transition-colors group-hover:text-primary">
@@ -241,13 +256,52 @@ export function AppShell({
                 Ctrl K
               </span>
             </label>
-            <button
-              aria-label={t("shell.notifications")}
-              className="relative flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground interaction-lift hover:border-primary/40 hover:text-foreground dark:bg-card"
-            >
-              <Bell size={17} />
-              <span className="status-dot absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-warning text-warning" />
-            </button>
+            <div className="relative" ref={notifRef}>
+              <button
+                aria-label={t("shell.notifications")}
+                onClick={() => setNotifOpen((v) => !v)}
+                className="relative flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground interaction-lift hover:border-primary/40 hover:text-foreground dark:bg-card"
+              >
+                <Bell size={17} />
+                <span className="status-dot absolute right-2.5 top-2.5 h-2 w-2 rounded-full bg-warning text-warning" />
+              </button>
+
+              {notifOpen && (
+                <div className="absolute end-0 top-14 z-50 w-80 rounded-xl border border-border bg-white shadow-[var(--shadow-lg)] backdrop-blur-xl dark:bg-card">
+                  <div className="flex items-center justify-between border-b border-border px-4 py-3">
+                    <p className="text-sm font-bold">{t("shell.notifications")}</p>
+                    <span className="rounded-full bg-warning/15 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase text-warning">{t("shell.notifNew")}</span>
+                  </div>
+                  <ul className="divide-y divide-border">
+                    <li className="flex items-start gap-3 px-4 py-3">
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-primary/10 text-primary">
+                        <Activity size={14} />
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold">{t("shell.notifModelsTitle")}</p>
+                        <p className="mt-0.5 text-[11px] text-muted-foreground">{t("shell.notifModelsBody")}</p>
+                        <p className="mt-1 font-mono text-[10px] text-muted-foreground/60">{t("shell.notifJustNow")}</p>
+                      </div>
+                    </li>
+                    <li className="flex items-start gap-3 px-4 py-3">
+                      <span className="mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center rounded-md bg-emerald-500/10 text-emerald-500">
+                        <ShieldCheck size={14} />
+                      </span>
+                      <div>
+                        <p className="text-xs font-semibold">{t("shell.notifEduTitle")}</p>
+                        <p className="mt-0.5 text-[11px] text-muted-foreground">{t("shell.notifEduBody")}</p>
+                        <p className="mt-1 font-mono text-[10px] text-muted-foreground/60">{t("shell.notifToday")}</p>
+                      </div>
+                    </li>
+                  </ul>
+                  <div className="border-t border-border px-4 py-2">
+                    <button onClick={() => setNotifOpen(false)} className="w-full rounded-lg py-2 text-xs font-semibold text-muted-foreground hover:text-foreground">
+                      {t("shell.notifDismiss")}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
             <div className="flex min-h-11 items-center gap-2 rounded-lg border border-border bg-white px-2 shadow-[var(--shadow-sm)] dark:bg-card">
               <div className="flex h-8 w-8 items-center justify-center rounded-md bg-primary text-xs font-bold text-primary-foreground">
                 {initials}
