@@ -68,8 +68,12 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
-lib64/
+# Anchored to the repo root on purpose. These come from the Python
+# packaging template, and an unanchored `lib/` also matches the
+# frontend's `src/lib/` — which silently kept src/lib/i18n.tsx out of
+# git and broke the Vercel build with "Could not load src/lib/i18n".
+/lib/
+/lib64/
 parts/
 sdist/
 var/
