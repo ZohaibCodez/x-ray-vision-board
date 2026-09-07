@@ -7,7 +7,8 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { AuthProvider } from "@/lib/auth-context";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { LanguageProvider } from "@/lib/i18n";
 
 import appCss from "../styles.css?url";
 
@@ -115,8 +116,22 @@ function RootComponent() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <Outlet />
+        <LocalizedApp />
       </AuthProvider>
     </QueryClientProvider>
+  );
+}
+
+/**
+ * Sits inside AuthProvider so the language provider can pick up the language
+ * saved on the signed-in profile.
+ */
+function LocalizedApp() {
+  const { user } = useAuth();
+
+  return (
+    <LanguageProvider profileLanguage={user?.settings?.language}>
+      <Outlet />
+    </LanguageProvider>
   );
 }

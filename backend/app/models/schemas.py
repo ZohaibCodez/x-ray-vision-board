@@ -125,6 +125,10 @@ class ChatResponse(BaseModel):
     reply: str
     doctor_type: Optional[str] = None
     home_remedies: list[str] = []
+    # False when the AI service could not be reached; `error` carries the reason
+    # so the UI can show it instead of silently pretending the bot replied.
+    ok: bool = True
+    error: Optional[str] = None
 
 
 class ChatSession(BaseModel):

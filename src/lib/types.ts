@@ -85,6 +85,9 @@ export interface ChatResponse {
   reply: string;
   doctor_type?: string | null;
   home_remedies: string[];
+  /** False when the AI service could not be reached; `error` says why. */
+  ok?: boolean;
+  error?: string | null;
 }
 
 export interface ChatSession {

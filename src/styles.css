@@ -1,4 +1,4 @@
-@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;600&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Manrope:wght@500;600;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;600&family=Noto+Sans+Arabic:wght@400;500;600;700;800&family=Noto+Nastaliq+Urdu:wght@400;600;700&display=swap");
 @import "tailwindcss" source(none);
 @source "../src";
 @import "tw-animate-css";
@@ -513,4 +513,88 @@
     scroll-behavior: auto !important;
     transition-duration: 0.01ms !important;
   }
+}
+
+
+/* ── Urdu / right-to-left ──────────────────────────────────────────
+ *
+ * Applied from the `dir` and `lang` attributes that the language provider
+ * sets on <html>, so switching language restyles the whole app at once.
+ *
+ * Noto Sans Arabic is used for the interface because it stays legible at the
+ * small sizes this UI uses. Nastaliq is the more traditional Urdu face but
+ * needs far more line height than nav items and buttons allow; it is exposed
+ * below as `--font-urdu-display` for headings, and teams who want it
+ * everywhere can point `--font-urdu` at it.
+ */
+
+:root {
+  --font-urdu: "Noto Sans Arabic", "Segoe UI", sans-serif;
+  --font-urdu-display: "Noto Nastaliq Urdu", "Noto Sans Arabic", serif;
+}
+
+html[lang="ur"] body {
+  font-family: var(--font-urdu);
+  /* Arabic-script glyphs sit smaller than Latin at the same px size. */
+  font-size: 1.03rem;
+  line-height: 1.85;
+}
+
+html[lang="ur"] .font-display,
+html[lang="ur"] h1,
+html[lang="ur"] h2,
+html[lang="ur"] h3 {
+  font-family: var(--font-urdu);
+  letter-spacing: 0;
+}
+
+/* Numerals, model IDs and timestamps stay in the Latin mono face. */
+html[lang="ur"] .font-mono {
+  font-family: var(--font-mono);
+}
+
+/* The shell is laid out with physical left/right utilities, so the sidebar
+ * and the content offset have to be mirrored explicitly under RTL. */
+[dir="rtl"] .app-sidebar {
+  left: auto;
+  right: 0;
+  border-right: 0;
+  border-left: 1px solid var(--border);
+}
+
+[dir="rtl"] .app-sidebar.is-offscreen {
+  transform: translateX(100%);
+}
+
+[dir="rtl"] .app-sidebar.is-onscreen {
+  transform: translateX(0);
+}
+
+@media (min-width: 768px) {
+  /* Both classes are repeated so this beats the `.is-offscreen` rule above on
+   * specificity — otherwise the sidebar stays pushed off-screen on desktop. */
+  [dir="rtl"] .app-sidebar,
+  [dir="rtl"] .app-sidebar.is-offscreen,
+  [dir="rtl"] .app-sidebar.is-onscreen {
+    transform: translateX(0);
+  }
+
+  [dir="rtl"] .app-content-expanded {
+    padding-left: 0;
+    padding-right: 18rem;
+  }
+
+  [dir="rtl"] .app-content-collapsed {
+    padding-left: 0;
+    padding-right: 5rem;
+  }
+}
+
+/* Chevrons and the send arrow point the other way when the page does. */
+[dir="rtl"] .rtl-flip {
+  transform: scaleX(-1);
+}
+
+@media print {
+  .print\:hidden { display: none !important; }
 }

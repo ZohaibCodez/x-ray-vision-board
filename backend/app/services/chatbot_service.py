@@ -1,17 +1,23 @@
-"""Health chatbot service powered by OpenRouter GLM 4.5 Air.
+"""Health chatbot service powered by OpenRouter.
 
 FYP requirement: General doctor bot for health queries, symptom analysis,
 home remedies, doctor type recommendation, and multilingual support.
+
+The bot answers in plain, everyday language for a Pakistani audience — no
+clinical jargon the average user would not recognise.
 """
 
 from __future__ import annotations
+
 import logging
-from app.services.openrouter_client import complete_text
+
+from app.services.openrouter_client import OpenRouterError, complete_chat
 
 logger = logging.getLogger(__name__)
 
 
-SYSTEM_PROMPT_EN = """You are XRayVision AI Health Assistant — a knowledgeable, empathetic medical chatbot.
+SYSTEM_PROMPT_EN = """You are the XRayVision AI Health Assistant — a knowledgeable, empathetic medical chatbot for users in Pakistan.
+
 You help patients with:
 1. Symptom analysis and possible conditions
 2. Basic home remedies and first-aid guidance
@@ -24,14 +30,19 @@ IMPORTANT RULES:
 - For serious symptoms, ALWAYS recommend visiting a hospital.
 - Be empathetic and clear in your responses.
 - If asked about medications, suggest consulting a pharmacist or doctor.
-- Provide evidence-based information when possible.
-- Keep responses concise but thorough (2-4 paragraphs max).
+- Keep responses short and simple: 2-4 short paragraphs at most.
 
-Respond in a structured, helpful manner. If you recommend a doctor type, mention it clearly.
-If you suggest home remedies, list them as bullet points.
+LANGUAGE RULES:
+- Write in simple, everyday English that someone with no medical background understands.
+- Avoid medical jargon. If you must use a medical term, explain it in brackets right after.
+- When you mention food, use everyday Pakistani household items — egg, roti, bread, rice,
+  daal, yogurt (dahi), banana, milk, chicken soup, tea — not foreign or unfamiliar ingredients.
+
+Respond in a structured, helpful manner.
 """
 
-SYSTEM_PROMPT_UR = """آپ XRayVision AI ہیلتھ اسسٹنٹ ہیں — ایک ذہین اور ہمدرد طبی چیٹ بوٹ۔
+SYSTEM_PROMPT_UR = """آپ XRayVision AI ہیلتھ اسسٹنٹ ہیں — پاکستانی صارفین کے لیے ایک ذہین اور ہمدرد طبی چیٹ بوٹ۔
+
 آپ مریضوں کی مدد کرتے ہیں:
 1. علامات کا تجزیہ اور ممکنہ بیماریاں
 2. بنیادی گھریلو علاج اور فرسٹ ایڈ
@@ -42,8 +53,41 @@ SYSTEM_PROMPT_UR = """آپ XRayVision AI ہیلتھ اسسٹنٹ ہیں — ای
 اہم قواعد:
 - ہمیشہ یاد دلائیں کہ آپ AI اسسٹنٹ ہیں، حقیقی ڈاکٹر نہیں۔
 - سنگین علامات کے لیے ہمیشہ ہسپتال جانے کی سفارش کریں۔
-- اردو میں جواب دیں۔
+- جواب مختصر رکھیں — زیادہ سے زیادہ 2 سے 4 چھوٹے پیراگراف۔
+
+زبان کے قواعد:
+- ہمیشہ صاف اور آسان اردو میں جواب دیں، ایسی اردو جو ہر عام آدمی سمجھ سکے۔
+- مشکل طبی اصطلاحات استعمال نہ کریں۔ اگر ضروری ہو تو بریکٹ میں آسان لفظوں میں سمجھائیں۔
+- کھانے کی بات کریں تو عام پاکستانی گھریلو چیزیں بتائیں — انڈا، روٹی، ڈبل روٹی، چاول، دال،
+  دہی، کیلا، دودھ، یخنی، چائے — باہر کی یا انجان چیزیں نہ بتائیں۔
 """
+
+# The markers stay in English so parsing works in both languages; only the
+# values after the colon are translated.
+OUTPUT_FORMAT_EN = """
+At the very end of your reply, on their own separate lines, add exactly:
+DOCTOR_TYPE: <the specialist to see, or the word none>
+HOME_REMEDIES: <simple remedies separated by commas, or the word none>
+"""
+
+OUTPUT_FORMAT_UR = """
+اپنے جواب کے بالکل آخر میں، الگ الگ سطروں میں، بالکل یہ لکھیں
+(لیبل انگریزی میں رکھیں، تفصیل اردو میں لکھیں):
+DOCTOR_TYPE: <کس ماہر ڈاکٹر سے ملنا ہے، یا لفظ none>
+HOME_REMEDIES: <آسان گھریلو علاج، کوما سے الگ کر کے، یا لفظ none>
+"""
+
+FALLBACK_REPLY_EN = (
+    "Sorry — I could not reach the AI service just now. "
+    "Please try again in a moment. If your symptoms are severe or getting worse, "
+    "do not wait for this chat: contact a doctor or go to the nearest hospital."
+)
+
+FALLBACK_REPLY_UR = (
+    "معذرت — میں ابھی AI سروس سے رابطہ نہیں کر سکا۔ "
+    "براہ کرم تھوڑی دیر بعد دوبارہ کوشش کریں۔ اگر آپ کی تکلیف شدید ہے یا بڑھ رہی ہے "
+    "تو اس چیٹ کا انتظار نہ کریں — فوراً ڈاکٹر سے رابطہ کریں یا قریبی ہسپتال جائیں۔"
+)
 
 
 def chat_with_health_bot(
@@ -51,7 +95,7 @@ def chat_with_health_bot(
     conversation_history: list[dict] | None = None,
     language: str = "en",
 ) -> dict:
-    """Process a health query and return AI response.
+    """Process a health query and return an AI response.
 
     Args:
         message: The user's message.
@@ -59,47 +103,54 @@ def chat_with_health_bot(
         language: "en" for English, "ur" for Urdu.
 
     Returns:
-        Dict with reply, doctor_type, and home_remedies.
+        Dict with reply, doctor_type, home_remedies, and an `ok` flag that is
+        False when the AI service could not be reached.
     """
-    system_prompt = SYSTEM_PROMPT_UR if language == "ur" else SYSTEM_PROMPT_EN
+    urdu = language == "ur"
+    system_prompt = SYSTEM_PROMPT_UR if urdu else SYSTEM_PROMPT_EN
+    output_format = OUTPUT_FORMAT_UR if urdu else OUTPUT_FORMAT_EN
 
-    # Build conversation context
-    messages = [system_prompt]
+    # Real chat roles instead of one flattened prompt — this is what the model
+    # is trained on, and it keeps the system rules from being ignored.
+    messages: list[dict] = [{"role": "system", "content": system_prompt + output_format}]
 
-    if conversation_history:
-        for msg in conversation_history[-10:]:  # Last 10 messages for context
-            role = "User" if msg.get("role") == "user" else "Assistant"
-            messages.append(f"{role}: {msg.get('content', '')}")
+    for msg in (conversation_history or [])[-10:]:
+        role = "user" if msg.get("role") == "user" else "assistant"
+        content = (msg.get("content") or "").strip()
+        if content:
+            messages.append({"role": role, "content": content})
 
-    messages.append(f"User: {message}")
+    if urdu:
+        # Repeated next to the user's turn because a long history can otherwise
+        # pull the model back into English.
+        message = f"{message}\n\n(اہم: پورا جواب صرف اردو میں دیں۔)"
 
-    lang_instruction = ""
-    if language == "ur":
-        lang_instruction = "\n\nIMPORTANT: Respond entirely in Urdu (اردو)."
-
-    full_prompt = "\n\n".join(messages) + lang_instruction + """
-
-Respond with helpful medical guidance. Also include at the end of your response (in a new line):
-DOCTOR_TYPE: <specialist type or "none">
-HOME_REMEDIES: <comma-separated list of remedies or "none">
-"""
+    messages.append({"role": "user", "content": message})
 
     try:
-        response_text = complete_text(full_prompt, temperature=0.35, max_tokens=1200)
-        return _parse_chat_response(response_text)
-    except Exception as e:
-        logger.error(f"Chatbot error: {e}")
+        response_text = complete_chat(messages, temperature=0.35, max_tokens=1200)
+    except OpenRouterError as exc:
+        logger.error("Chatbot unavailable: %s", exc)
         return {
-            "reply": (
-                "I apologize, but I'm currently unable to process your request. "
-                "Please try again later or consult a medical professional directly."
-                if language == "en" else
-                "معذرت، میں ابھی آپ کی درخواست پر عمل نہیں کر سکتا۔ "
-                "براہ کرم بعد میں دوبارہ کوشش کریں یا براہ راست ڈاکٹر سے مشورہ کریں۔"
-            ),
+            "reply": FALLBACK_REPLY_UR if urdu else FALLBACK_REPLY_EN,
             "doctor_type": None,
             "home_remedies": [],
+            "ok": False,
+            "error": exc.user_message,
         }
+    except Exception as exc:  # noqa: BLE001 - never let the chat route 500
+        logger.exception("Unexpected chatbot error: %s", exc)
+        return {
+            "reply": FALLBACK_REPLY_UR if urdu else FALLBACK_REPLY_EN,
+            "doctor_type": None,
+            "home_remedies": [],
+            "ok": False,
+            "error": "The AI service is unavailable right now.",
+        }
+
+    parsed = _parse_chat_response(response_text)
+    parsed["ok"] = True
+    return parsed
 
 
 def _parse_chat_response(text: str) -> dict:
@@ -107,22 +158,30 @@ def _parse_chat_response(text: str) -> dict:
     lines = text.strip().split("\n")
     reply_lines = []
     doctor_type = None
-    home_remedies = []
+    home_remedies: list[str] = []
 
     for line in lines:
-        stripped = line.strip()
-        if stripped.upper().startswith("DOCTOR_TYPE:"):
-            val = stripped.split(":", 1)[1].strip()
-            doctor_type = val if val.lower() != "none" else None
-        elif stripped.upper().startswith("HOME_REMEDIES:"):
-            val = stripped.split(":", 1)[1].strip()
-            if val.lower() != "none":
+        stripped = line.strip().lstrip("*# ").strip()
+        upper = stripped.upper()
+
+        if upper.startswith("DOCTOR_TYPE:"):
+            val = stripped.split(":", 1)[1].strip().strip("*_ ")
+            doctor_type = val if val.lower() not in ("none", "") else None
+        elif upper.startswith("HOME_REMEDIES:"):
+            val = stripped.split(":", 1)[1].strip().strip("*_ ")
+            if val.lower() not in ("none", ""):
                 home_remedies = [r.strip() for r in val.split(",") if r.strip()]
         else:
             reply_lines.append(line)
 
+    reply = "\n".join(reply_lines).strip()
+
+    # If the model emitted nothing but the markers, still show something.
+    if not reply:
+        reply = text.strip()
+
     return {
-        "reply": "\n".join(reply_lines).strip(),
+        "reply": reply,
         "doctor_type": doctor_type,
         "home_remedies": home_remedies,
     }

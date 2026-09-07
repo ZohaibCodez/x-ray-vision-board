@@ -23,28 +23,41 @@ import {
 } from "lucide-react";
 import { Logo } from "@/components/landing/Logo";
 import { useAuth } from "@/lib/auth-context";
+import { useLanguage, type StringKey } from "@/lib/i18n";
+import { LanguageSwitch } from "@/components/app/LanguageSwitch";
 
 const navItems = [
-  { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-  { to: "/analyze", label: "New Analysis", icon: ScanLine },
-  { to: "/chat", label: "Health Chat", icon: MessageSquare },
-  { to: "/diet", label: "Diet Planner", icon: Salad },
-  { to: "/clinics", label: "Clinics", icon: MapPin },
-  { to: "/history", label: "History", icon: History },
-  { to: "/profile", label: "Profile", icon: User },
-  { to: "/settings", label: "Settings", icon: Settings },
-] as const;
+  { to: "/dashboard", labelKey: "nav.dashboard", icon: LayoutDashboard },
+  { to: "/analyze", labelKey: "nav.analyze", icon: ScanLine },
+  { to: "/chat", labelKey: "nav.chat", icon: MessageSquare },
+  { to: "/diet", labelKey: "nav.diet", icon: Salad },
+  { to: "/clinics", labelKey: "nav.clinics", icon: MapPin },
+  { to: "/history", labelKey: "nav.history", icon: History },
+  { to: "/profile", labelKey: "nav.profile", icon: User },
+  { to: "/settings", labelKey: "nav.settings", icon: Settings },
+] as const satisfies readonly { to: string; labelKey: StringKey; icon: typeof User }[];
 
 const secondaryNav = [
-  { to: "/dashboard", label: "Docs", icon: BookOpen },
-  { to: "/dashboard", label: "Support", icon: LifeBuoy },
-] as const;
+  { to: "/dashboard", labelKey: "nav.docs", icon: BookOpen },
+  { to: "/dashboard", labelKey: "nav.support", icon: LifeBuoy },
+] as const satisfies readonly { to: string; labelKey: StringKey; icon: typeof User }[];
 
-export function AppShell({ children, title }: { children: ReactNode; title: string }) {
+export function AppShell({
+  children,
+  title,
+  titleKey,
+}: {
+  children: ReactNode;
+  /** Fallback title, used when `titleKey` is not given. */
+  title: string;
+  /** Preferred: a translation key, so the header follows the app language. */
+  titleKey?: StringKey;
+}) {
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, isAuthenticated, isLoading, logout } = useAuth();
+  const { t } = useLanguage();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -75,25 +88,25 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
   return (
     <div className="clinical-page relative min-h-dvh text-foreground">
       <a href="#main-content" className="skip-link">
-        Skip to content
+        {t("shell.skipToContent")}
       </a>
       <div className="pointer-events-none fixed inset-0 grid-bg opacity-45" />
 
       {mobileOpen && (
         <button
           className="fixed inset-0 z-30 bg-slate-950/30 backdrop-blur-sm md:hidden"
-          aria-label="Close navigation"
+          aria-label={t("shell.closeNav")}
           onClick={() => setMobileOpen(false)}
         />
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex flex-col border-r border-border bg-white/88 shadow-[var(--shadow-lg)] backdrop-blur-xl transition-all duration-200 dark:bg-card/88 md:translate-x-0 ${
+        className={`app-sidebar fixed inset-y-0 left-0 z-40 flex flex-col border-r border-border bg-white/88 shadow-[var(--shadow-lg)] backdrop-blur-xl transition-all duration-200 dark:bg-card/88 md:translate-x-0 ${
           collapsed ? "md:w-20" : "md:w-72"
-        } ${mobileOpen ? "w-72 translate-x-0" : "w-72 -translate-x-full md:w-auto"}`}
+        } ${mobileOpen ? "is-onscreen w-72 translate-x-0" : "is-offscreen w-72 -translate-x-full md:w-auto"}`}
       >
         <div className={`flex h-18 items-center border-b border-border ${collapsed ? "md:justify-center" : "px-5"}`}>
-          <Link to="/dashboard" className="group flex min-h-12 items-center gap-3" aria-label="Go to dashboard">
+          <Link to="/dashboard" className="group flex min-h-12 items-center gap-3" aria-label={t("shell.goToDashboard")}>
             <Logo size={30} />
             {!collapsed && (
               <span className="font-display text-lg font-extrabold transition-colors group-hover:text-primary">
@@ -111,8 +124,8 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
                   <Activity size={16} />
                 </span>
                 <div>
-                  <p className="text-xs font-semibold">AI Ensemble</p>
-                  <p className="font-mono text-[10px] text-muted-foreground">4 models online</p>
+                  <p className="text-xs font-semibold">{t("shell.aiEnsemble")}</p>
+                  <p className="font-mono text-[10px] text-muted-foreground">{t("shell.modelsOnline")}</p>
                 </div>
               </div>
             </div>
@@ -128,7 +141,7 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
                   <Link
                     to={item.to}
                     aria-current={active ? "page" : undefined}
-                    title={collapsed ? item.label : undefined}
+                    title={collapsed ? t(item.labelKey) : undefined}
                     className={`group relative flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm interaction-lift ${
                       active
                         ? "nav-item-active bg-primary text-primary-foreground shadow-[var(--shadow-sm)]"
@@ -136,7 +149,7 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
                     } ${collapsed ? "md:justify-center md:px-0" : ""}`}
                   >
                     <item.icon size={18} className="shrink-0 transition-transform duration-200 group-hover:scale-105" />
-                    {!collapsed && <span className="font-semibold">{item.label}</span>}
+                    {!collapsed && <span className="font-semibold">{t(item.labelKey)}</span>}
                   </Link>
                 </li>
               );
@@ -148,13 +161,13 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
               <div className="my-5 border-t border-border" />
               <ul className="space-y-1">
                 {secondaryNav.map((item) => (
-                  <li key={item.label}>
+                  <li key={item.labelKey}>
                     <Link
                       to={item.to}
                       className="flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm font-semibold text-muted-foreground interaction-lift hover:bg-white hover:text-foreground dark:hover:bg-surface"
                     >
                       <item.icon size={18} />
-                      <span>{item.label}</span>
+                      <span>{t(item.labelKey)}</span>
                     </Link>
                   </li>
                 ))}
@@ -167,7 +180,7 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
           {!collapsed ? (
             <div className="mb-3 flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-warning">
               <ShieldCheck size={15} />
-              <span className="font-mono text-[10px] font-semibold uppercase tracking-wider">Educational use only</span>
+              <span className="font-mono text-[10px] font-semibold uppercase tracking-wider">{t("shell.educationalOnly")}</span>
             </div>
           ) : (
             <div className="mb-3 hidden justify-center text-warning md:flex">
@@ -177,44 +190,51 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
           <button
             onClick={() => setCollapsed((value) => !value)}
             className="hidden min-h-10 w-full items-center justify-center gap-2 rounded-lg border border-border bg-white text-muted-foreground interaction-lift hover:text-foreground dark:bg-surface md:flex"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? t("shell.expandSidebar") : t("shell.collapseSidebar")}
           >
-            {collapsed ? <ChevronRight size={15} /> : <ChevronLeft size={15} />}
-            {!collapsed && <span className="text-xs font-semibold">Collapse</span>}
+            {collapsed ? <ChevronRight size={15} className="rtl-flip" /> : <ChevronLeft size={15} className="rtl-flip" />}
+            {!collapsed && <span className="text-xs font-semibold">{t("shell.collapse")}</span>}
           </button>
         </div>
       </aside>
 
-      <div className={`relative flex min-h-dvh flex-col transition-[padding] duration-200 ${collapsed ? "md:pl-20" : "md:pl-72"}`}>
+      <div
+        className={`relative flex min-h-dvh flex-col transition-[padding] duration-200 ${
+          collapsed ? "app-content-collapsed md:pl-20" : "app-content-expanded md:pl-72"
+        }`}
+      >
         <header className="sticky top-0 z-20 flex min-h-18 items-center gap-4 border-b border-border bg-white/78 px-4 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur-xl dark:bg-background/78 md:px-8">
           <button
             onClick={() => setMobileOpen(true)}
             className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground interaction-lift dark:bg-card md:hidden"
-            aria-label="Open navigation"
+            aria-label={t("shell.openNav")}
           >
-            <PanelLeftOpen size={18} />
+            <PanelLeftOpen size={18} className="rtl-flip" />
           </button>
 
           <button
             onClick={() => setCollapsed((value) => !value)}
             className="hidden h-11 w-11 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground interaction-lift hover:text-foreground dark:bg-card md:flex"
-            aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+            aria-label={collapsed ? t("shell.expandSidebar") : t("shell.collapseSidebar")}
           >
-            {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
+            {collapsed ? <PanelLeftOpen size={18} className="rtl-flip" /> : <PanelLeftClose size={18} className="rtl-flip" />}
           </button>
 
           <div>
-            <p className="clinical-kicker hidden md:block">Workspace</p>
-            <h1 className="font-display text-lg font-extrabold md:text-xl">{title}</h1>
+            <p className="clinical-kicker hidden md:block">{t("shell.workspace")}</p>
+            <h1 className="font-display text-lg font-extrabold md:text-xl">
+              {titleKey ? t(titleKey) : title}
+            </h1>
           </div>
 
-          <div className="ml-auto flex items-center gap-2 sm:gap-3">
+          <div className="ms-auto flex items-center gap-2 sm:gap-3">
+            <LanguageSwitch />
             <label className="relative hidden lg:block">
-              <span className="sr-only">Search workspace</span>
+              <span className="sr-only">{t("shell.searchLabel")}</span>
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
               <input
                 type="search"
-                placeholder="Search scans, findings..."
+                placeholder={t("shell.search")}
                 className="premium-input h-11 w-[300px] rounded-lg border border-border bg-white/80 pl-9 pr-16 text-sm placeholder:text-muted-foreground focus:outline-none dark:bg-card/80"
               />
               <span className="pointer-events-none absolute right-2 top-1/2 hidden -translate-y-1/2 rounded-md border border-border bg-surface px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground xl:block">
@@ -222,7 +242,7 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
               </span>
             </label>
             <button
-              aria-label="Notifications"
+              aria-label={t("shell.notifications")}
               className="relative flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground interaction-lift hover:border-primary/40 hover:text-foreground dark:bg-card"
             >
               <Bell size={17} />
@@ -233,12 +253,12 @@ export function AppShell({ children, title }: { children: ReactNode; title: stri
                 {initials}
               </div>
               <div className="hidden sm:block">
-                <p className="max-w-36 truncate text-xs font-bold">{user?.full_name || "User"}</p>
-                <p className="max-w-36 truncate text-[11px] text-muted-foreground">{user?.role || "Medical Student"}</p>
+                <p className="max-w-36 truncate text-xs font-bold">{user?.full_name || t("shell.user")}</p>
+                <p className="max-w-36 truncate text-[11px] text-muted-foreground">{user?.role || t("shell.medicalStudent")}</p>
               </div>
               <button
                 onClick={handleLogout}
-                aria-label="Sign out"
+                aria-label={t("shell.signOut")}
                 className="flex h-8 w-8 items-center justify-center rounded-md text-muted-foreground interaction-lift hover:bg-surface hover:text-foreground"
               >
                 <LogOut size={15} />

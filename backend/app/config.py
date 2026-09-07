@@ -25,6 +25,15 @@ class Settings(BaseSettings):
     # OpenRouter
     openrouter_api_key: str = ""
     openrouter_model: str = "z-ai/glm-4.5-air:free"
+    # Free model IDs get rate limited and retired without warning, which used to
+    # take the chatbot and diet planner offline. These are tried in order when
+    # the primary model fails. `openrouter/free` is OpenRouter's auto-router
+    # across whatever free models are currently healthy.
+    openrouter_fallback_models: str = (
+        "meta-llama/llama-3.3-70b-instruct:free,"
+        "google/gemma-2-9b-it:free,"
+        "openrouter/free"
+    )
     openrouter_site_url: str = "http://localhost:5173"
     openrouter_app_name: str = "XRayVision AI"
     openrouter_timeout_seconds: float = 60.0

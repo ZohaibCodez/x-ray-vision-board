@@ -1,6 +1,12 @@
 """Diet plan generator endpoint — FYP requirement."""
 
-from __future__ import annotations
+# NOTE: deliberately no `from __future__ import annotations` in this module.
+# `@limiter.limit` (slowapi) wraps the endpoint, so the wrapper's __globals__
+# belong to slowapi, not to this file. With string annotations FastAPI then
+# cannot resolve `req: DietRequest` to a Pydantic model, silently treats it as
+# a *query* parameter, and every POST fails with 422 before the handler runs.
+# Real annotation objects avoid the lookup entirely. Python 3.11+ supports the
+# `X | None` syntax used here natively.
 from fastapi import APIRouter, Depends, Request
 from app.main import limiter
 from app.models.schemas import DietRequest, DietPlanResponse, DayPlan, MealItem

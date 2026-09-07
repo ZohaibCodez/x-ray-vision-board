@@ -1,8 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
-import { AlertTriangle, Loader2, Salad, Sparkles, Lightbulb } from "lucide-react";
+import { AlertTriangle, Loader2, Printer, Salad, Sparkles, Lightbulb } from "lucide-react";
 import { AppShell } from "@/components/app/AppShell";
 import { dietApi } from "@/lib/api";
+import { useLanguage, type StringKey } from "@/lib/i18n";
 import type { DietPlanResponse } from "@/lib/types";
 
 export const Route = createFileRoute("/diet")({
@@ -10,50 +11,92 @@ export const Route = createFileRoute("/diet")({
   component: DietPage,
 });
 
-const preferences = ["Balanced", "Vegetarian", "Vegan", "Keto", "High-Protein", "Low-Carb"];
+/**
+ * The form is deliberately plain: pick from a few buttons, press one big
+ * button. The previous version asked for a free-text medical condition,
+ * "Keto / Low-Carb" preferences and comma-separated restrictions, which is
+ * more than a typical user here can answer.
+ *
+ * `condition` and `goal` are the English terms the backend matches on; only
+ * the label the user reads is translated.
+ */
+const healthOptions: {
+  id: string;
+  labelKey: StringKey;
+  condition?: string;
+  goal?: string;
+}[] = [
+  { id: "none", labelKey: "diet.condition.none" },
+  { id: "sugar", labelKey: "diet.condition.sugar", condition: "diabetes" },
+  { id: "bp", labelKey: "diet.condition.bp", condition: "high blood pressure" },
+  { id: "heart", labelKey: "diet.condition.heart", condition: "heart disease" },
+  { id: "kidney", labelKey: "diet.condition.kidney", condition: "kidney disease" },
+  { id: "weight", labelKey: "diet.condition.weight", goal: "weight loss" },
+];
+
+const foodOptions: { id: string; labelKey: StringKey; preference: string }[] = [
+  { id: "all", labelKey: "diet.food.everything", preference: "balanced" },
+  { id: "nomeat", labelKey: "diet.food.noMeat", preference: "vegetarian" },
+  { id: "nobeef", labelKey: "diet.food.noBeef", preference: "no beef" },
+];
+
+const avoidOptions: { id: string; labelKey: StringKey; restriction: string }[] = [
+  { id: "egg", labelKey: "diet.avoid.egg", restriction: "egg" },
+  { id: "milk", labelKey: "diet.avoid.milk", restriction: "dairy" },
+  { id: "wheat", labelKey: "diet.avoid.wheat", restriction: "gluten" },
+  { id: "nuts", labelKey: "diet.avoid.nuts", restriction: "nuts" },
+];
 
 function DietPage() {
-  const [condition, setCondition] = useState("");
-  const [pref, setPref] = useState("Balanced");
-  const [restrictions, setRestrictions] = useState("");
-  const [goals, setGoals] = useState("general health");
-  const [language, setLanguage] = useState<"en" | "ur">("en");
+  const { lang, dir, t } = useLanguage();
+  const [health, setHealth] = useState("none");
+  const [food, setFood] = useState("all");
+  const [avoid, setAvoid] = useState<string[]>([]);
   const [loading, setLoading] = useState(false);
   const [plan, setPlan] = useState<DietPlanResponse | null>(null);
   const [error, setError] = useState("");
+
+  const toggleAvoid = (id: string) => {
+    setAvoid((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]));
+  };
 
   const handleGenerate = async () => {
     setLoading(true);
     setError("");
     try {
+      const selectedHealth = healthOptions.find((o) => o.id === health);
+      const selectedFood = foodOptions.find((o) => o.id === food);
+
       const result = await dietApi.generate({
-        condition: condition || undefined,
-        dietary_preferences: pref.toLowerCase(),
-        restrictions: restrictions ? restrictions.split(",").map(s => s.trim()) : [],
-        goals,
-        language,
+        condition: selectedHealth?.condition,
+        dietary_preferences: selectedFood?.preference || "balanced",
+        restrictions: avoidOptions
+          .filter((o) => avoid.includes(o.id))
+          .map((o) => o.restriction),
+        goals: selectedHealth?.goal || "general health",
+        language: lang,
       });
       setPlan(result);
     } catch (err: any) {
-      setError(err.message || "Failed to generate diet plan.");
+      setError(err.message || t("diet.failed"));
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <AppShell title="Diet Planner">
-      <div className="mx-auto max-w-4xl">
+    <AppShell title="Diet Planner" titleKey="diet.title">
+      <div className="mx-auto max-w-4xl" dir={dir}>
         {!plan ? (
           <>
-            <header className="mb-8 clinical-panel-strong premium-card p-5">
+            <header className="clinical-panel-strong premium-card mb-8 p-5">
               <div className="flex items-center gap-3">
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-primary">
                   <Salad size={18} />
                 </div>
                 <div>
-                  <h2 className="font-display text-2xl font-bold">AI Diet Plan Generator</h2>
-                  <p className="text-sm text-muted-foreground">Get a personalized meal plan based on your health condition</p>
+                  <h2 className="font-display text-2xl font-bold">{t("diet.heading")}</h2>
+                  <p className="text-sm text-muted-foreground">{t("diet.subtitle")}</p>
                 </div>
               </div>
             </header>
@@ -64,66 +107,33 @@ function DietPage() {
               </div>
             )}
 
-            <div className="clinical-panel premium-card space-y-6 p-6">
-              <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Medical Condition (optional)</label>
-                <input
-                  value={condition}
-                  onChange={(e) => setCondition(e.target.value)}
-                  placeholder="e.g., diabetes, heart disease, high blood pressure"
-                  className="premium-input w-full rounded-md border border-border bg-background/60 px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none"
-                />
-              </div>
+            <div className="clinical-panel premium-card space-y-7 p-6">
+              <Choice
+                label={t("diet.conditionLabel")}
+                help={t("diet.conditionHelp")}
+                options={healthOptions.map((o) => ({ id: o.id, label: t(o.labelKey) }))}
+                selected={[health]}
+                onSelect={setHealth}
+              />
 
-              <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Dietary Preference</label>
-                <div className="flex flex-wrap gap-2">
-                  {preferences.map((p) => (
-                    <button
-                      key={p}
-                      onClick={() => setPref(p)}
-                      className={`min-h-10 rounded-lg border px-3 py-2 text-xs font-medium interaction-lift ${
-                        pref === p
-                          ? "border-primary bg-primary/10 text-primary"
-                          : "border-border bg-background/60 text-muted-foreground hover:border-primary/40"
-                      }`}
-                    >
-                      {p}
-                    </button>
-                  ))}
-                </div>
-              </div>
+              <Choice
+                label={t("diet.foodLabel")}
+                options={foodOptions.map((o) => ({ id: o.id, label: t(o.labelKey) }))}
+                selected={[food]}
+                onSelect={setFood}
+              />
 
-              <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Restrictions (comma-separated)</label>
-                <input
-                  value={restrictions}
-                  onChange={(e) => setRestrictions(e.target.value)}
-                  placeholder="e.g., gluten-free, dairy-free, nut allergy"
-                  className="premium-input w-full rounded-md border border-border bg-background/60 px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none"
-                />
-              </div>
-
-              <div>
-                <label className="mb-1.5 block text-xs font-medium uppercase tracking-wider text-muted-foreground">Health Goals</label>
-                <input
-                  value={goals}
-                  onChange={(e) => setGoals(e.target.value)}
-                  placeholder="e.g., weight loss, muscle gain, general health"
-                  className="premium-input w-full rounded-md border border-border bg-background/60 px-4 py-3 text-sm placeholder:text-muted-foreground focus:outline-none"
-                />
-              </div>
-
-              <div className="flex items-center gap-3">
-                <div className="flex gap-1 rounded-md border border-border bg-background/60 p-1">
-                  <button onClick={() => setLanguage("en")} className={`rounded px-2.5 py-1 text-xs font-medium ${language === "en" ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}>English</button>
-                  <button onClick={() => setLanguage("ur")} className={`rounded px-2.5 py-1 text-xs font-medium ${language === "ur" ? "bg-primary/15 text-primary" : "text-muted-foreground"}`}>Urdu</button>
-                </div>
-              </div>
+              <Choice
+                label={t("diet.avoidLabel")}
+                options={avoidOptions.map((o) => ({ id: o.id, label: t(o.labelKey) }))}
+                selected={avoid}
+                onSelect={toggleAvoid}
+                multi
+              />
 
               <div className="flex items-start gap-3 rounded-lg border border-warning/25 bg-warning/10 p-4 text-sm text-muted-foreground">
                 <AlertTriangle size={16} className="mt-0.5 shrink-0 text-warning" />
-                <p>Educational meal guidance only. For hypertension, diabetes, kidney disease, pregnancy, allergies, or prescribed medicines, review the plan with a qualified clinician or dietitian.</p>
+                <p>{t("diet.disclaimer")}</p>
               </div>
 
               <button
@@ -131,7 +141,15 @@ function DietPage() {
                 disabled={loading}
                 className="clinical-button h-14 w-full text-base disabled:opacity-50"
               >
-                {loading ? (<><Loader2 size={18} className="animate-spin" /> Generating plan...</>) : (<><Sparkles size={18} /> Generate Diet Plan</>)}
+                {loading ? (
+                  <>
+                    <Loader2 size={18} className="animate-spin" /> {t("diet.generating")}
+                  </>
+                ) : (
+                  <>
+                    <Sparkles size={18} /> {t("diet.generate")}
+                  </>
+                )}
               </button>
             </div>
           </>
@@ -139,16 +157,23 @@ function DietPage() {
           <>
             <div className="clinical-panel-strong premium-card mb-6 flex flex-col gap-4 p-5 sm:flex-row sm:items-center sm:justify-between">
               <div>
-                <p className="font-mono text-[11px] uppercase tracking-widest text-primary">Your Plan</p>
+                <p className="font-mono text-[11px] uppercase tracking-widest text-primary">
+                  {t("diet.yourPlan")}
+                </p>
                 <h2 className="mt-1 font-display text-2xl font-bold">{plan.title}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">{plan.summary}</p>
               </div>
-              <button
-                onClick={() => setPlan(null)}
-                className="clinical-button-secondary px-4"
-              >
-                New Plan
-              </button>
+              <div className="flex shrink-0 gap-2 print:hidden">
+                <button
+                  onClick={() => window.print()}
+                  className="clinical-button-secondary px-4"
+                >
+                  <Printer size={15} /> {t("diet.print")}
+                </button>
+                <button onClick={() => setPlan(null)} className="clinical-button-secondary px-4">
+                  {t("diet.newPlan")}
+                </button>
+              </div>
             </div>
 
             <div className="space-y-4">
@@ -156,17 +181,23 @@ function DietPage() {
                 <div key={day.day} className="clinical-panel premium-card scroll-reveal p-5">
                   <h3 className="font-display text-lg font-bold text-primary">{day.day}</h3>
                   <div className="mt-4 grid gap-3 sm:grid-cols-3">
-                    <MealCard title="Breakfast" meal={day.breakfast} />
-                    <MealCard title="Lunch" meal={day.lunch} />
-                    <MealCard title="Dinner" meal={day.dinner} />
+                    <MealCard title={t("diet.breakfast")} meal={day.breakfast} />
+                    <MealCard title={t("diet.lunch")} meal={day.lunch} />
+                    <MealCard title={t("diet.dinner")} meal={day.dinner} />
                   </div>
                   {day.snacks.length > 0 && (
                     <div className="mt-3">
-                      <p className="text-xs font-medium text-muted-foreground mb-2">Snacks</p>
+                      <p className="mb-2 text-xs font-medium text-muted-foreground">
+                        {t("diet.snacks")}
+                      </p>
                       <div className="flex flex-wrap gap-2">
                         {day.snacks.map((s, i) => (
-                          <span key={i} className="rounded-full border border-border bg-background/60 px-3 py-1 text-xs">
-                            {s.name} {s.calories ? `| ${s.calories} cal` : ""}
+                          <span
+                            key={i}
+                            className="rounded-full border border-border bg-background/60 px-3 py-1 text-xs"
+                          >
+                            {s.name}
+                            {s.calories ? ` · ${s.calories} ${t("diet.calories")}` : ""}
                           </span>
                         ))}
                       </div>
@@ -178,14 +209,18 @@ function DietPage() {
 
             {plan.tips.length > 0 && (
               <div className="clinical-panel premium-card mt-6 p-5">
-                <div className="flex items-center gap-2 mb-3">
+                <div className="mb-3 flex items-center gap-2">
                   <Lightbulb size={16} className="text-primary" />
-                  <span className="font-mono text-[11px] uppercase tracking-widest text-primary">Health Tips</span>
+                  <span className="font-mono text-[11px] uppercase tracking-widest text-primary">
+                    {t("diet.tips")}
+                  </span>
                 </div>
                 <ul className="space-y-2">
                   {plan.tips.map((tip, i) => (
                     <li key={i} className="flex items-start gap-2 text-sm">
-                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 font-mono text-[10px] text-primary">{i + 1}</span>
+                      <span className="mt-0.5 flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-primary/15 font-mono text-[10px] text-primary">
+                        {i + 1}
+                      </span>
                       <span>{tip}</span>
                     </li>
                   ))}
@@ -199,16 +234,69 @@ function DietPage() {
   );
 }
 
-function MealCard({ title, meal }: { title: string; meal: { name: string; description: string; calories?: number | null; nutrients?: string | null } }) {
+function Choice({
+  label,
+  help,
+  options,
+  selected,
+  onSelect,
+  multi = false,
+}: {
+  label: string;
+  help?: string;
+  options: { id: string; label: string }[];
+  selected: string[];
+  onSelect: (id: string) => void;
+  multi?: boolean;
+}) {
   return (
-    <div className="rounded-lg border border-border bg-background/60 p-3 interaction-lift">
+    <div>
+      <label className="block text-sm font-semibold text-foreground">{label}</label>
+      {help && <p className="mt-0.5 text-xs text-muted-foreground">{help}</p>}
+      <div className="mt-3 flex flex-wrap gap-2" role={multi ? "group" : "radiogroup"}>
+        {options.map((option) => {
+          const active = selected.includes(option.id);
+          return (
+            <button
+              key={option.id}
+              type="button"
+              role={multi ? "checkbox" : "radio"}
+              aria-checked={active}
+              onClick={() => onSelect(option.id)}
+              className={`interaction-lift min-h-11 rounded-lg border px-4 py-2 text-sm font-medium ${
+                active
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-background/60 text-muted-foreground hover:border-primary/40"
+              }`}
+            >
+              {option.label}
+            </button>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+function MealCard({
+  title,
+  meal,
+}: {
+  title: string;
+  meal: { name: string; description: string; calories?: number | null; nutrients?: string | null };
+}) {
+  return (
+    <div className="interaction-lift rounded-lg border border-border bg-background/60 p-3">
       <p className="text-xs font-medium text-muted-foreground">{title}</p>
       <p className="mt-1 text-sm font-semibold">{meal.name}</p>
       <p className="mt-1 text-xs text-muted-foreground">{meal.description}</p>
-      <div className="mt-2 flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
-        {meal.calories && <span>{meal.calories} cal</span>}
-        {meal.nutrients && <><span className="text-border">|</span><span>{meal.nutrients}</span></>}
-      </div>
+      {(meal.calories || meal.nutrients) && (
+        <div className="mt-2 flex flex-wrap items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
+          {meal.calories && <span>{meal.calories} cal</span>}
+          {meal.calories && meal.nutrients && <span className="text-border">|</span>}
+          {meal.nutrients && <span>{meal.nutrients}</span>}
+        </div>
+      )}
     </div>
   );
 }
