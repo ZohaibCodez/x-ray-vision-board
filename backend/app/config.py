@@ -29,9 +29,11 @@ class Settings(BaseSettings):
     # take the chatbot and diet planner offline. These are tried in order when
     # the primary model fails. `openrouter/free` is OpenRouter's auto-router
     # across whatever free models are currently healthy.
+    # Only 2 entries here: OpenRouter caps the whole chain (primary + these)
+    # at 3 and 400s the request if it is longer. `openrouter/free` goes last
+    # because it auto-routes across whatever free models are currently healthy.
     openrouter_fallback_models: str = (
         "meta-llama/llama-3.3-70b-instruct:free,"
-        "google/gemma-2-9b-it:free,"
         "openrouter/free"
     )
     openrouter_site_url: str = "http://localhost:5173"

@@ -26,6 +26,11 @@ MAX_ATTEMPTS = 3
 BACKOFF_SECONDS = (1.0, 3.0)
 RETRYABLE_STATUS = {408, 409, 429, 500, 502, 503, 504}
 
+# OpenRouter rejects the request outright with
+# "'models' array must have 3 items or fewer." past this, so the chain is
+# truncated rather than allowed to fail every call.
+MAX_MODELS = 3
+
 
 class OpenRouterError(RuntimeError):
     """Raised when OpenRouter cannot produce a completion.
@@ -50,7 +55,7 @@ def _model_candidates() -> list[str]:
     for model in candidates:
         if model and model not in ordered:
             ordered.append(model)
-    return ordered
+    return ordered[:MAX_MODELS]
 
 
 def _retry_after_seconds(response: httpx.Response, attempt: int) -> float:
@@ -97,8 +102,15 @@ def complete_chat(
     *,
     temperature: float = 0.2,
     max_tokens: int = 2048,
+    reasoning: dict | None = None,
 ) -> str:
-    """Send a list of role/content messages and return the assistant text."""
+    """Send a list of role/content messages and return the assistant text.
+
+    `reasoning` maps to OpenRouter's reasoning controls. The free tier routes to
+    reasoning models (a live run landed on nemotron, which spent 2087 of 3000
+    tokens thinking and truncated the answer), so callers that need a long,
+    complete answer should turn reasoning down and raise `max_tokens`.
+    """
     settings = get_settings()
     if not settings.openrouter_api_key:
         raise OpenRouterError(
@@ -116,6 +128,8 @@ def complete_chat(
     if len(models) > 1:
         # OpenRouter tries each model in order when the earlier ones fail.
         payload["models"] = models
+    if reasoning:
+        payload["reasoning"] = reasoning
 
     headers = {
         "Authorization": f"Bearer {settings.openrouter_api_key}",
@@ -200,6 +214,18 @@ def complete_chat(
 
         content = _extract_content(data)
         if content:
+            choice = (data.get("choices") or [{}])[0]
+            if choice.get("finish_reason") == "length":
+                # Not fatal — the caller may still salvage it — but it is the
+                # usual reason a long structured answer comes back unparseable.
+                usage = data.get("usage") or {}
+                logger.warning(
+                    "OpenRouter response hit the token limit (model=%s, completion=%s, "
+                    "reasoning=%s). The answer is truncated.",
+                    data.get("model"),
+                    usage.get("completion_tokens"),
+                    (usage.get("completion_tokens_details") or {}).get("reasoning_tokens"),
+                )
             return content
 
         last_error = OpenRouterError(
@@ -222,6 +248,7 @@ def complete_text(
     system_prompt: str | None = None,
     temperature: float = 0.2,
     max_tokens: int = 2048,
+    reasoning: dict | None = None,
 ) -> str:
     """Send a single prompt to OpenRouter and return the assistant text."""
     messages: list[dict] = []
@@ -229,4 +256,9 @@ def complete_text(
         messages.append({"role": "system", "content": system_prompt})
     messages.append({"role": "user", "content": prompt})
 
-    return complete_chat(messages, temperature=temperature, max_tokens=max_tokens)
+    return complete_chat(
+        messages,
+        temperature=temperature,
+        max_tokens=max_tokens,
+        reasoning=reasoning,
+    )

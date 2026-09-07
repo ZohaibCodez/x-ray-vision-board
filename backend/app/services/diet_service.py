@@ -112,7 +112,15 @@ Respond ONLY in this JSON format, with no markdown and no extra text:
 """
 
     try:
-        response_text = complete_text(prompt, temperature=0.35, max_tokens=3000)
+        # A 7-day plan is ~2,500 tokens of JSON on its own. The free tier
+        # routes to reasoning models that spend most of a small budget
+        # thinking, so give it real headroom and turn the thinking down.
+        response_text = complete_text(
+            prompt,
+            temperature=0.35,
+            max_tokens=16000,
+            reasoning={"effort": "low", "exclude": True},
+        )
         parsed = _parse_diet_response(response_text)
         return _normalize_diet_plan(
             parsed, condition_text, dietary_preferences, restrictions, goals, language
@@ -154,6 +162,9 @@ def _condition_rules(condition: str, goals: str) -> str:
             " and always pair them with daal, sabzi, anda, dahi or meat.",
             "Say clearly to avoid soft drinks, packet juice, mithai, and lots of sugar in chai.",
             "Prefer chapati over white bread, and a smaller portion of rice.",
+            "NEVER put these in a diabetic plan, not even once: halwa puri, puri, jalebi, gulab jamun,"
+            " mithai, sheer khurma, sweet lassi, rooh afza, sugary paratha, cake, biscuits, or any"
+            " deep-fried nashta. They are normal Pakistani foods but they are wrong for this person.",
         ])
     if _has_any(context, KIDNEY_TERMS):
         rules.extend([
@@ -189,6 +200,67 @@ def _restriction_rules(restrictions: list[str]) -> str:
     return "\n".join(f"- {rule}" for rule in rules) or "- No extra foods to avoid."
 
 
+def _repair_truncated_plan(text: str) -> dict | None:
+    """Rebuild a plan from output that was cut off mid-JSON.
+
+    Free-tier reasoning models regularly hit the token ceiling partway through
+    day 4 or 5. Everything before the cut is still valid, so the complete day
+    objects are recovered and the caller decides whether enough survived.
+    """
+    if '"plan"' not in text:
+        return None
+
+    def _grab(field: str) -> str:
+        m = re.search(rf'"{field}"\s*:\s*"((?:[^"\\]|\\.)*)"', text)
+        return m.group(1) if m else ""
+
+    start = text.find("[", text.find('"plan"'))
+    if start == -1:
+        return None
+
+    days, depth, obj_start = [], 0, None
+    in_string, escaped = False, False
+
+    for i in range(start, len(text)):
+        ch = text[i]
+        if escaped:
+            escaped = False
+            continue
+        if ch == "\\":
+            escaped = True
+            continue
+        if ch == '"':
+            in_string = not in_string
+            continue
+        if in_string:
+            continue
+        if ch == "{":
+            if depth == 0:
+                obj_start = i
+            depth += 1
+        elif ch == "}":
+            depth -= 1
+            if depth == 0 and obj_start is not None:
+                try:
+                    days.append(json.loads(text[obj_start:i + 1]))
+                except json.JSONDecodeError:
+                    pass
+                obj_start = None
+        elif ch == "]" and depth == 0:
+            break
+
+    if not days:
+        return None
+
+    logger.warning("Recovered %s day(s) from a truncated diet plan", len(days))
+    return {
+        "title": _grab("title") or "Your Diet Plan",
+        "summary": _grab("summary"),
+        "plan": days,
+        "tips": [],
+    }
+
+
 def _parse_diet_response(text: str) -> dict:
     """Parse the model response into a structured diet plan."""
     cleaned = text.strip()
@@ -198,19 +270,26 @@ def _parse_diet_response(text: str) -> dict:
         lines = cleaned.split("\n")
         cleaned = "\n".join(lines[1:-1] if lines[-1].strip() == "```" else lines[1:]).strip()
 
+    parsed = None
     try:
         parsed = json.loads(cleaned)
     except json.JSONDecodeError:
         # Fall back to the outermost JSON object in the text.
         match = re.search(r"\{.*\}", cleaned, re.DOTALL)
-        if not match:
-            logger.warning("Failed to parse diet plan JSON")
-            return {}
-        try:
-            parsed = json.loads(match.group(0))
-        except json.JSONDecodeError:
-            logger.warning("Failed to parse diet plan JSON after extraction")
-            return {}
+        if match:
+            try:
+                parsed = json.loads(match.group(0))
+            except json.JSONDecodeError:
+                parsed = None
+
+    if parsed is None:
+        # The answer may simply have run out of tokens mid-object. Salvage the
+        # days that did come through rather than throwing the whole plan away.
+        parsed = _repair_truncated_plan(cleaned)
+
+    if parsed is None:
+        logger.warning("Failed to parse diet plan JSON")
+        return {}
 
     if not isinstance(parsed, dict):
         return {}
@@ -221,6 +300,57 @@ def _parse_diet_response(text: str) -> dict:
         "plan": parsed.get("plan", []),
         "tips": parsed.get("tips", []),
     }
+
+
+# Foods that are perfectly normal in a Pakistani kitchen but are wrong for a
+# specific condition. The model does reach for these — a live run put
+# "Halwa puri aur chai" in a diabetes plan — so the prompt rule is backed by a
+# hard check here. Matched on word boundaries so "puri" does not fire inside
+# an unrelated word.
+DIABETES_BANNED = (
+    "halwa puri", "puri", "jalebi", "gulab jamun", "mithai", "sheer khurma",
+    "sweet lassi", "rooh afza", "kheer", "cake", "biscuit", "soft drink",
+    "حلوہ پوری", "پوری", "جلیبی", "مٹھائی", "گلاب جامن", "کھیر", "میٹھی لسی",
+)
+
+HYPERTENSION_BANNED = (
+    "achaar", "achar", "pickle", "papad", "chips", "instant noodles",
+    "processed meat", "salted", "namkeen",
+    "اچار", "پاپڑ", "چپس", "نمکین",
+)
+
+
+def _meal_texts(days: list) -> list[str]:
+    """Every meal name + description in the plan, lowercased."""
+    texts = []
+    for day in days:
+        if not isinstance(day, dict):
+            continue
+        meals = [day.get("breakfast"), day.get("lunch"), day.get("dinner")]
+        meals += day.get("snacks") if isinstance(day.get("snacks"), list) else []
+        for meal in meals:
+            if isinstance(meal, dict):
+                texts.append(f"{meal.get('name', '')} {meal.get('description', '')}".lower())
+    return texts
+
+
+def _unsafe_for_condition(days: list, condition: str, goals: str) -> list[str]:
+    """Foods in the plan that are unsafe for the stated condition."""
+    context = f"{condition} {goals}"
+    banned: tuple[str, ...] = ()
+    if _has_any(context, DIABETES_TERMS):
+        banned += DIABETES_BANNED
+    if _has_any(context, HYPERTENSION_TERMS):
+        banned += HYPERTENSION_BANNED
+    if not banned:
+        return []
+
+    found = []
+    for text in _meal_texts(days):
+        for item in banned:
+            if re.search(rf"(?<!\w){re.escape(item)}(?!\w)", text):
+                found.append(item)
+    return found
 
 
 def _counts_unfamiliar_foods(days: list) -> int:
@@ -240,6 +370,38 @@ def _counts_unfamiliar_foods(days: list) -> int:
     return hits
 
 
+URDU_DAY_NAMES = (
+    "پہلا دن", "دوسرا دن", "تیسرا دن", "چوتھا دن",
+    "پانچواں دن", "چھٹا دن", "ساتواں دن",
+)
+
+
+def _day_label(index: int, language: str) -> str:
+    """Human day name for position `index` (1-based)."""
+    if language == "ur" and 1 <= index <= len(URDU_DAY_NAMES):
+        return URDU_DAY_NAMES[index - 1]
+    return f"Day {index}"
+
+
+def _top_up_days(days: list, language: str) -> list:
+    """Extend a short plan to 7 days by cycling the days that came through.
+
+    Repeating meals across a week is normal in a real household plan, and the
+    user keeps the food that was chosen for them rather than being handed the
+    generic week instead.
+    """
+    filled = [dict(d) for d in days if isinstance(d, dict)]
+    if not filled:
+        return days
+
+    while len(filled) < 7:
+        filled.append(dict(filled[len(filled) % len(days)]))
+
+    for i, day in enumerate(filled, start=1):
+        day["day"] = _day_label(i, language)
+    return filled
+
+
 def _normalize_diet_plan(
     plan: dict,
     condition: str = "general wellness",
@@ -251,6 +413,13 @@ def _normalize_diet_plan(
     """Keep generated plans complete, local, and safe."""
     restrictions = restrictions or []
     days = plan.get("plan") if isinstance(plan.get("plan"), list) else []
+
+    # A plan cut short at day 6 is still the user's own personalized plan.
+    # Topping it up beats throwing it away for the generic one; only a badly
+    # short answer falls all the way back.
+    if 5 <= len(days) < 7:
+        logger.info("Diet plan had %s days; topping up to 7", len(days))
+        days = _top_up_days(days, language)
 
     if len(days) != 7:
         logger.warning("Diet plan had %s days; using validated fallback", len(days))
@@ -274,6 +443,16 @@ def _normalize_diet_plan(
     if unfamiliar >= 4:
         logger.warning(
             "Diet plan used %s unfamiliar foods; falling back to the local plan", unfamiliar
+        )
+        return _fallback_diet_plan(condition, dietary_preferences, restrictions, goals, language)
+
+    # Safety, not taste: one mithai or halwa puri in a diabetic plan is enough
+    # to reject the whole thing.
+    unsafe = _unsafe_for_condition(days, condition, goals)
+    if unsafe:
+        logger.warning(
+            "Diet plan contained food unsafe for '%s' (%s); using the validated fallback",
+            condition, ", ".join(sorted(set(unsafe))[:5]),
         )
         return _fallback_diet_plan(condition, dietary_preferences, restrictions, goals, language)
 
@@ -429,7 +608,7 @@ def _base_week_en(
                 "Protein and energy" if not no_egg else "Energy",
             ),
             "lunch": meat_lunch,
-            "dinner": _meal("Khichdi", "Soft rice and lentils cooked together, with a spoon of pickle-free salad.", 430, "Light and easy to digest"),
+            "dinner": _meal("Khichdi", "Soft rice and lentils cooked together, with a little plain salad.", 430, "Light and easy to digest"),
             "snacks": [_meal("Seb (apple)", "One apple.", 90, "Fibre and vitamins")],
         },
         {
@@ -636,17 +815,39 @@ def _fallback_diet_plan(
     if condition and condition.lower() != "general wellness":
         tips = _merge_tips(tips, [_DOCTOR_TIP_UR if urdu else _DOCTOR_TIP_EN])
 
+    # The summary names the foods the plan is built from, so it has to drop the
+    # ones this person cannot eat — otherwise it advertises anda and dahi to
+    # someone who told us they avoid both.
     if urdu:
         title = "سات دن کا آسان پاکستانی کھانے کا پلان"
+        foods = []
+        if not no_egg:
+            foods.append("انڈا")
+        if not gluten_free:
+            foods.append("روٹی")
+        foods += ["دال", "چاول", "سبزی"]
+        if not dairy_free:
+            foods.append("دہی")
+        foods.append("پھل")
         summary = (
-            "روزمرہ کے عام گھریلو کھانوں پر مبنی سات دن کا سادہ پلان — انڈا، روٹی، دال، "
-            "چاول، سبزی، دہی اور پھل۔ سب کچھ عام بازار سے مل جاتا ہے۔"
+            "روزمرہ کے عام گھریلو کھانوں پر مبنی سات دن کا سادہ پلان — "
+            + "، ".join(foods)
+            + "۔ سب کچھ عام بازار سے مل جاتا ہے۔"
         )
     else:
         title = "Simple 7-Day Pakistani Meal Plan"
+        foods = []
+        if not no_egg:
+            foods.append("anda")
+        foods.append("makai ki roti" if gluten_free else "roti")
+        foods += ["daal", "chawal", "sabzi"]
+        if not dairy_free:
+            foods.append("dahi")
+        foods.append("fruit")
         summary = (
-            "A simple 7-day plan made from everyday home food — anda, roti, daal, chawal, "
-            "sabzi, dahi and fruit. Everything is available in any local market."
+            "A simple 7-day plan made from everyday home food — "
+            + ", ".join(foods[:-1])
+            + f" and {foods[-1]}. Everything is available in any local market."
         )
 
     return {
