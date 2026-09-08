@@ -252,10 +252,19 @@ export function applyLanguage(lang: Lang) {
 export function LanguageProvider({
   children,
   profileLanguage,
+  onChange,
 }: {
   children: ReactNode;
   /** `settings.language` from the signed-in profile, when there is one. */
   profileLanguage?: unknown;
+  /**
+   * Called whenever the user picks a language, so the caller can persist it
+   * to the signed-in profile. Without this, a switch made anywhere outside
+   * the Settings page's "Save" button only lived in localStorage — the next
+   * login would restore whatever language was last explicitly saved there,
+   * which is why the app kept reverting to Urdu after logging back in.
+   */
+  onChange?: (lang: Lang) => void;
 }) {
   const [lang, setLangState] = useState<Lang>("en");
 
@@ -275,10 +284,14 @@ export function LanguageProvider({
     }
   }, [profileLanguage]);
 
-  const setLang = useCallback((next: Lang) => {
-    setLangState(next);
-    applyLanguage(next);
-  }, []);
+  const setLang = useCallback(
+    (next: Lang) => {
+      setLangState(next);
+      applyLanguage(next);
+      onChange?.(next);
+    },
+    [onChange],
+  );
 
   const t = useCallback(
     (key: StringKey) => {

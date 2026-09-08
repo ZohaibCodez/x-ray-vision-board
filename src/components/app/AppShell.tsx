@@ -20,6 +20,7 @@ import {
   Settings,
   ShieldCheck,
   User,
+  X,
 } from "lucide-react";
 import { Logo } from "@/components/landing/Logo";
 import { useAuth } from "@/lib/auth-context";
@@ -61,6 +62,12 @@ export function AppShell({
   const { user, isAuthenticated, isLoading, logout } = useAuth();
   const { t } = useLanguage();
   const navigate = useNavigate();
+
+  // The desktop "collapse to icons" toggle is plain component state, not a
+  // media query — without this, collapsing the sidebar on desktop and then
+  // opening it on mobile (or just resizing down) showed the same icon-only
+  // layout there too, since the mobile drawer isn't meant to ever collapse.
+  const expanded = !collapsed || mobileOpen;
 
   // Close notification panel when clicking outside
   useEffect(() => {
@@ -116,23 +123,48 @@ export function AppShell({
       )}
 
       <aside
-        className={`app-sidebar fixed inset-y-0 left-0 z-40 flex flex-col border-r border-border bg-white/88 shadow-[var(--shadow-lg)] backdrop-blur-xl transition-all duration-200 dark:bg-card/88 md:translate-x-0 ${
+        className={`app-sidebar fixed inset-y-0 left-0 z-40 flex flex-col border-r border-border bg-white/88 shadow-[var(--shadow-lg)] backdrop-blur-xl transition-all duration-200 dark:bg-card/88 md:visible md:translate-x-0 md:pointer-events-auto ${
           collapsed ? "md:w-20" : "md:w-72"
-        } ${mobileOpen ? "is-onscreen w-72 translate-x-0" : "is-offscreen w-72 -translate-x-full md:w-auto"}`}
+        } ${
+          mobileOpen
+            ? "is-onscreen w-72 translate-x-0 visible pointer-events-auto"
+            : // `invisible`/`pointer-events-none` are the real guard here, not the
+              // transform: under RTL, translating this off-canvas can silently fail
+              // to move it (a transform + backdrop-blur + dir-flip quirk), which left
+              // the "closed" drawer sitting on top of the page, blocking the hamburger
+              // button. Hiding it outright means it can't block clicks either way.
+              "is-offscreen invisible pointer-events-none w-72 -translate-x-full md:w-auto"
+        }`}
       >
-        <div className={`flex h-18 items-center border-b border-border ${collapsed ? "md:justify-center" : "px-5"}`}>
+        <div className={`flex h-18 items-center justify-between border-b border-border ${collapsed && !mobileOpen ? "md:justify-center" : "px-5"}`}>
           <Link to="/" className="group flex min-h-12 items-center gap-3" aria-label={t("shell.goToHome")}>
             <Logo size={30} />
-            {!collapsed && (
+            {expanded && (
               <span className="font-display text-lg font-extrabold transition-colors group-hover:text-primary">
                 XRayVision <span className="text-gradient-medical">AI</span>
               </span>
             )}
           </Link>
+          <button
+            onClick={() => setMobileOpen(false)}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-muted-foreground interaction-lift hover:bg-surface hover:text-foreground md:hidden"
+            aria-label={t("shell.closeNav")}
+          >
+            <X size={18} />
+          </button>
         </div>
 
-        <div className={`px-4 py-4 ${collapsed ? "md:px-3" : ""}`}>
-          {!collapsed && (
+        {/* On mobile the header is too narrow for this next to the title and
+            user card, so it gets its own row here instead. */}
+        {expanded && (
+          <div className="flex items-center justify-between border-b border-border px-5 py-3 md:hidden">
+            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("lang.label")}</span>
+            <LanguageSwitch />
+          </div>
+        )}
+
+        <div className={`px-4 py-4 ${collapsed && !mobileOpen ? "md:px-3" : ""}`}>
+          {expanded && (
             <div className="clinical-panel-strong premium-card p-3">
               <div className="flex items-center gap-2">
                 <span className="status-dot flex h-8 w-8 items-center justify-center rounded-md bg-primary/10 text-primary">
@@ -156,7 +188,7 @@ export function AppShell({
                   <Link
                     to={item.to}
                     aria-current={active ? "page" : undefined}
-                    title={collapsed ? t(item.labelKey) : undefined}
+                    title={!expanded ? t(item.labelKey) : undefined}
                     className={`group relative flex min-h-11 items-center gap-3 rounded-lg px-3 text-sm interaction-lift ${
                       active
                         ? "nav-item-active bg-primary text-primary-foreground shadow-[var(--shadow-sm)]"
@@ -164,14 +196,14 @@ export function AppShell({
                     } ${collapsed ? "md:justify-center md:px-0" : ""}`}
                   >
                     <item.icon size={18} className="shrink-0 transition-transform duration-200 group-hover:scale-105" />
-                    {!collapsed && <span className="font-semibold">{t(item.labelKey)}</span>}
+                    {expanded && <span className="font-semibold">{t(item.labelKey)}</span>}
                   </Link>
                 </li>
               );
             })}
           </ul>
 
-          {!collapsed && (
+          {expanded && (
             <>
               <div className="my-5 border-t border-border" />
               <ul className="space-y-1">
@@ -192,7 +224,7 @@ export function AppShell({
         </nav>
 
         <div className="border-t border-border p-3">
-          {!collapsed ? (
+          {expanded ? (
             <div className="mb-3 flex items-center gap-2 rounded-lg border border-warning/30 bg-warning/10 px-3 py-2 text-warning">
               <ShieldCheck size={15} />
               <span className="font-mono text-[10px] font-semibold uppercase tracking-wider">{t("shell.educationalOnly")}</span>
@@ -221,7 +253,7 @@ export function AppShell({
         <header className="sticky top-0 z-20 flex min-h-18 items-center gap-4 border-b border-border bg-white/78 px-4 shadow-[0_1px_0_rgba(15,23,42,0.03)] backdrop-blur-xl dark:bg-background/78 md:px-8">
           <button
             onClick={() => setMobileOpen(true)}
-            className="flex h-11 w-11 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground interaction-lift dark:bg-card md:hidden"
+            className="flex h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground interaction-lift dark:bg-card md:hidden"
             aria-label={t("shell.openNav")}
           >
             <PanelLeftOpen size={18} className="rtl-flip" />
@@ -229,21 +261,25 @@ export function AppShell({
 
           <button
             onClick={() => setCollapsed((value) => !value)}
-            className="hidden h-11 w-11 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground interaction-lift hover:text-foreground dark:bg-card md:flex"
+            className="hidden h-11 w-11 shrink-0 items-center justify-center rounded-lg border border-border bg-white text-muted-foreground interaction-lift hover:text-foreground dark:bg-card md:flex"
             aria-label={collapsed ? t("shell.expandSidebar") : t("shell.collapseSidebar")}
           >
             {collapsed ? <PanelLeftOpen size={18} className="rtl-flip" /> : <PanelLeftClose size={18} className="rtl-flip" />}
           </button>
 
-          <div>
+          <div className="min-w-0 flex-1 md:flex-none">
             <p className="clinical-kicker hidden md:block">{t("shell.workspace")}</p>
-            <h1 className="font-display text-lg font-extrabold md:text-xl">
+            <h1 className="truncate font-display text-lg font-extrabold md:text-xl">
               {titleKey ? t(titleKey) : title}
             </h1>
           </div>
 
-          <div className="ms-auto flex items-center gap-2 sm:gap-3">
-            <LanguageSwitch />
+          <div className="ms-auto flex shrink-0 items-center gap-2 sm:gap-3">
+            {/* On mobile this lives inside the sidebar drawer instead — the
+                header is too narrow to fit it next to the title and user card. */}
+            <div className="hidden md:block">
+              <LanguageSwitch />
+            </div>
             <label className="relative hidden lg:block">
               <span className="sr-only">{t("shell.searchLabel")}</span>
               <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -267,7 +303,7 @@ export function AppShell({
               </button>
 
               {notifOpen && (
-                <div className="absolute end-0 top-14 z-50 w-80 rounded-xl border border-border bg-white shadow-[var(--shadow-lg)] backdrop-blur-xl dark:bg-card">
+                <div className="absolute end-0 top-14 z-50 w-[min(20rem,calc(100vw-2rem))] rounded-xl border border-border bg-white shadow-[var(--shadow-lg)] backdrop-blur-xl dark:bg-card">
                   <div className="flex items-center justify-between border-b border-border px-4 py-3">
                     <p className="text-sm font-bold">{t("shell.notifications")}</p>
                     <span className="rounded-full bg-warning/15 px-2 py-0.5 font-mono text-[10px] font-semibold uppercase text-warning">{t("shell.notifNew")}</span>

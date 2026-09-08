@@ -7,8 +7,9 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
+import { useCallback } from "react";
 import { AuthProvider, useAuth } from "@/lib/auth-context";
-import { LanguageProvider } from "@/lib/i18n";
+import { LanguageProvider, type Lang } from "@/lib/i18n";
 
 import appCss from "../styles.css?url";
 
@@ -127,10 +128,22 @@ function RootComponent() {
  * saved on the signed-in profile.
  */
 function LocalizedApp() {
-  const { user } = useAuth();
+  const { user, updateSettings } = useAuth();
+
+  // Persist every language switch to the profile, not just the one made from
+  // the Settings page's "Save" button — otherwise the choice only lives in
+  // localStorage and the next login restores whatever was last explicitly
+  // saved, which is why the app kept coming back up in Urdu.
+  const handleLanguageChange = useCallback(
+    (next: Lang) => {
+      if (!user) return;
+      updateSettings({ ...user.settings, language: next }).catch(() => {});
+    },
+    [user, updateSettings],
+  );
 
   return (
-    <LanguageProvider profileLanguage={user?.settings?.language}>
+    <LanguageProvider profileLanguage={user?.settings?.language} onChange={handleLanguageChange}>
       <Outlet />
     </LanguageProvider>
   );
