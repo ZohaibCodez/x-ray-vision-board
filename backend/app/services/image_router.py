@@ -25,22 +25,43 @@ import cv2
 logger = logging.getLogger(__name__)
 
 
+# Mean saturation near the colour-photo / X-ray cut-off (40) is a coin flip:
+# a phone photo of a film on a light box, or a pale wound photo, lands here.
+# Those images get run through both the radiograph and wound models.
+AMBIGUOUS_SATURATION_MIN = 20.0
+AMBIGUOUS_SATURATION_MAX = 60.0
+
+
 def classify_image_type(file_bytes: bytes) -> str:
     """Return the predicted scan type for an uploaded image.
 
     Returns one of ``"chest"``, ``"fracture"``, or ``"wound"``.
+    """
+    return classify_image_detailed(file_bytes)["scan_type"]
+
+
+def classify_image_detailed(file_bytes: bytes) -> dict:
+    """Classify an image and report how sure the router is.
+
+    Returns ``{"scan_type", "saturation", "ambiguous"}``. ``ambiguous`` is True
+    when the image sits close to the colour-photo vs radiograph boundary.
     """
     try:
         nparr = np.frombuffer(file_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_COLOR)
         if img is None:
             logger.warning("image_router: could not decode image, defaulting to fracture")
-            return "fracture"
+            return {"scan_type": "fracture", "saturation": None, "ambiguous": False}
 
-        return _classify(img, file_bytes)
+        saturation = float(np.mean(cv2.cvtColor(img, cv2.COLOR_BGR2HSV)[:, :, 1]))
+        return {
+            "scan_type": _classify(img, file_bytes),
+            "saturation": round(saturation, 1),
+            "ambiguous": AMBIGUOUS_SATURATION_MIN <= saturation <= AMBIGUOUS_SATURATION_MAX,
+        }
     except Exception as exc:
         logger.warning(f"image_router: classification failed ({exc}), defaulting to fracture")
-        return "fracture"
+        return {"scan_type": "fracture", "saturation": None, "ambiguous": False}
 
 
 def _classify(img: np.ndarray, file_bytes: bytes) -> str:

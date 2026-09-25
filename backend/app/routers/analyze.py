@@ -54,27 +54,78 @@ async def analyze_image(
 
     # ── Auto-detect scan type if user selected "auto" ────────────────
     original_scan_type = scan_type
+    routing: dict = {
+        "requested": original_scan_type,
+        "detected": scan_type,
+        "ambiguous": False,
+        "cross_checked": None,
+        "switched": False,
+        "note": None,
+    }
+    cross_type: str | None = None
     if scan_type == "auto":
-        from app.services.image_router import classify_image_type
-        scan_type = classify_image_type(file_bytes)
-        logger.info(f"Auto-router classified image as: {scan_type}")
+        from app.services.image_router import classify_image_detailed
+        details = classify_image_detailed(file_bytes)
+        scan_type = details["scan_type"]
+        routing.update(detected=scan_type, ambiguous=details["ambiguous"], saturation=details["saturation"])
+        if details["ambiguous"]:
+            # Close to the photo/radiograph boundary: get a second opinion from the other family.
+            cross_type = "wound" if scan_type in ("chest", "fracture") else "fracture"
+        logger.info(f"Auto-router classified image as: {scan_type} (ambiguous={details['ambiguous']})")
 
     scan_id = str(uuid.uuid4())
     logger.info(f"Starting analysis {scan_id} | type={scan_type} (requested={original_scan_type}) | user={user_id}")
     start_time = time.perf_counter()
 
     try:
-        raw_findings, model_errors, model_names = await _run_routed_ensemble(
+        primary_coro = _run_routed_ensemble(
             file_bytes=file_bytes,
             scan_type=scan_type,
             confidence_threshold=settings.confidence_threshold,
         )
+        cross_result = None
+        if cross_type:
+            primary_result, cross_result = await asyncio.gather(
+                primary_coro,
+                _run_routed_ensemble(
+                    file_bytes=file_bytes,
+                    scan_type=cross_type,
+                    confidence_threshold=settings.confidence_threshold,
+                ),
+                return_exceptions=True,
+            )
+            if isinstance(primary_result, Exception):
+                raise primary_result
+            if isinstance(cross_result, Exception):
+                logger.warning(f"Cross-check ({cross_type}) failed, ignoring: {cross_result}")
+                cross_result = None
+        else:
+            primary_result = await primary_coro
+        raw_findings, model_errors, model_names = primary_result
     except Exception as exc:
         logger.error(f"Model inference failed: {exc}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"AI model inference failed: {str(exc)}",
         ) from exc
+
+    if cross_type and cross_result:
+        scan_type, raw_findings, model_names = _reconcile_routing(
+            primary_type=scan_type,
+            primary_findings=raw_findings,
+            primary_models=model_names,
+            cross_type=cross_type,
+            cross_findings=cross_result[0],
+            cross_models=cross_result[2],
+            routing=routing,
+        )
+
+    if scan_type == "fracture" and not routing["note"] and _signal(raw_findings, "fracture") == 0:
+        routing["note"] = (
+            "No active fracture was found on this radiograph. An X-ray cannot assess skin or "
+            "soft-tissue wounds — if your concern is a wound, upload a photo of it as a Wound scan."
+        )
+    routing["final"] = scan_type
 
     try:
         agent_result = synthesize_report(
@@ -124,6 +175,7 @@ async def analyze_image(
         "scan_type": scan_type,
         "auto_detected": original_scan_type == "auto",
         "ensemble_mode": "routed",
+        "routing": routing,
         "models_run": model_names,
         "model_errors": model_errors,
         "specialist": synthesis.specialist,  # persisted here since scans table has no specialist column
@@ -251,124 +303,178 @@ def _detect_metallic_hardware(file_bytes: bytes) -> bool:
         return False
 
 
-def _run_fracture(file_bytes: bytes, confidence_threshold: float) -> list[dict]:
-    """Run fracture detection with classifier gating.
+_SITE_METAL_FRACTION = 0.02  # ≥2% saturated-white pixels around a box → implant at the site
+_SITE_BOX_PAD = 0.15
+_SWITCH_MIN_SIGNAL = 60.0    # cross-check must be at least this confident to take over
+_SWITCH_MAX_PRIMARY = 50.0   # ...and the original route must be weaker than this
 
-    The HuggingFace image-level classifier acts as a *gatekeeper*:
-    if it is highly confident the scan shows NO fracture, weak YOLO
-    detections are suppressed — this is the key fix for healed bones,
-    rods, and old injuries being misreported as active fractures.
+_INACTIVE_FRACTURE_WORDS = ("prior", "healed", "possible", "old finding")
+
+
+def _decode_gray(file_bytes: bytes):
+    try:
+        import cv2
+        import numpy as np
+
+        return cv2.imdecode(np.frombuffer(file_bytes, np.uint8), cv2.IMREAD_GRAYSCALE)
+    except Exception:
+        return None
+
+
+def _metal_fraction_in_box(gray, bbox: dict) -> float:
+    """Fraction of saturated-white pixels in (and just around) a fracture box.
+
+    Surgical rods/plates are near-saturated. Checking at the box, rather than
+    anywhere in the image, stops burned-in R/L markers and text from masking a
+    real fracture as "surgical implant".
+    """
+    if gray is None:
+        return 0.0
+    h, w = gray.shape[:2]
+    bx, by, bw, bh = (bbox[k] / 100.0 for k in ("x", "y", "w", "h"))
+    x1 = max(0, int((bx - bw * _SITE_BOX_PAD) * w))
+    x2 = min(w, int((bx + bw * (1 + _SITE_BOX_PAD)) * w))
+    y1 = max(0, int((by - bh * _SITE_BOX_PAD) * h))
+    y2 = min(h, int((by + bh * (1 + _SITE_BOX_PAD)) * h))
+    roi = gray[y1:y2, x1:x2]
+    if roi.size == 0:
+        return 0.0
+    return float((roi >= 240).mean())
+
+
+def _is_active_fracture(finding: dict) -> bool:
+    name = finding.get("name", "").lower()
+    return "fracture" in name and not any(w in name for w in _INACTIVE_FRACTURE_WORDS)
+
+
+def _run_fracture(file_bytes: bytes, confidence_threshold: float) -> list[dict]:
+    """Run fracture detection: YOLO localizes, the classifier and implant check gate.
+
+    YOLO boxes are always kept, since they are the only thing that says *where*
+    the fracture is. They are downgraded (not dropped) to a healed/post-surgical
+    finding when metal sits at the site, or when the image-level classifier is
+    confident there is no fracture and the box is weak. The classifier's
+    "Full image" finding is only used when YOLO localized nothing.
     """
     from app.services.fracture_model import predict_fractures
 
-    findings: list[dict] = []
-
-    # ── 1. Run YOLO localization ────────────────────────────────────
     yolo_image = image_preprocess.preprocess_for_yolo(file_bytes)
     yolo_findings = predict_fractures(yolo_image, confidence_threshold)
-    yolo_positive = [
-        f for f in yolo_findings
-        if f.get("name") != "No fracture box localized"
-    ]
+    yolo_boxes = [dict(f) for f in yolo_findings if f.get("bbox")]
 
-    # ── 2. Run HuggingFace classifier (second opinion / gate) ──────
+    classifier_findings: list[dict] = []
     classifier_says_no_fracture = False
-    classifier_confidence = 0.0
-
     if get_settings().fracture_classifier_enabled:
         try:
             from app.services.fracture_classifier import predict_fracture_presence
 
-            classifier_image = image_preprocess.preprocess_for_vit(file_bytes)
-            classifier_findings = predict_fracture_presence(classifier_image)
-
-            # Check if classifier is confident there is NO fracture
-            for cf in classifier_findings:
-                if cf.get("severity") == "clear" and cf.get("confidence", 0) >= 70:
-                    classifier_says_no_fracture = True
-                    classifier_confidence = cf["confidence"]
-                    logger.info(
-                        f"Classifier gate: NOT FRACTURED at {classifier_confidence:.1f}% — "
-                        f"will suppress weak YOLO detections"
-                    )
-
-            findings.extend(classifier_findings)
+            classifier_findings = predict_fracture_presence(image_preprocess.preprocess_for_vit(file_bytes))
+            classifier_says_no_fracture = any(
+                cf.get("severity") == "clear" and cf.get("confidence", 0) >= 70
+                for cf in classifier_findings
+            )
         except Exception as exc:
             logger.warning(f"Fracture classifier failed: {exc}")
 
-    # ── 3. Intelligent Hardware & Classifier Gating ────────────────
-    # Detect surgical hardware / metal implants via OpenCV pixel density OR YOLO detections
-    metal_detected_via_cv = _detect_metallic_hardware(file_bytes)
-    has_hardware = metal_detected_via_cv or any(
-        "hardware" in f.get("name", "").lower()
-        or "metal" in f.get("name", "").lower()
-        or "implant" in f.get("name", "").lower()
-        or "healed" in f.get("name", "").lower()
-        for f in yolo_positive
-    )
+    gray = _decode_gray(file_bytes)
+    findings: list[dict] = []
 
-    processed_findings: list[dict] = []
+    for box in yolo_boxes:
+        if _is_active_fracture(box):
+            if _metal_fraction_in_box(gray, box["bbox"]) >= _SITE_METAL_FRACTION:
+                logger.info(f"Implant at fracture site ({box['confidence']}%) → prior fracture site")
+                box.update(
+                    name="Prior Fracture Site — Surgical Implants Present",
+                    severity="low", color="info", icd_code="Z96.6",
+                )
+            elif classifier_says_no_fracture and box["confidence"] < 75:
+                logger.info(f"Classifier says no fracture; weak box ({box['confidence']}%) downgraded")
+                box.update(
+                    name="Possible Healed / Old Finding (No Active Fracture)",
+                    severity="low", color="info", icd_code="",
+                )
+        findings.append(box)
 
+    has_active_box = any(_is_active_fracture(f) for f in findings)
+    has_hardware = _detect_metallic_hardware(file_bytes)
+
+    for cf in classifier_findings:
+        if "fracture suspected" not in cf.get("name", "").lower():
+            findings.append(cf)  # the classifier's "no fracture" note
+            continue
+        if has_active_box or yolo_boxes:
+            continue  # a localized box already carries (or explains away) this
+        cf = dict(cf)
+        if has_hardware:
+            cf.update(
+                name="Prior Fracture Site — Surgical Implants Present",
+                severity="low", color="info", icd_code="Z96.6",
+            )
+        else:
+            cf.update(
+                name="Possible Healed / Old Finding (No Active Fracture Localized)",
+                severity="low", color="info", icd_code="",
+            )
+        findings.append(cf)
+
+    if not findings:
+        findings = yolo_findings  # the "No fracture box localized" placeholder
+
+    findings.sort(key=lambda item: item.get("confidence", 0), reverse=True)
+    return findings
+
+
+def _signal(findings: list[dict], kind: str) -> float:
+    """Strongest real (non-clear, non-downgraded) finding for a model family."""
+    best = 0.0
     for f in findings:
-        name_lower = f.get("name", "").lower()
-        is_classifier_suspected = f.get("model") == "FractureClassifier" and "fracture suspected" in name_lower
+        if f.get("severity") in ("clear", None):
+            continue
+        if kind == "fracture" and not (f.get("bbox") or f.get("model") == "FractureClassifier"):
+            continue
+        if kind == "fracture" and not _is_active_fracture(f):
+            continue
+        if kind == "wound" and f.get("model") != "WoundClassifier":
+            continue
+        if kind == "chest" and f.get("model") != "DenseNet121":
+            continue
+        best = max(best, float(f.get("confidence", 0)))
+    return best
 
-        if is_classifier_suspected:
-            if has_hardware:
-                # The image-level classifier's 90%+ score is triggered by the high-contrast
-                # metal plate/screws. Reclassify it to a post-surgical finding.
-                logger.info(
-                    f"Reclassifying HF classifier finding (conf={f.get('confidence')}%) "
-                    f"due to surgical hardware / implant detection."
-                )
-                f["name"] = "Prior Fracture Site — Surgical Implants Present"
-                f["severity"] = "low"
-                f["color"] = "info"
-                f["icd_code"] = "Z96.6"
-            elif not yolo_positive:
-                # If YOLO localized NO active fracture box, an unlocalized classifier guess
-                # is not proof of an acute fracture.
-                logger.info(
-                    f"Reclassifying unlocalized HF classifier finding (conf={f.get('confidence')}%) "
-                    f"because no YOLO fracture box was localized."
-                )
-                f["name"] = "Possible Healed / Old Finding (No Active Fracture Localized)"
-                f["severity"] = "low"
-                f["color"] = "info"
-                f["icd_code"] = ""
-            elif classifier_says_no_fracture:
-                continue
 
-        processed_findings.append(f)
+def _reconcile_routing(
+    *,
+    primary_type: str,
+    primary_findings: list[dict],
+    primary_models: list[str],
+    cross_type: str,
+    cross_findings: list[dict],
+    cross_models: list[str],
+    routing: dict,
+) -> tuple[str, list[dict], list[str]]:
+    """Pick one report when both a radiograph and a wound model looked at the image.
 
-    # ── 4. Classifier gating for weak YOLO boxes ────────────────────
-    if classifier_says_no_fracture and yolo_positive:
-        final_findings: list[dict] = []
-        for f in yolo_positive:
-            is_fracture_finding = "fracture" in f.get("name", "").lower()
-            is_weak = f.get("confidence", 0) < 75
+    Reporting both leads to contradictory output (e.g. "98% fracture" next to
+    "no wound"). The cross-check only takes over when it is clearly confident
+    and the original route found little.
+    """
+    routing["cross_checked"] = cross_type
+    primary_signal = _signal(primary_findings, primary_type)
+    cross_signal = _signal(cross_findings, cross_type)
+    logger.info(f"Routing: {primary_type}={primary_signal:.1f} vs {cross_type}={cross_signal:.1f}")
 
-            if is_fracture_finding and is_weak and not has_hardware:
-                logger.info(
-                    f"Classifier gate suppressed: {f['name']} at {f['confidence']}% "
-                    f"(classifier says Not Fractured at {classifier_confidence:.1f}%)"
-                )
-                f["name"] = "Possible Healed / Old Finding (No Active Fracture)"
-                f["severity"] = "low"
-                f["color"] = "info"
-                f["icd_code"] = ""
-            final_findings.append(f)
+    if cross_signal >= _SWITCH_MIN_SIGNAL and primary_signal < _SWITCH_MAX_PRIMARY:
+        routing["switched"] = True
+        routing["note"] = (
+            "This looks like a photo of a wound rather than a radiograph, so it was analyzed "
+            "with the wound model."
+            if cross_type == "wound"
+            else "This looks like a radiograph rather than a wound photo, so it was analyzed "
+            "with the fracture model."
+        )
+        return cross_type, cross_findings, cross_models
 
-        # Merge processed classifier findings with gated YOLO findings
-        for pf in processed_findings:
-            if pf not in final_findings:
-                final_findings.append(pf)
-
-        final_findings.sort(key=lambda item: item.get("confidence", 0), reverse=True)
-        return final_findings
-
-    processed_findings.sort(key=lambda item: item.get("confidence", 0), reverse=True)
-    return processed_findings
+    return primary_type, primary_findings, primary_models
 
 
 def _run_wound(file_bytes: bytes, confidence_threshold: float) -> list[dict]:

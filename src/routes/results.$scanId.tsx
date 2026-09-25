@@ -53,6 +53,7 @@ function ResultsPage() {
   const borderline        = findings.filter((f) => f.confidence < 50);
   const agent = scan.agent_synthesis;
   const lowConf = findings.some((f) => f.confidence < 60);
+  const routing = scan.model_results?.routing as { note?: string | null } | undefined;
 
   const downloadBlob = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
@@ -101,12 +102,14 @@ function ResultsPage() {
             <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{scan.created_at}</span>
           </header>
 
-          <div className="relative overflow-hidden rounded-xl bg-black">
-            <div className="relative aspect-square" style={{ transform: `scale(${zoom})`, transformOrigin: "center", transition: "transform 200ms" }}>
+          <div className="relative flex items-center justify-center overflow-hidden rounded-xl bg-black">
+            {/* Wrapper shrink-wraps the image so box percentages (relative to the
+                original image) line up with it — a fixed square would offset them. */}
+            <div className="relative inline-block max-w-full" style={{ transform: `scale(${zoom})`, transformOrigin: "center", transition: "transform 200ms" }}>
               {scan.image_url ? (
-                <img src={scan.image_url} alt={`X-ray scan ${scanId}`} className="h-full w-full object-contain opacity-95" />
+                <img src={scan.image_url} alt={`X-ray scan ${scanId}`} className="block h-auto max-h-[70vh] w-auto max-w-full opacity-95" />
               ) : (
-                <div className="flex h-full w-full items-center justify-center text-muted-foreground">
+                <div className="flex aspect-square w-64 items-center justify-center text-muted-foreground">
                   <span className="font-mono text-xs">No image available</span>
                 </div>
               )}
@@ -172,6 +175,13 @@ function ResultsPage() {
             </div>
             <p className="font-mono text-[10px] text-muted-foreground">{scanId}</p>
           </div>
+
+          {routing?.note && (
+            <div className="mt-4 flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs text-foreground">
+              <Sparkles size={14} className="mt-0.5 shrink-0 text-primary" />
+              <span>{routing.note}</span>
+            </div>
+          )}
 
           {lowConf && (
             <div className="mt-4 flex items-start gap-2 rounded-lg border border-info/30 bg-info/10 p-3 text-xs text-info">
