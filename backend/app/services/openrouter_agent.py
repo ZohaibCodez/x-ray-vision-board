@@ -107,9 +107,8 @@ IMPORTANT RULES:
 3. If no significant pathology is detected, set urgency to "clear" and recommend routine follow-up.
 4. Always include a recommendation to consult a qualified radiologist.
 5. recommended_actions should be specific, actionable medical steps — max 4 actions.
-6. For fracture scans: if "Fracture suspected" or "Fracture Detected" is present, do NOT call the scan clear.
-   Explain whether localization came from YOLO boxes or image-level classifier evidence.
-7. "No fracture box localized" means YOLO did not find a box; it is not proof of no fracture.
+10. For fracture scans: if findings indicate "Prior Fracture Site", "Surgical Implants Present", or "Healed Fracture Site", set urgency to "low" or "medium" and clarify that post-surgical internal fixation hardware (plates/screws) is present from a prior injury without active dislocation.
+11. "No fracture box localized" means YOLO did not find a box; it is not proof of no fracture.
 8. For specialist: choose based ONLY on the highest-confidence finding (>60%).
    - Lung Opacity / Infiltration / Pneumonia / Atelectasis / Consolidation / Edema → Pulmonologist
    - Cardiomegaly / Enlarged Cardiomediastinum (only if >70% confidence) → Cardiologist

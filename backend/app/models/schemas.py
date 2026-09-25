@@ -49,7 +49,7 @@ class SettingsUpdateRequest(BaseModel):
 # ── Analysis ──────────────────────────────────────────────────────────
 
 class AnalyzeRequest(BaseModel):
-    scan_type: str = Field(..., pattern="^(chest|fracture|wound)$")
+    scan_type: str = Field(..., pattern="^(auto|chest|fracture|wound)$")
     session_label: Optional[str] = None
     notes: Optional[str] = None
 

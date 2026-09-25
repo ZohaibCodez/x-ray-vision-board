@@ -9,6 +9,7 @@ import {
   Info,
   Loader2,
   ScanLine,
+  Sparkles,
   Stethoscope,
   UploadCloud,
   X,
@@ -70,6 +71,7 @@ async function validateImageFile(file: File): Promise<string | null> {
 }
 
 const types = [
+  { id: "auto", label: "Auto-Detect", icon: Sparkles, model: "AI Router", text: "System automatically detects image type and runs the right model — recommended for most users." },
   { id: "chest", label: "Chest pathology", icon: Stethoscope, model: "DenseNet121", text: "Chest X-ray screening for common pathology signals." },
   { id: "fracture", label: "Fracture detection", icon: Bone, model: "YOLOv8", text: "Bone X-ray localization with bounding boxes." },
   { id: "wound", label: "External wound", icon: Activity, model: "ViT", text: "Photo classification for external wound categories." },
@@ -79,7 +81,7 @@ function AnalyzePage() {
   const [file, setFile] = useState<File | null>(null);
   const [fileError, setFileError] = useState<string | null>(null);
   const [drag, setDrag] = useState(false);
-  const [type, setType] = useState<(typeof types)[number]["id"]>("chest");
+  const [type, setType] = useState<(typeof types)[number]["id"]>("auto");
   const [label, setLabel] = useState("");
   const [notes, setNotes] = useState("");
   const navigate = useNavigate();
@@ -148,9 +150,9 @@ function AnalyzePage() {
       <div className="grid gap-5 xl:grid-cols-[0.82fr_1.18fr]">
         <aside className="clinical-panel-strong h-fit p-6">
           <p className="clinical-kicker">Image intake</p>
-          <h2 className="mt-2 font-display text-3xl font-extrabold">Prepare a routed AI analysis.</h2>
+          <h2 className="mt-2 font-display text-3xl font-extrabold">Upload & let AI analyze.</h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Choose the scan type carefully. Each route runs a dedicated model so the report stays clinically focused.
+            Just upload your image — Auto-Detect will identify the image type and run the right model automatically. You can also pick a specific route manually.
           </p>
 
           <div className="mt-6 space-y-3">
