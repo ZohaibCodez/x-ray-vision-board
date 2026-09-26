@@ -18,6 +18,8 @@ import {
   type ReactNode,
 } from "react";
 
+import { appStrings, translateTerm } from "./i18n-app";
+
 export type Lang = "en" | "ur";
 
 export const STORAGE_KEY = "xray_lang";
@@ -210,6 +212,8 @@ const strings = {
   },
   "settings.save": { en: "Save Settings", ur: "سیٹنگز محفوظ کریں" },
   "settings.saved": { en: "Saved", ur: "محفوظ ہو گیا" },
+
+  ...appStrings,
 } as const;
 
 export type StringKey = keyof typeof strings;
@@ -222,6 +226,17 @@ interface LanguageContextValue {
   isUrdu: boolean;
   setLang: (lang: Lang) => void;
   t: (key: StringKey) => string;
+  /** Like `t`, filling `{name}` placeholders. */
+  format: (key: StringKey, vars: Record<string, string | number>) => string;
+  /** Urdu for a known backend label (finding, urgency, role...), else the original. */
+  term: (text: string | null | undefined) => string;
+  formatDate: (iso: string) => string;
+}
+
+function fillPlaceholders(template: string, vars: Record<string, string | number>): string {
+  let out: string = template;
+  for (const [name, val] of Object.entries(vars)) out = out.split(`{${name}}`).join(String(val));
+  return out;
 }
 
 const LanguageContext = createContext<LanguageContextValue | null>(null);
@@ -302,6 +317,18 @@ export function LanguageProvider({
     [lang],
   );
 
+  const format = useCallback(
+    (key: StringKey, vars: Record<string, string | number>) => fillPlaceholders(t(key), vars),
+    [t],
+  );
+
+  const term = useCallback((text: string | null | undefined) => translateTerm(text, lang), [lang]);
+
+  const formatDate = useCallback(
+    (iso: string) => new Date(iso).toLocaleDateString(lang === "ur" ? "ur-PK" : undefined),
+    [lang],
+  );
+
   const value = useMemo<LanguageContextValue>(
     () => ({
       lang,
@@ -309,8 +336,11 @@ export function LanguageProvider({
       isUrdu: lang === "ur",
       setLang,
       t,
+      format,
+      term,
+      formatDate,
     }),
-    [lang, setLang, t],
+    [lang, setLang, t, format, term, formatDate],
   );
 
   return <LanguageContext.Provider value={value}>{children}</LanguageContext.Provider>;
@@ -332,5 +362,9 @@ export function useLanguage(): LanguageContextValue {
     isUrdu: false,
     setLang: () => {},
     t: (key: StringKey) => strings[key]?.en ?? key,
+    format: (key: StringKey, vars: Record<string, string | number>) =>
+      fillPlaceholders(strings[key]?.en ?? key, vars),
+    term: (text) => text ?? "",
+    formatDate: (iso: string) => new Date(iso).toLocaleDateString(),
   };
 }

@@ -4,6 +4,7 @@ import { AlertTriangle, Camera, Check, Loader2, Mail, Save, ScanLine, ShieldChec
 import { AppShell } from "@/components/app/AppShell";
 import { useAuth } from "@/lib/auth-context";
 import { useStats } from "@/hooks/use-scans";
+import { useLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/profile")({
   head: () => ({ meta: [{ title: "Profile - XRayVision AI" }] }),
@@ -15,6 +16,7 @@ const roles = ["Medical Student", "Healthcare Professional", "Researcher", "Educ
 function ProfilePage() {
   const { user, updateProfile, updateAvatar, logout } = useAuth();
   const { data: stats, isLoading: statsLoading } = useStats();
+  const { t, format, term, formatDate } = useLanguage();
   const [name, setName] = useState(user?.full_name || "");
   const [role, setRole] = useState(user?.role || "Medical Student");
   const [avatarUrl, setAvatarUrl] = useState(user?.avatar_url || "");
@@ -51,7 +53,7 @@ function ProfilePage() {
     try {
       await updateAvatar(file);
     } catch (err: any) {
-      setError(err.message || "Failed to upload avatar.");
+      setError(err.message || t("prof.errAvatar"));
     } finally {
       setUploadingAvatar(false);
     }
@@ -60,7 +62,7 @@ function ProfilePage() {
   const onSave = async () => {
     setError("");
     if (name.trim().length < 2) {
-      setError("Full name must be at least 2 characters.");
+      setError(t("prof.errName"));
       return;
     }
 
@@ -75,7 +77,7 @@ function ProfilePage() {
   };
 
   return (
-    <AppShell title="Profile">
+    <AppShell title="Profile" titleKey="prof.title">
       <div className="mx-auto max-w-5xl space-y-6">
         <section className="clinical-panel-strong premium-card overflow-hidden p-6">
           <div className="grid gap-6 lg:grid-cols-[1fr_0.72fr]">
@@ -95,7 +97,7 @@ function ProfilePage() {
                   <div className="flex h-full w-full items-center justify-center font-display text-3xl font-extrabold">{initials}</div>
                 )}
                 {!uploadingAvatar && (
-                  <span className="absolute bottom-2 right-2 flex h-8 w-8 items-center justify-center rounded-lg bg-background/90 text-primary shadow">
+                  <span className="absolute bottom-2 end-2 flex h-8 w-8 items-center justify-center rounded-lg bg-background/90 text-primary shadow">
                     <Camera size={15} />
                   </span>
                 )}
@@ -108,19 +110,19 @@ function ProfilePage() {
                 />
               </button>
               <div>
-                <p className="clinical-kicker">Account profile</p>
-                <h2 className="mt-2 font-display text-3xl font-extrabold">{user?.full_name || "User"}</h2>
+                <p className="clinical-kicker">{t("prof.kicker")}</p>
+                <h2 className="mt-2 font-display text-3xl font-extrabold">{user?.full_name || t("prof.user")}</h2>
                 <p className="mt-1 text-sm text-muted-foreground">{user?.email}</p>
                 <p className="mt-2 text-xs text-muted-foreground">
-                  Member since {user?.created_at ? new Date(user.created_at).toLocaleDateString() : "recently"}
+                  {format("prof.since", { date: user?.created_at ? formatDate(user.created_at) : t("prof.recently") })}
                 </p>
               </div>
             </div>
 
             <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-1">
-              <ProfileSignal icon={ShieldCheck} label="Role" value={user?.role || "Medical Student"} />
-              <ProfileSignal icon={ScanLine} label="Scans" value={statsLoading ? "..." : String(stats?.total_scans ?? 0)} />
-              <ProfileSignal icon={Target} label="Avg Confidence" value={statsLoading ? "..." : `${stats?.avg_confidence ?? 0}%`} />
+              <ProfileSignal icon={ShieldCheck} label={t("prof.role")} value={term(user?.role || "Medical Student")} />
+              <ProfileSignal icon={ScanLine} label={t("prof.scans")} value={statsLoading ? "..." : String(stats?.total_scans ?? 0)} />
+              <ProfileSignal icon={Target} label={t("prof.avgConf")} value={statsLoading ? "..." : `${stats?.avg_confidence ?? 0}%`} />
             </div>
           </div>
         </section>
@@ -135,34 +137,34 @@ function ProfilePage() {
         <section className="grid gap-6 lg:grid-cols-[1fr_0.72fr]">
           <div className="clinical-panel premium-card space-y-5 p-6">
             <div>
-              <h3 className="font-display text-lg font-bold">Personal details</h3>
-              <p className="mt-1 text-sm text-muted-foreground">Keep your identity visible in reports and workspace activity.</p>
+              <h3 className="font-display text-lg font-bold">{t("prof.details")}</h3>
+              <p className="mt-1 text-sm text-muted-foreground">{t("prof.detailsSub")}</p>
             </div>
 
-            <Field label="Full Name" icon={User}>
+            <Field label={t("prof.fullName")} icon={User}>
               <input
                 value={name}
                 onChange={(event) => setName(event.target.value)}
-                className="premium-input w-full rounded-md border border-border bg-background/60 py-3 pl-9 pr-3 text-sm focus:outline-none"
+                className="premium-input w-full rounded-md border border-border bg-background/60 py-3 ps-9 pe-3 text-sm focus:outline-none"
               />
             </Field>
 
-            <Field label="Email" icon={Mail}>
+            <Field label={t("prof.email")} icon={Mail}>
               <input
                 value={user?.email || ""}
                 disabled
-                className="w-full rounded-md border border-border bg-background/40 py-3 pl-9 pr-3 text-sm text-muted-foreground"
+                className="w-full rounded-md border border-border bg-background/40 py-3 ps-9 pe-3 text-sm text-muted-foreground"
               />
             </Field>
 
             <div>
-              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">Role</label>
+              <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">{t("prof.role")}</label>
               <select
                 value={role}
                 onChange={(event) => setRole(event.target.value)}
                 className="premium-input w-full rounded-md border border-border bg-background/60 px-3 py-3 text-sm focus:outline-none"
               >
-                {roles.map((item) => <option key={item}>{item}</option>)}
+                {roles.map((item) => <option key={item} value={item}>{term(item)}</option>)}
               </select>
             </div>
 
@@ -170,27 +172,27 @@ function ProfilePage() {
 
             <button onClick={onSave} disabled={saving || !hasChanges} className="clinical-button px-6 disabled:opacity-50">
               {saving ? <Loader2 size={15} className="animate-spin" /> : saved ? <Check size={15} /> : <Save size={15} />}
-              {saved ? "Saved" : "Save Changes"}
+              {saved ? t("prof.saved") : t("prof.save")}
             </button>
           </div>
 
           <aside className="space-y-6">
             <div className="clinical-panel premium-card p-6">
-              <h3 className="font-display text-lg font-bold">Usage Statistics</h3>
+              <h3 className="font-display text-lg font-bold">{t("prof.usage")}</h3>
               <div className="mt-4 grid gap-3">
-                <StatBox icon={ScanLine} label="Total Scans" value={String(stats?.total_scans ?? 0)} color="text-primary" />
-                <StatBox icon={AlertTriangle} label="Critical Findings" value={String(stats?.critical_findings ?? 0)} color="text-destructive" />
-                <StatBox icon={Target} label="Avg. Confidence" value={`${stats?.avg_confidence ?? 0}%`} color="text-success" />
+                <StatBox icon={ScanLine} label={t("prof.totalScans")} value={String(stats?.total_scans ?? 0)} color="text-primary" />
+                <StatBox icon={AlertTriangle} label={t("prof.critical")} value={String(stats?.critical_findings ?? 0)} color="text-destructive" />
+                <StatBox icon={Target} label={t("prof.avgConfShort")} value={`${stats?.avg_confidence ?? 0}%`} color="text-success" />
               </div>
             </div>
 
             <div className="rounded-lg border border-border bg-background/60 p-5">
-              <h3 className="font-display text-base font-bold">Session</h3>
+              <h3 className="font-display text-base font-bold">{t("prof.session")}</h3>
               <p className="mt-1.5 text-sm text-muted-foreground">
-                Sign out of your account on this device.
+                {t("prof.sessionBody")}
               </p>
               <button onClick={logout} className="clinical-button-secondary mt-4 px-4">
-                Sign out
+                {t("shell.signOut")}
               </button>
             </div>
           </aside>
@@ -205,7 +207,7 @@ function Field({ label, icon: Icon, children }: { label: string; icon: LucideIco
     <div>
       <label className="mb-1.5 block text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</label>
       <div className="relative">
-        <Icon size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Icon size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
         {children}
       </div>
     </div>

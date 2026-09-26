@@ -7,6 +7,7 @@ import {
 import { AppShell } from "@/components/app/AppShell";
 import { clinicApi } from "@/lib/api";
 import type { ClinicResult } from "@/lib/types";
+import { useLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/clinics")({
   head: () => ({ meta: [{ title: "Nearby Clinics - XRayVision AI" }] }),
@@ -30,6 +31,7 @@ const URGENCY_COLORS: Record<string, string> = {
 };
 
 function ClinicCard({ clinic }: { clinic: ClinicResult }) {
+  const { t, term } = useLanguage();
   const Icon = AMENITY_ICONS[clinic.type] ?? Building2;
   const colorClass = URGENCY_COLORS[clinic.type] ?? "text-muted-foreground bg-card border-border";
 
@@ -42,7 +44,7 @@ function ClinicCard({ clinic }: { clinic: ClinicResult }) {
           </div>
           <div className="min-w-0">
             <p className="truncate font-semibold text-foreground text-sm">{clinic.name}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">{clinic.type}</p>
+            <p className="text-xs text-muted-foreground mt-0.5">{term(clinic.type)}</p>
             {clinic.address !== "Address not available" && (
               <p className="mt-1 truncate text-xs text-muted-foreground">{clinic.address}</p>
             )}
@@ -50,7 +52,7 @@ function ClinicCard({ clinic }: { clinic: ClinicResult }) {
         </div>
         <div className="flex shrink-0 flex-col items-end gap-2">
           <span className="rounded-full border border-primary/20 bg-primary/10 px-2 py-0.5 font-mono text-xs font-medium text-primary">
-            {clinic.distance_km} km
+            {clinic.distance_km} {t("common.km")}
           </span>
           <a
             href={clinic.maps_url}
@@ -59,7 +61,7 @@ function ClinicCard({ clinic }: { clinic: ClinicResult }) {
             className="inline-flex min-h-8 items-center gap-1 rounded-md border border-border bg-background/60 px-2.5 py-1 text-xs text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
           >
             <ExternalLink size={11} />
-            Maps
+            {t("cl.maps")}
           </a>
         </div>
       </div>
@@ -68,6 +70,7 @@ function ClinicCard({ clinic }: { clinic: ClinicResult }) {
 }
 
 function ClinicsPage() {
+  const { t, format } = useLanguage();
   const [clinics, setClinics] = useState<ClinicResult[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,15 +85,15 @@ function ClinicsPage() {
       const result = await clinicApi.search({ lat, lon, radius_km: radius });
       setClinics(result.clinics);
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to find clinics.");
+      setError(err instanceof Error ? err.message : t("cl.errFind"));
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [t]);
 
   const handleLocate = useCallback(() => {
     if (!navigator.geolocation) {
-      setError("Geolocation is not supported by your browser.");
+      setError(t("cl.errGeoUnsupported"));
       return;
     }
     setLoading(true);
@@ -105,14 +108,14 @@ function ClinicsPage() {
       (err) => {
         setLoading(false);
         if (err.code === 1) {
-          setError("Location permission denied. Please allow location access and try again.");
+          setError(t("cl.errDenied"));
         } else {
-          setError("Could not determine your location. Try again.");
+          setError(t("cl.errLocate"));
         }
       },
       { timeout: 10000 },
     );
-  }, [radiusKm, doSearch]);
+  }, [radiusKm, doSearch, t]);
 
   const handleRefresh = useCallback(() => {
     if (location) doSearch(location.lat, location.lon, radiusKm);
@@ -122,7 +125,7 @@ function ClinicsPage() {
   const pharmacyCount = clinics?.filter((c) => c.type === "Pharmacy").length ?? 0;
 
   return (
-    <AppShell title="Nearby Clinics">
+    <AppShell title="Nearby Clinics" titleKey="cl.title">
       <div className="mx-auto max-w-4xl space-y-6">
         {/* Header */}
         <div className="clinical-panel-strong premium-card p-5">
@@ -131,16 +134,16 @@ function ClinicsPage() {
               <MapPin size={18} />
             </div>
             <div>
-              <h2 className="font-display text-xl font-bold">Clinic Locator</h2>
-              <p className="text-xs text-muted-foreground">Find hospitals, clinics, doctors and pharmacies near you</p>
+              <h2 className="font-display text-xl font-bold">{t("cl.heading")}</h2>
+              <p className="text-xs text-muted-foreground">{t("cl.sub")}</p>
             </div>
           </div>
 
           {/* Radius slider */}
           <div className="mb-4">
             <div className="flex items-center justify-between mb-1.5">
-              <label className="text-xs font-medium text-muted-foreground">Search radius</label>
-              <span className="font-mono text-xs text-primary">{radiusKm} km</span>
+              <label className="text-xs font-medium text-muted-foreground">{t("cl.radius")}</label>
+              <span className="font-mono text-xs text-primary">{radiusKm} {t("common.km")}</span>
             </div>
             <input
               type="range"
@@ -152,8 +155,8 @@ function ClinicsPage() {
               className="h-10 w-full accent-primary"
             />
             <div className="flex justify-between text-[10px] text-muted-foreground mt-0.5">
-              <span>1 km</span>
-              <span>20 km</span>
+              <span>1 {t("common.km")}</span>
+              <span>20 {t("common.km")}</span>
             </div>
           </div>
 
@@ -168,7 +171,7 @@ function ClinicsPage() {
               ) : (
                 <Navigation size={16} />
               )}
-              {loading ? "Locating..." : "Use My Location"}
+              {loading ? t("cl.locating") : t("cl.useLocation")}
             </button>
             {location && (
               <button
@@ -177,14 +180,14 @@ function ClinicsPage() {
                 className="clinical-button-secondary px-3 disabled:opacity-50"
               >
                 <RefreshCw size={14} />
-                Refresh
+                {t("cl.refresh")}
               </button>
             )}
           </div>
 
           {locationName && (
             <p className="mt-2 text-center text-[11px] text-muted-foreground">
-              Current location: {locationName}
+              {format("cl.current", { loc: locationName })}
             </p>
           )}
         </div>
@@ -221,20 +224,20 @@ function ClinicsPage() {
             <div className="flex items-center justify-between">
               <p className="text-sm font-medium text-foreground">
                 {clinics.length === 0
-                  ? "No facilities found"
-                  : `${clinics.length} facilities within ${radiusKm} km`}
+                  ? t("cl.none")
+                  : format("cl.count", { n: clinics.length, r: radiusKm })}
               </p>
               <div className="flex gap-3 text-xs text-muted-foreground">
-                {hospitalCount > 0 && <span>{hospitalCount} hospital{hospitalCount !== 1 ? "s" : ""}</span>}
-                {pharmacyCount > 0 && <span>{pharmacyCount} pharmac{pharmacyCount !== 1 ? "ies" : "y"}</span>}
+                {hospitalCount > 0 && <span>{format("cl.hospitals", { n: hospitalCount }).replace("(s)", hospitalCount !== 1 ? "s" : "")}</span>}
+                {pharmacyCount > 0 && <span>{format("cl.pharmacies", { n: pharmacyCount }).replace("(ies)", pharmacyCount !== 1 ? "ies" : "y")}</span>}
               </div>
             </div>
 
             {clinics.length === 0 ? (
               <div className="clinical-panel flex flex-col items-center justify-center py-16 text-center">
                 <MapPin size={40} className="text-muted-foreground/30" />
-                <p className="mt-4 font-display text-base font-bold text-muted-foreground">No facilities found</p>
-                <p className="mt-1 text-sm text-muted-foreground">Try increasing the search radius or refreshing the lookup.</p>
+                <p className="mt-4 font-display text-base font-bold text-muted-foreground">{t("cl.none")}</p>
+                <p className="mt-1 text-sm text-muted-foreground">{t("cl.noneHint")}</p>
               </div>
             ) : (
               <div className="space-y-2">
@@ -250,13 +253,13 @@ function ClinicsPage() {
         {clinics === null && !loading && !error && (
           <div className="clinical-panel flex flex-col items-center justify-center py-16 text-center">
             <Navigation size={40} className="text-primary/30" />
-            <p className="mt-4 font-display text-base font-bold text-muted-foreground">Find clinics near you</p>
-            <p className="mt-1 text-sm text-muted-foreground">Click "Use My Location" to search for nearby healthcare facilities.</p>
+            <p className="mt-4 font-display text-base font-bold text-muted-foreground">{t("cl.emptyTitle")}</p>
+            <p className="mt-1 text-sm text-muted-foreground">{t("cl.emptyBody")}</p>
           </div>
         )}
 
         <p className="text-center text-[11px] text-muted-foreground">
-          Powered by OpenStreetMap | Data may not reflect all facilities
+          {t("cl.credit")}
         </p>
       </div>
     </AppShell>

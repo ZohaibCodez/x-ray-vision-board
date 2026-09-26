@@ -17,6 +17,7 @@ import {
 import { AppShell } from "@/components/app/AppShell";
 import { Field } from "@/components/ui-x/Field";
 import { useAnalyze } from "@/hooks/use-analyze";
+import { useLanguage, type StringKey } from "@/lib/i18n";
 
 export const Route = createFileRoute("/analyze")({
   head: () => ({ meta: [{ title: "New Analysis - XRayVision AI" }] }),
@@ -44,26 +45,29 @@ function getImageDimensions(file: File): Promise<{ width: number; height: number
   });
 }
 
-async function validateImageFile(file: File): Promise<string | null> {
+async function validateImageFile(
+  file: File,
+  format: (key: StringKey, vars: Record<string, string | number>) => string,
+): Promise<string | null> {
   const ext = "." + (file.name.split(".").pop()?.toLowerCase() ?? "");
   const isDicom = ext === ".dcm";
 
   if (!isDicom && !ALLOWED_TYPES.includes(file.type) && !ALLOWED_EXTENSIONS.includes(ext)) {
-    return "Unsupported format. Upload a JPEG, PNG, or DICOM (.dcm) file.";
+    return format("an.err.format", {});
   }
 
   if (file.size > MAX_FILE_SIZE) {
-    return `File is too large (${(file.size / 1024 / 1024).toFixed(1)} MB). Maximum is 20 MB.`;
+    return format("an.err.size", { size: (file.size / 1024 / 1024).toFixed(1) });
   }
 
   if (!isDicom) {
     try {
       const { width, height } = await getImageDimensions(file);
       if (width < MIN_DIMENSION || height < MIN_DIMENSION) {
-        return `Image resolution is too low (${width}×${height} px). Minimum is ${MIN_DIMENSION}×${MIN_DIMENSION} px — low-resolution images produce unreliable results.`;
+        return format("an.err.resolution", { w: width, h: height, min: MIN_DIMENSION });
       }
     } catch {
-      return "Could not verify image dimensions. Make sure the file is a valid image.";
+      return format("an.err.dimensions", {});
     }
   }
 
@@ -71,11 +75,13 @@ async function validateImageFile(file: File): Promise<string | null> {
 }
 
 const types = [
-  { id: "auto", label: "Auto-Detect", icon: Sparkles, model: "AI Router", text: "System automatically detects image type and runs the right model — recommended for most users." },
-  { id: "chest", label: "Chest pathology", icon: Stethoscope, model: "DenseNet121", text: "Chest X-ray screening for common pathology signals." },
-  { id: "fracture", label: "Fracture detection", icon: Bone, model: "YOLOv8", text: "Bone X-ray localization with bounding boxes." },
-  { id: "wound", label: "External wound", icon: Activity, model: "ViT", text: "Photo classification for external wound categories." },
-] as const;
+  { id: "auto", labelKey: "an.type.auto", textKey: "an.type.autoText", modelKey: "an.type.autoModel", icon: Sparkles },
+  { id: "chest", labelKey: "an.type.chest", textKey: "an.type.chestText", model: "DenseNet121", icon: Stethoscope },
+  { id: "fracture", labelKey: "an.type.fracture", textKey: "an.type.fractureText", model: "YOLOv8", icon: Bone },
+  { id: "wound", labelKey: "an.type.wound", textKey: "an.type.woundText", model: "ViT", icon: Activity },
+] as const satisfies readonly {
+  id: string; labelKey: StringKey; textKey: StringKey; model?: string; modelKey?: StringKey; icon: typeof Bone;
+}[];
 
 function AnalyzePage() {
   const [file, setFile] = useState<File | null>(null);
@@ -85,19 +91,20 @@ function AnalyzePage() {
   const [label, setLabel] = useState("");
   const [notes, setNotes] = useState("");
   const navigate = useNavigate();
+  const { t, format } = useLanguage();
   const inputRef = useRef<HTMLInputElement>(null);
   const analyzeMutation = useAnalyze();
 
   const acceptFile = useCallback(async (candidate: File) => {
     setFileError(null);
-    const error = await validateImageFile(candidate);
+    const error = await validateImageFile(candidate, format);
     if (error) {
       setFileError(error);
       setFile(null);
       return;
     }
     setFile(candidate);
-  }, []);
+  }, [format]);
 
   const onDrop = useCallback((event: React.DragEvent) => {
     event.preventDefault();
@@ -126,17 +133,19 @@ function AnalyzePage() {
 
   if (analyzeMutation.isPending) return <Processing />;
 
+  const modelName = (item: (typeof types)[number]) => ("modelKey" in item ? t(item.modelKey) : item.model);
+
   if (analyzeMutation.isError) {
     return (
-      <AppShell title="Analysis Error">
+      <AppShell title="Analysis Error" titleKey="an.errorTitle">
         <div className="mx-auto max-w-2xl clinical-panel-strong p-8 text-center">
           <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-lg bg-destructive/10 text-destructive">
             <AlertTriangle size={26} />
           </div>
-          <h2 className="mt-4 font-display text-2xl font-extrabold">Analysis failed</h2>
+          <h2 className="mt-4 font-display text-2xl font-extrabold">{t("an.failed")}</h2>
           <p className="mt-2 text-sm leading-6 text-muted-foreground">{analyzeMutation.error.message}</p>
           <button onClick={() => analyzeMutation.reset()} className="clinical-button mt-6 px-6">
-            Try again
+            {t("an.tryAgain")}
           </button>
         </div>
       </AppShell>
@@ -146,13 +155,13 @@ function AnalyzePage() {
   const activeType = types.find((item) => item.id === type)!;
 
   return (
-    <AppShell title="New Analysis">
+    <AppShell title="New Analysis" titleKey="an.title">
       <div className="grid gap-5 xl:grid-cols-[0.82fr_1.18fr]">
         <aside className="clinical-panel-strong h-fit p-6">
-          <p className="clinical-kicker">Image intake</p>
-          <h2 className="mt-2 font-display text-3xl font-extrabold">Upload & let AI analyze.</h2>
+          <p className="clinical-kicker">{t("an.kicker")}</p>
+          <h2 className="mt-2 font-display text-3xl font-extrabold">{t("an.heading")}</h2>
           <p className="mt-3 text-sm leading-6 text-muted-foreground">
-            Just upload your image — Auto-Detect will identify the image type and run the right model automatically. You can also pick a specific route manually.
+            {t("an.intro")}
           </p>
 
           <div className="mt-6 space-y-3">
@@ -162,8 +171,8 @@ function AnalyzePage() {
                   {index + 1}
                 </span>
                 <div>
-                  <p className="text-sm font-bold">{item.label}</p>
-                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.text}</p>
+                  <p className="text-sm font-bold">{t(item.labelKey)}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{t(item.textKey)}</p>
                 </div>
               </div>
             ))}
@@ -180,8 +189,8 @@ function AnalyzePage() {
           />
 
           <div>
-            <p className="clinical-kicker">Step 1</p>
-            <h3 className="mt-2 text-xl font-extrabold">Upload image</h3>
+            <p className="clinical-kicker">{t("an.step1")}</p>
+            <h3 className="mt-2 text-xl font-extrabold">{t("an.uploadImage")}</h3>
           </div>
 
           {!file ? (
@@ -206,10 +215,10 @@ function AnalyzePage() {
                 <span className={`flex h-16 w-16 items-center justify-center rounded-lg ${fileError ? "bg-destructive/10 text-destructive" : "bg-primary/10 text-primary"}`}>
                   <UploadCloud size={30} />
                 </span>
-                <span className="mt-5 text-lg font-extrabold">{drag ? "Drop image to upload" : "Drag and drop your medical image"}</span>
-                <span className="mt-1 text-sm text-muted-foreground">or browse files from your device</span>
+                <span className="mt-5 text-lg font-extrabold">{drag ? t("an.dropActive") : t("an.dropIdle")}</span>
+                <span className="mt-1 text-sm text-muted-foreground">{t("an.browse")}</span>
                 <span className="mt-4 font-mono text-[11px] uppercase tracking-[0.12em] text-muted-foreground">
-                  DICOM / PNG / JPG &nbsp;·&nbsp; Min 200×200 px &nbsp;·&nbsp; Max 20 MB
+                  {t("an.limits")}
                 </span>
               </button>
 
@@ -223,8 +232,7 @@ function AnalyzePage() {
               <div className="flex items-start gap-3 rounded-lg border border-border bg-surface/55 px-4 py-3 text-xs text-muted-foreground">
                 <Info size={14} className="mt-0.5 shrink-0 text-primary/70" />
                 <span>
-                  <strong className="text-foreground">Image quality matters.</strong> Use clear, well-lit, non-blurry images at least 512×512 px for best accuracy.
-                  Very small or low-quality images can cause incorrect predictions.
+                  <strong className="text-foreground">{t("an.qualityTitle")}</strong> {t("an.qualityBody")}
                 </span>
               </div>
             </div>
@@ -238,13 +246,13 @@ function AnalyzePage() {
                   <div className="min-w-0">
                     <p className="truncate text-sm font-bold">{file.name}</p>
                     <p className="mt-1 font-mono text-[10px] uppercase tracking-[0.1em] text-muted-foreground">
-                      {(file.size / 1024 / 1024).toFixed(2)} MB &nbsp;·&nbsp; ready
+                      {(file.size / 1024 / 1024).toFixed(2)} MB · {t("an.ready")}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-2">
                   <CheckCircle2 size={16} className="text-emerald-500" />
-                  <button type="button" onClick={() => { setFile(null); setFileError(null); }} aria-label="Remove file" className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-surface hover:text-destructive">
+                  <button type="button" onClick={() => { setFile(null); setFileError(null); }} aria-label={t("an.removeFile")} className="flex h-10 w-10 items-center justify-center rounded-lg text-muted-foreground hover:bg-surface hover:text-destructive">
                     <X size={18} />
                   </button>
                 </div>
@@ -253,8 +261,8 @@ function AnalyzePage() {
           )}
 
           <div className="mt-7">
-            <p className="clinical-kicker">Step 2</p>
-            <h3 className="mt-2 text-xl font-extrabold">Analysis route</h3>
+            <p className="clinical-kicker">{t("an.step2")}</p>
+            <h3 className="mt-2 text-xl font-extrabold">{t("an.routeTitle")}</h3>
             <div className="mt-4 grid gap-3 md:grid-cols-3">
               {types.map((item) => {
                 const Icon = item.icon;
@@ -264,14 +272,14 @@ function AnalyzePage() {
                     type="button"
                     key={item.id}
                     onClick={() => setType(item.id)}
-                    className={`min-h-[150px] rounded-lg border p-4 text-left transition-all ${
+                    className={`min-h-[150px] rounded-lg border p-4 text-start transition-all ${
                       active ? "border-primary bg-primary text-primary-foreground shadow-[var(--glow-cyan)]" : "border-border bg-card text-card-foreground hover:border-primary/40 hover:bg-accent/30"
                     }`}
                   >
                     <Icon size={20} />
-                    <p className="mt-4 text-sm font-extrabold">{item.label}</p>
+                    <p className="mt-4 text-sm font-extrabold">{t(item.labelKey)}</p>
                     <p className={`mt-1 font-mono text-[10px] uppercase tracking-[0.1em] ${active ? "text-primary-foreground/78" : "text-muted-foreground"}`}>
-                      {item.model}
+                      {modelName(item)}
                     </p>
                   </button>
                 );
@@ -280,11 +288,11 @@ function AnalyzePage() {
           </div>
 
           <div className="mt-7">
-            <p className="clinical-kicker">Step 3</p>
-            <h3 className="mt-2 text-xl font-extrabold">Context</h3>
+            <p className="clinical-kicker">{t("an.step3")}</p>
+            <h3 className="mt-2 text-xl font-extrabold">{t("an.contextTitle")}</h3>
             <div className="mt-4 grid gap-4 md:grid-cols-2">
-              <Field label="Patient / session label" name="label" placeholder="PT-4821" value={label} onChange={(event) => setLabel(event.target.value)} />
-              <Field label="Notes for AI agent" name="notes" placeholder="Pain after fall; swelling near wrist" value={notes} onChange={(event) => setNotes(event.target.value)} />
+              <Field label={t("an.label")} name="label" placeholder="PT-4821" value={label} onChange={(event) => setLabel(event.target.value)} />
+              <Field label={t("an.notes")} name="notes" placeholder={t("an.notesPlaceholder")} value={notes} onChange={(event) => setNotes(event.target.value)} />
             </div>
           </div>
 
@@ -294,13 +302,13 @@ function AnalyzePage() {
                 <activeType.icon size={18} />
               </span>
               <div>
-                <p className="text-sm font-bold">{activeType.label}</p>
-                <p className="text-xs text-muted-foreground">{activeType.model} route selected</p>
+                <p className="text-sm font-bold">{t(activeType.labelKey)}</p>
+                <p className="text-xs text-muted-foreground">{modelName(activeType)} {t("an.routeSelected")}</p>
               </div>
             </div>
             <button type="submit" disabled={!file} className="clinical-button px-6 disabled:cursor-not-allowed disabled:opacity-45">
               <ScanLine size={17} />
-              Analyze image
+              {t("an.analyze")}
             </button>
           </div>
         </form>
@@ -310,21 +318,22 @@ function AnalyzePage() {
 }
 
 const processingSteps = [
-  "Normalizing and preparing the image",
-  "Selecting the routed vision model",
-  "Running model inference",
-  "Generating clinical synthesis",
-  "Saving report and export metadata",
-];
+  "an.step.normalize",
+  "an.step.route",
+  "an.step.infer",
+  "an.step.synth",
+  "an.step.save",
+] as const satisfies readonly StringKey[];
 
 function Processing() {
+  const { t } = useLanguage();
   return (
-    <AppShell title="Processing">
+    <AppShell title="Processing" titleKey="an.processingTitle">
       <div className="mx-auto max-w-4xl">
         <header className="clinical-panel-strong p-6 text-center">
-          <p className="clinical-kicker">Analyzing</p>
-          <h2 className="mt-2 font-display text-3xl font-extrabold">AI models are processing your scan</h2>
-          <p className="mt-2 text-sm text-muted-foreground">This can take longer the first time while models finish loading.</p>
+          <p className="clinical-kicker">{t("an.processing.kicker")}</p>
+          <h2 className="mt-2 font-display text-3xl font-extrabold">{t("an.processing.heading")}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{t("an.processing.sub")}</p>
         </header>
 
         <div className="relative mt-5 overflow-hidden rounded-lg border border-border bg-slate-950 aspect-video">
@@ -341,7 +350,7 @@ function Processing() {
           {processingSteps.map((step) => (
             <li key={step} className="clinical-panel flex items-center gap-3 p-4 text-sm">
               <Loader2 size={16} className="shrink-0 animate-spin text-primary" />
-              <span>{step}</span>
+              <span>{t(step)}</span>
             </li>
           ))}
         </ul>

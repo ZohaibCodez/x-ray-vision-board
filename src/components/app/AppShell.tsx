@@ -60,7 +60,7 @@ export function AppShell({
   const notifRef = useRef<HTMLDivElement>(null);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const { user, isAuthenticated, isLoading, logout } = useAuth();
-  const { t } = useLanguage();
+  const { t, term } = useLanguage();
   const navigate = useNavigate();
 
   // The desktop "collapse to icons" toggle is plain component state, not a
@@ -344,7 +344,7 @@ export function AppShell({
               </div>
               <div className="hidden sm:block">
                 <p className="max-w-36 truncate text-xs font-bold">{user?.full_name || t("shell.user")}</p>
-                <p className="max-w-36 truncate text-[11px] text-muted-foreground">{user?.role || t("shell.medicalStudent")}</p>
+                <p className="max-w-36 truncate text-[11px] text-muted-foreground">{term(user?.role) || t("shell.medicalStudent")}</p>
               </div>
               <button
                 onClick={handleLogout}

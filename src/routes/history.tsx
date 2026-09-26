@@ -4,6 +4,7 @@ import { Search, Calendar, UploadCloud, ScanLine, FileImage, Loader2 } from "luc
 import { AppShell } from "@/components/app/AppShell";
 import { useScans } from "@/hooks/use-scans";
 import type { ScanListItem } from "@/lib/types";
+import { useLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/history")({
   head: () => ({ meta: [{ title: "History — XRayVision AI" }] }),
@@ -21,6 +22,7 @@ const urgencyStyle: Record<string, string> = {
 
 function HistoryPage() {
   const [filter, setFilter] = useState<typeof filters[number]>("All");
+  const { t, format, term, formatDate } = useLanguage();
   const [query, setQuery] = useState("");
 
   const scanType = filter === "All" ? undefined : filter.toLowerCase();
@@ -32,26 +34,26 @@ function HistoryPage() {
   });
 
   return (
-    <AppShell title="Scan History">
+    <AppShell title="Scan History" titleKey="hist.title">
       <div className="flex flex-wrap items-end justify-between gap-4">
         <div>
-          <p className="font-mono text-[11px] uppercase tracking-widest text-primary">Archive</p>
-          <h2 className="mt-1 font-display text-3xl font-bold">All analyses</h2>
+          <p className="font-mono text-[11px] uppercase tracking-widest text-primary">{t("hist.kicker")}</p>
+          <h2 className="mt-1 font-display text-3xl font-bold">{t("hist.heading")}</h2>
         </div>
         <Link to="/analyze" className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:shadow-[var(--glow-cyan)]">
-          <ScanLine size={16} /> New Analysis
+          <ScanLine size={16} /> {t("nav.analyze")}
         </Link>
       </div>
 
       {/* Filter bar */}
       <div className="mt-6 flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card/60 p-3">
         <div className="relative flex-1 min-w-[200px]">
-          <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+          <Search size={14} className="absolute start-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
           <input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search by scan ID or session..."
-            className="w-full rounded-md border border-border bg-background/60 py-2 pl-9 pr-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none"
+            placeholder={t("hist.search")}
+            className="w-full rounded-md border border-border bg-background/60 py-2 ps-9 pe-3 text-sm placeholder:text-muted-foreground focus:border-primary focus:outline-none"
           />
         </div>
         <div className="flex gap-1 rounded-md border border-border bg-background/60 p-1">
@@ -61,7 +63,7 @@ function HistoryPage() {
               onClick={() => setFilter(f)}
               className={`rounded px-3 py-1.5 text-xs font-medium transition-colors ${filter === f ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"}`}
             >
-              {f}
+              {f === "All" ? t("common.all") : term(f)}
             </button>
           ))}
         </div>
@@ -91,24 +93,24 @@ function HistoryPage() {
                   <FileImage size={36} className="text-muted-foreground/40" />
                 )}
                 <div className="pointer-events-none absolute inset-0 grid-bg opacity-30" />
-                <span className={`absolute right-3 top-3 rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${urgencyStyle[s.urgency] || urgencyStyle.clear}`}>
-                  {s.urgency}
+                <span className={`absolute end-3 top-3 rounded-full border px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${urgencyStyle[s.urgency] || urgencyStyle.clear}`}>
+                  {term(s.urgency)}
                 </span>
               </div>
               <div className="p-4">
                 <div className="flex items-center justify-between">
                   <span className="rounded-full bg-primary/10 px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">
-                    {s.scan_type}
+                    {term(s.scan_type)}
                   </span>
-                  <span className="font-mono text-[10px] text-muted-foreground">{s.findings_count} findings</span>
+                  <span className="font-mono text-[10px] text-muted-foreground">{format("hist.findings", { n: s.findings_count })}</span>
                 </div>
                 <p className="mt-2 truncate font-mono text-xs text-muted-foreground">{s.id.slice(0, 16)}…</p>
                 <div className="mt-1 flex items-center justify-between text-xs">
                   <span className="font-medium">{s.session_label || "—"}</span>
-                  <span className="text-muted-foreground">{new Date(s.created_at).toLocaleDateString()}</span>
+                  <span className="text-muted-foreground">{formatDate(s.created_at)}</span>
                 </div>
                 <div className="mt-4 flex items-center justify-between text-xs">
-                  <span className="text-primary opacity-0 transition-opacity group-hover:opacity-100">View report →</span>
+                  <span className="text-primary opacity-0 transition-opacity group-hover:opacity-100">{t("hist.view")} <span className="rtl-flip inline-block">→</span></span>
                 </div>
               </div>
             </Link>
@@ -120,17 +122,18 @@ function HistoryPage() {
 }
 
 function EmptyState() {
+  const { t } = useLanguage();
   return (
     <div className="mt-12 flex flex-col items-center justify-center rounded-2xl border border-dashed border-border bg-card/40 px-6 py-16 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-full bg-card text-muted-foreground">
         <UploadCloud size={28} />
       </div>
-      <h3 className="mt-4 font-display text-xl font-bold">No analyses yet</h3>
+      <h3 className="mt-4 font-display text-xl font-bold">{t("hist.emptyTitle")}</h3>
       <p className="mt-2 max-w-sm text-sm text-muted-foreground">
-        Upload your first X-ray to start building a diagnostic history.
+        {t("hist.emptyBody")}
       </p>
       <Link to="/analyze" className="mt-6 inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:shadow-[var(--glow-cyan)]">
-        <ScanLine size={16} /> Start New Analysis
+        <ScanLine size={16} /> {t("hist.start")}
       </Link>
     </div>
   );

@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app/AppShell";
 import { scansApi } from "@/lib/api";
 import { useScan } from "@/hooks/use-scans";
 import type { Finding as FindingType } from "@/lib/types";
+import { useLanguage } from "@/lib/i18n";
 
 export const Route = createFileRoute("/results/$scanId")({
   head: () => ({ meta: [{ title: "Results — XRayVision AI" }] }),
@@ -19,10 +20,11 @@ function ResultsPage() {
   const [showLabels, setShowLabels] = useState(true);
   const [zoom, setZoom] = useState(1);
   const [exporting, setExporting] = useState<"pdf" | "json" | null>(null);
+  const { t, format, term, isUrdu } = useLanguage();
 
   if (isLoading) {
     return (
-      <AppShell title="Loading Results">
+      <AppShell title="Loading Results" titleKey="res.loading">
         <div className="flex items-center justify-center py-32">
           <Loader2 size={32} className="animate-spin text-primary" />
         </div>
@@ -32,12 +34,12 @@ function ResultsPage() {
 
   if (error || !scan) {
     return (
-      <AppShell title="Error">
+      <AppShell title="Error" titleKey="res.errorTitle">
         <div className="mx-auto max-w-md text-center py-32">
           <AlertTriangle size={32} className="mx-auto text-destructive" />
-          <h2 className="mt-4 font-display text-2xl font-bold">Scan Not Found</h2>
-          <p className="mt-2 text-sm text-muted-foreground">{error?.message || "This scan could not be loaded."}</p>
-          <Link to="/history" className="mt-6 inline-block text-sm text-primary hover:underline">← Back to history</Link>
+          <h2 className="mt-4 font-display text-2xl font-bold">{t("res.notFound")}</h2>
+          <p className="mt-2 text-sm text-muted-foreground">{error?.message || t("res.notFoundBody")}</p>
+          <Link to="/history" className="mt-6 inline-block text-sm text-primary hover:underline"><span className="rtl-flip inline-block">←</span> {t("res.backHistory")}</Link>
         </div>
       </AppShell>
     );
@@ -72,7 +74,7 @@ function ResultsPage() {
       const blob = await scansApi.downloadPdf(scanId);
       downloadBlob(blob, `xrayvision-report-${scanId}.pdf`);
     } catch (err: unknown) {
-      alert(`PDF generation failed: ${err instanceof Error ? err.message : "Unknown error"}. Please try again.`);
+      alert(format("res.pdfFailed", { err: err instanceof Error ? err.message : "Unknown error" }));
     } finally {
       setExporting(null);
     }
@@ -90,14 +92,14 @@ function ResultsPage() {
   };
 
   return (
-    <AppShell title="Diagnostic Results">
+    <AppShell title="Diagnostic Results" titleKey="res.title">
       <div className="grid gap-6 lg:grid-cols-[45fr_55fr]">
         {/* Image viewer */}
         <section className="rounded-2xl border border-border bg-card p-4" style={{ background: "var(--gradient-card)" }}>
           <header className="mb-3 flex items-center justify-between px-1">
             <div className="flex items-center gap-3">
-              <h2 className="text-base font-semibold">Diagnostic Image</h2>
-              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">{scan.scan_type}</span>
+              <h2 className="text-base font-semibold">{t("res.image")}</h2>
+              <span className="rounded-full bg-primary/10 px-2.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-primary">{term(scan.scan_type)}</span>
             </div>
             <span className="font-mono text-[10px] uppercase tracking-wider text-muted-foreground">{scan.created_at}</span>
           </header>
@@ -110,7 +112,7 @@ function ResultsPage() {
                 <img src={scan.image_url} alt={`X-ray scan ${scanId}`} className="block h-auto max-h-[70vh] w-auto max-w-full opacity-95" />
               ) : (
                 <div className="flex aspect-square w-64 items-center justify-center text-muted-foreground">
-                  <span className="font-mono text-xs">No image available</span>
+                  <span className="font-mono text-xs">{t("res.noImage")}</span>
                 </div>
               )}
               {showHeatmap && (
@@ -125,7 +127,7 @@ function ResultsPage() {
                 findings.filter(f => f.bbox).map((f, i) => (
                   <div
                     key={f.name + i}
-                    aria-label={`${f.name}, ${f.confidence}% confidence`}
+                    aria-label={`${term(f.name)}, ${f.confidence}%`}
                     className={`group absolute border-2 border-dashed animate-fade-up ${
                       f.color === "destructive" ? "border-destructive" : f.color === "warning" ? "border-warning" : "border-info"
                     }`}
@@ -137,11 +139,11 @@ function ResultsPage() {
                   >
                     {showLabels && (
                       <span
-                        className={`absolute -top-6 left-0 rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-background ${
+                        className={`absolute -top-6 start-0 rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-background ${
                           f.color === "destructive" ? "bg-destructive" : f.color === "warning" ? "bg-warning" : "bg-info"
                         }`}
                       >
-                        {f.name} · {f.confidence.toFixed(1)}%
+                        {term(f.name)} · {f.confidence.toFixed(1)}%
                       </span>
                     )}
                   </div>
@@ -152,13 +154,13 @@ function ResultsPage() {
 
           {/* Toolbar */}
           <div className="mt-3 flex flex-wrap items-center gap-2">
-            <ToolbarBtn active={showBoxes} onClick={() => setShowBoxes((v) => !v)} icon={<Eye size={14} />} label="AI Findings" />
-            <ToolbarBtn active={showHeatmap} onClick={() => setShowHeatmap((v) => !v)} icon={<Layers size={14} />} label="Heatmap" />
-            <ToolbarBtn active={showLabels} onClick={() => setShowLabels((v) => !v)} icon={<Tag size={14} />} label="Labels" />
-            <div className="ml-auto flex items-center gap-1">
-              <button aria-label="Zoom in" onClick={() => setZoom((z) => Math.min(2.5, z + 0.25))} className="rounded-md border border-border bg-background/60 p-2 text-muted-foreground hover:text-foreground"><ZoomIn size={14} /></button>
-              <button aria-label="Zoom out" onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))} className="rounded-md border border-border bg-background/60 p-2 text-muted-foreground hover:text-foreground"><ZoomOut size={14} /></button>
-              <button aria-label="Reset zoom" onClick={() => setZoom(1)} className="rounded-md border border-border bg-background/60 p-2 text-muted-foreground hover:text-foreground"><RotateCcw size={14} /></button>
+            <ToolbarBtn active={showBoxes} onClick={() => setShowBoxes((v) => !v)} icon={<Eye size={14} />} label={t("res.tool.findings")} />
+            <ToolbarBtn active={showHeatmap} onClick={() => setShowHeatmap((v) => !v)} icon={<Layers size={14} />} label={t("res.tool.heatmap")} />
+            <ToolbarBtn active={showLabels} onClick={() => setShowLabels((v) => !v)} icon={<Tag size={14} />} label={t("res.tool.labels")} />
+            <div className="ms-auto flex items-center gap-1">
+              <button aria-label={t("res.zoomIn")} onClick={() => setZoom((z) => Math.min(2.5, z + 0.25))} className="rounded-md border border-border bg-background/60 p-2 text-muted-foreground hover:text-foreground"><ZoomIn size={14} /></button>
+              <button aria-label={t("res.zoomOut")} onClick={() => setZoom((z) => Math.max(0.5, z - 0.25))} className="rounded-md border border-border bg-background/60 p-2 text-muted-foreground hover:text-foreground"><ZoomOut size={14} /></button>
+              <button aria-label={t("res.zoomReset")} onClick={() => setZoom(1)} className="rounded-md border border-border bg-background/60 p-2 text-muted-foreground hover:text-foreground"><RotateCcw size={14} /></button>
             </div>
           </div>
         </section>
@@ -169,8 +171,8 @@ function ResultsPage() {
             <div className="flex items-center gap-3">
               <AlertTriangle size={16} className="text-warning" />
               <div>
-                <p className="font-mono text-[10px] uppercase tracking-widest text-warning">Urgency</p>
-                <p className="font-display text-lg font-bold text-warning">{agent.urgency.toUpperCase()}</p>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-warning">{t("res.urgency")}</p>
+                <p className="font-display text-lg font-bold text-warning">{isUrdu ? term(agent.urgency) : agent.urgency.toUpperCase()}</p>
               </div>
             </div>
             <p className="font-mono text-[10px] text-muted-foreground">{scanId}</p>
@@ -179,25 +181,25 @@ function ResultsPage() {
           {routing?.note && (
             <div className="mt-4 flex items-start gap-2 rounded-lg border border-primary/30 bg-primary/5 p-3 text-xs text-foreground">
               <Sparkles size={14} className="mt-0.5 shrink-0 text-primary" />
-              <span>{routing.note}</span>
+              <span>{term(routing.note)}</span>
             </div>
           )}
 
           {lowConf && (
             <div className="mt-4 flex items-start gap-2 rounded-lg border border-info/30 bg-info/10 p-3 text-xs text-info">
               <AlertTriangle size={14} className="mt-0.5 shrink-0" />
-              <span>One or more findings have confidence below 60% — radiologist review recommended.</span>
+              <span>{t("res.lowConf")}</span>
             </div>
           )}
 
           {/* Primary findings ≥ 65% */}
-          <h3 className="mt-6 text-sm font-semibold text-muted-foreground">Primary Findings</h3>
+          <h3 className="mt-6 text-sm font-semibold text-muted-foreground">{t("res.primary")}</h3>
           <div className="mt-3 space-y-3">
             {primaryFindings.map((f, i) => (
               <FindingCard key={f.name + i} f={f} delay={i * 80} />
             ))}
             {primaryFindings.length === 0 && (
-              <p className="text-sm text-muted-foreground italic">No high-confidence findings detected.</p>
+              <p className="text-sm text-muted-foreground italic">{t("res.noPrimary")}</p>
             )}
           </div>
 
@@ -205,8 +207,8 @@ function ResultsPage() {
           {secondaryFindings.length > 0 && (
             <>
               <h3 className="mt-5 text-sm font-semibold text-muted-foreground">
-                Secondary Findings
-                <span className="ml-2 font-mono text-[10px] text-muted-foreground/60 normal-case">50–65% confidence</span>
+                {t("res.secondary")}
+                <span className="ms-2 font-mono text-[10px] text-muted-foreground/60 normal-case">{t("res.secondaryRange")}</span>
               </h3>
               <div className="mt-3 space-y-2">
                 {secondaryFindings.map((f, i) => (
@@ -220,7 +222,7 @@ function ResultsPage() {
           {borderline.length > 0 && (
             <details className="mt-4">
               <summary className="cursor-pointer text-xs text-muted-foreground hover:text-foreground">
-                {borderline.length} borderline finding{borderline.length > 1 ? "s" : ""} below 50% — click to expand
+                {format("res.borderline", { n: borderline.length })}
               </summary>
               <div className="mt-2 space-y-2 opacity-70">
                 {borderline.map((f, i) => (
@@ -233,14 +235,14 @@ function ResultsPage() {
           <div className="mt-6 rounded-lg border border-primary/30 bg-primary/5 p-4">
             <div className="flex items-center gap-2">
               <Sparkles size={14} className="text-primary" />
-              <span className="font-mono text-[10px] uppercase tracking-widest text-primary">GLM Agent Analysis</span>
+              <span className="font-mono text-[10px] uppercase tracking-widest text-primary">{t("res.agent")}</span>
             </div>
             <Typewriter text={agent.synthesis_text} className="mt-2 text-sm leading-relaxed text-foreground" />
           </div>
 
           {agent.recommended_actions.length > 0 && (
             <>
-              <h3 className="mt-6 text-sm font-semibold text-muted-foreground">Immediate Actions</h3>
+              <h3 className="mt-6 text-sm font-semibold text-muted-foreground">{t("res.actions")}</h3>
               <ol className="mt-3 space-y-2">
                 {agent.recommended_actions.map((a, i) => (
                   <li key={a} className="flex items-start gap-3 rounded-lg border border-border bg-background/60 px-4 py-3 text-sm">
@@ -255,36 +257,36 @@ function ResultsPage() {
           {agent.specialist && (
             <div className="mt-4 flex items-center gap-2 rounded-lg border border-info/30 bg-info/10 px-4 py-3 text-sm text-info">
               <MapPin size={14} />
-              <span>Recommended specialist: <strong>{agent.specialist}</strong></span>
+              <span>{t("res.specialist")} <strong>{term(agent.specialist)}</strong></span>
               <a
                 href={`https://www.google.com/maps/search/${encodeURIComponent(agent.specialist + " near me")}`}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="ml-auto text-xs underline"
+                className="ms-auto text-xs underline"
               >
-                Find nearby →
+                {t("res.findNearby")} <span className="rtl-flip inline-block">→</span>
               </a>
             </div>
           )}
 
-          <h3 className="mt-6 text-sm font-semibold text-muted-foreground">Confidence Summary</h3>
+          <h3 className="mt-6 text-sm font-semibold text-muted-foreground">{t("res.confSummary")}</h3>
           <div className="mt-3 overflow-x-auto rounded-lg border border-border">
             <table className="w-full text-xs">
-              <thead className="bg-background/60 text-left font-mono uppercase tracking-wider text-muted-foreground">
+              <thead className="bg-background/60 text-start font-mono uppercase tracking-wider text-muted-foreground">
                 <tr>
-                  <th className="px-3 py-2">Model</th>
-                  <th className="px-3 py-2">Finding</th>
-                  <th className="px-3 py-2">Confidence</th>
-                  <th className="px-3 py-2">Severity</th>
+                  <th className="px-3 py-2">{t("res.col.model")}</th>
+                  <th className="px-3 py-2">{t("res.col.finding")}</th>
+                  <th className="px-3 py-2">{t("res.col.confidence")}</th>
+                  <th className="px-3 py-2">{t("res.col.severity")}</th>
                 </tr>
               </thead>
               <tbody>
                 {allFindings.map((f, i) => (
                   <tr key={f.name + i} className="border-t border-border">
                     <td className="px-3 py-2 font-mono text-muted-foreground">{f.model}</td>
-                    <td className="px-3 py-2">{f.name}</td>
+                    <td className="px-3 py-2">{term(f.name)}</td>
                     <td className="px-3 py-2 font-mono">{f.confidence.toFixed(1)}%</td>
-                    <td className={`px-3 py-2 font-medium ${f.color === "destructive" ? "text-destructive" : f.color === "warning" ? "text-warning" : f.color === "success" ? "text-success" : "text-info"}`}>{f.severity}</td>
+                    <td className={`px-3 py-2 font-medium ${f.color === "destructive" ? "text-destructive" : f.color === "warning" ? "text-warning" : f.color === "success" ? "text-success" : "text-info"}`}>{term(f.severity)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -297,21 +299,20 @@ function ResultsPage() {
               disabled={exporting !== null}
               className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-semibold text-primary-foreground hover:shadow-[var(--glow-cyan)] disabled:opacity-60"
             >
-              <Download size={14} /> {exporting === "pdf" ? "Preparing..." : "Download PDF Report"}
+              <Download size={14} /> {exporting === "pdf" ? t("res.preparing") : t("res.pdf")}
             </button>
             <button
               onClick={onExportJson}
               disabled={exporting !== null}
               className="inline-flex items-center gap-2 rounded-lg border border-border bg-background/60 px-4 py-2.5 text-sm font-medium hover:border-primary/60 disabled:opacity-60"
             >
-              <Share2 size={14} /> {exporting === "json" ? "Preparing..." : "Export JSON"}
+              <Share2 size={14} /> {exporting === "json" ? t("res.preparing") : t("res.json")}
             </button>
-            <Link to="/history" className="ml-auto self-center text-xs text-muted-foreground hover:text-foreground">Back to history →</Link>
+            <Link to="/history" className="ms-auto self-center text-xs text-muted-foreground hover:text-foreground">{t("res.backHistory")} <span className="rtl-flip inline-block">→</span></Link>
           </div>
 
           <p className="mt-6 border-t border-border pt-4 text-[11px] leading-relaxed text-muted-foreground">
-            <span className="font-semibold text-foreground">Educational use only.</span> XRayVision AI is not a licensed medical device.
-            All outputs are AI-generated estimations intended to support, not replace, the clinical judgment of a qualified radiologist.
+            <span className="font-semibold text-foreground">{t("res.disclaimerLead")}</span> {t("res.disclaimerBody")}
           </p>
         </section>
       </div>
@@ -334,6 +335,7 @@ function ToolbarBtn({ active, onClick, icon, label }: { active: boolean; onClick
 }
 
 function FindingCard({ f, delay, compact = false }: { f: FindingType; delay: number; compact?: boolean }) {
+  const { term } = useLanguage();
   const [val, setVal] = useState(0);
   useEffect(() => {
     const start = performance.now();
@@ -354,12 +356,12 @@ function FindingCard({ f, delay, compact = false }: { f: FindingType; delay: num
     return (
       <div className="flex items-center gap-3 rounded-md border border-border/60 bg-background/40 px-3 py-2 animate-fade-up" style={{ animationDelay: `${delay}ms` }}>
         <span className={`h-1.5 w-1.5 shrink-0 rounded-full ${sevDot}`} />
-        <span className="flex-1 text-xs text-foreground">{f.name}</span>
+        <span className="flex-1 text-xs text-foreground">{term(f.name)}</span>
         <div className="w-24 h-1 overflow-hidden rounded-full bg-border">
           <div className="h-full rounded-full bg-primary/60" style={{ width: `${val}%` }} />
         </div>
-        <span className="font-mono text-[11px] text-muted-foreground w-10 text-right">{val.toFixed(1)}%</span>
-        <span className={`font-mono text-[9px] uppercase ${sevText}`}>{f.severity}</span>
+        <span className="font-mono text-[11px] text-muted-foreground w-10 text-end">{val.toFixed(1)}%</span>
+        <span className={`font-mono text-[9px] uppercase ${sevText}`}>{term(f.severity)}</span>
       </div>
     );
   }
@@ -369,9 +371,9 @@ function FindingCard({ f, delay, compact = false }: { f: FindingType; delay: num
       <div className="flex items-start justify-between gap-3">
         <div className="flex items-center gap-2">
           <span className={`h-2 w-2 rounded-full ${sevDot}`} />
-          <span className="text-sm font-semibold">{f.name}</span>
+          <span className="text-sm font-semibold">{term(f.name)}</span>
         </div>
-        <span className={`rounded-full bg-card px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${sevText}`}>{f.severity}</span>
+        <span className={`rounded-full bg-card px-2 py-0.5 font-mono text-[10px] uppercase tracking-wider ${sevText}`}>{term(f.severity)}</span>
       </div>
       <div className="mt-3 flex items-center gap-3">
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-border">
@@ -381,7 +383,7 @@ function FindingCard({ f, delay, compact = false }: { f: FindingType; delay: num
       </div>
       <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 font-mono text-[10px] uppercase tracking-wider text-muted-foreground">
         <span>{f.model}</span><span className="text-border">·</span>
-        <span>{f.region || "—"}</span><span className="text-border">·</span>
+        <span>{term(f.region) || "—"}</span><span className="text-border">·</span>
         <span>ICD-10 {f.icd_code || "—"}</span>
       </div>
     </div>
