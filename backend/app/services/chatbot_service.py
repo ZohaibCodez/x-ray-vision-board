@@ -128,7 +128,13 @@ def chat_with_health_bot(
     messages.append({"role": "user", "content": message})
 
     try:
-        response_text = complete_chat(messages, temperature=0.35, max_tokens=1200)
+        # See openrouter_agent.py for why `reasoning: exclude` matters here —
+        # same JSON-parsing risk if GLM's chain of thought eats the token
+        # budget before it reaches the actual structured reply.
+        response_text = complete_chat(
+            messages, temperature=0.35, max_tokens=1200,
+            reasoning={"effort": "low", "exclude": True},
+        )
     except OpenRouterError as exc:
         logger.error("Chatbot unavailable: %s", exc)
         return {

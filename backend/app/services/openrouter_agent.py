@@ -32,7 +32,18 @@ def synthesize_report(
     prompt = _build_synthesis_prompt(findings, scan_type, patient_notes)
 
     try:
-        response_text = complete_text(prompt, temperature=0.1, max_tokens=1400)
+        # Without `reasoning: exclude`, GLM sometimes writes out its own chain
+        # of thought (and even echoes back these instructions) before ever
+        # producing the JSON — with a 1400-token budget that reasoning alone
+        # can eat the whole response, so the JSON never appears and the user
+        # sees the model's raw scratch space as the "clinical synthesis".
+        # diet_service.py already had this fix; it just never got copied here.
+        response_text = complete_text(
+            prompt,
+            temperature=0.1,
+            max_tokens=1800,
+            reasoning={"effort": "low", "exclude": True},
+        )
         parsed = _parse_synthesis_response(response_text)
 
         # Double-check: if any finding has confidence > 70 but urgency is "clear", escalate
