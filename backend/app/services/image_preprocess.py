@@ -7,7 +7,6 @@ from PIL import Image
 import io
 import torch
 
-_MIN_FILE_SIZE = 100 * 1024       # 100 KB
 _MAX_FILE_SIZE = 20 * 1024 * 1024 # 20 MB
 _MIN_DIMENSION = 200               # px per side
 
@@ -15,15 +14,18 @@ _MIN_DIMENSION = 200               # px per side
 def validate_image_file(file_bytes: bytes, filename: str = "", content_type: str = "") -> None:
     """Raise ValueError with a user-readable message if the image fails quality checks.
 
-    Checks: file size bounds, decodability, and minimum pixel dimensions.
+    Checks: file size ceiling, decodability, and minimum pixel dimensions.
     DICOM files (.dcm) skip the PIL dimension check since pydicom handles them separately.
+
+    There used to be a 100 KB *minimum* file-size check here too, on the theory
+    that a tiny file means too little pixel data. File size is a bad proxy for
+    that — a well-compressed JPEG/PNG of a perfectly adequate 800x800 X-ray can
+    legitimately be under 100 KB, and that was rejecting real uploads. The
+    dimension check below already measures the thing that actually matters
+    (actual pixel resolution), so the byte-size floor was redundant on top of
+    being wrong.
     """
     size = len(file_bytes)
-    if size < _MIN_FILE_SIZE:
-        raise ValueError(
-            f"File is too small ({size // 1024} KB). "
-            "Minimum is 100 KB — very small images lack sufficient pixel data for reliable inference."
-        )
     if size > _MAX_FILE_SIZE:
         raise ValueError(
             f"File is too large ({size / 1024 / 1024:.1f} MB). Maximum allowed size is 20 MB."

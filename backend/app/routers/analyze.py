@@ -406,15 +406,21 @@ def _run_fracture(file_bytes: bytes, confidence_threshold: float) -> list[dict]:
             continue  # a localized box already carries (or explains away) this
         cf = dict(cf)
         if has_hardware:
+            # Implants are real, positive evidence of a prior/healed fracture —
+            # safe to reclassify.
             cf.update(
                 name="Prior Fracture Site — Surgical Implants Present",
                 severity="low", color="info", icd_code="Z96.6",
             )
-        else:
-            cf.update(
-                name="Possible Healed / Old Finding (No Active Fracture Localized)",
-                severity="low", color="info", icd_code="",
-            )
+        # Otherwise: YOLO failed to localize a box (a known weakness of the
+        # detector on subtle/hairline fractures), but the image-level classifier
+        # is still the only signal we have. Calling it "healed / old" here would
+        # be fabricated — we have no evidence of that, only a missing box. Pass
+        # the classifier's own finding through unchanged; it already carries a
+        # confidence-tiered severity (predict_fracture_presence), so a
+        # high-confidence call still reads as urgent instead of being flattened
+        # to "low". This was hiding real fractures the classifier caught but
+        # YOLO didn't box.
         findings.append(cf)
 
     if not findings:

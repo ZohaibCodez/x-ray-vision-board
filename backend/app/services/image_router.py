@@ -25,11 +25,23 @@ import cv2
 logger = logging.getLogger(__name__)
 
 
-# Mean saturation near the colour-photo / X-ray cut-off (40) is a coin flip:
-# a phone photo of a film on a light box, or a pale wound photo, lands here.
-# Those images get run through both the radiograph and wound models.
-AMBIGUOUS_SATURATION_MIN = 20.0
-AMBIGUOUS_SATURATION_MAX = 60.0
+# Mean saturation near the colour-photo / X-ray cut-off (40) is a coin flip —
+# but "near" turned out to be a much wider range than it looks. A phone photo
+# of a real X-ray film (under warm indoor lighting, JPEG-compressed) routinely
+# measures 60-150+ mean saturation despite being visually a grayscale film to
+# the human eye — camera white balance and compression both add a colour cast.
+# Measured empirically: a synthetic grayscale bone image under simulated warm
+# lighting hit sat=66 (typical indoor light), sat=100+ (yellow-toned phone
+# photo), and sat=145 (sepia/older-photo cast) — all clearly X-rays, all above
+# the old 60 ceiling, so they were being hard-routed to "wound" with no chance
+# of correction. Genuine full-colour wound/skin photos are usually still
+# higher than that (skin tone, redness, bruising), so the ceiling here is
+# generous on purpose: it's cheap to run both models and reconcile (see
+# `_reconcile_routing`), and a wrongly-skipped cross-check is what caused scans
+# to get stuck reporting "98% fracture" on what was actually a wound photo, or
+# a fracture photo staying misfiled as wound with no fracture signal reported.
+AMBIGUOUS_SATURATION_MIN = 12.0
+AMBIGUOUS_SATURATION_MAX = 200.0
 
 
 def classify_image_type(file_bytes: bytes) -> str:

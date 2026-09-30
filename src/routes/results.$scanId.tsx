@@ -56,6 +56,14 @@ function ResultsPage() {
   const agent = scan.agent_synthesis;
   const lowConf = findings.some((f) => f.confidence < 60);
   const routing = scan.model_results?.routing as { note?: string | null } | undefined;
+  // Show one box, not one per finding — several overlapping boxes (a fracture
+  // box plus a hardware box plus a secondary finding) read as "the AI isn't
+  // sure", which is exactly the confusion this was meant to avoid. The single
+  // highest-confidence localized finding is the one worth pointing at.
+  const boxedFindings = findings.filter((f) => f.bbox);
+  const primaryBox = boxedFindings.length
+    ? boxedFindings.reduce((best, f) => (f.confidence > best.confidence ? f : best))
+    : null;
 
   const downloadBlob = (blob: Blob, filename: string) => {
     const url = URL.createObjectURL(blob);
@@ -69,11 +77,28 @@ function ResultsPage() {
   };
 
   const onDownloadPdf = async () => {
+    // Open the tab synchronously, inside the click handler, before any await.
+    // Fetching the PDF first and only then opening/clicking (the previous
+    // approach) loses the browser's "this came from a real click" flag on
+    // Safari/iOS once the fetch's await returns — the popup or the anchor
+    // click then gets silently blocked, which reads to the user as "PDF
+    // download nahi ho rahi" with no visible error. A blank tab opened before
+    // any awaiting keeps that user-gesture context; we just redirect it once
+    // the PDF is ready. Desktop Chrome/Firefox didn't need this, but it's
+    // harmless there too.
+    const tab = window.open("", "_blank");
     setExporting("pdf");
     try {
       const blob = await scansApi.downloadPdf(scanId);
-      downloadBlob(blob, `xrayvision-report-${scanId}.pdf`);
+      const url = URL.createObjectURL(blob);
+      if (tab && !tab.closed) {
+        tab.location.href = url;
+      } else {
+        downloadBlob(blob, `xrayvision-report-${scanId}.pdf`);
+      }
+      setTimeout(() => URL.revokeObjectURL(url), 60_000);
     } catch (err: unknown) {
+      tab?.close();
       alert(format("res.pdfFailed", { err: err instanceof Error ? err.message : "Unknown error" }));
     } finally {
       setExporting(null);
@@ -123,31 +148,28 @@ function ResultsPage() {
                   }}
                 />
               )}
-              {showBoxes &&
-                findings.filter(f => f.bbox).map((f, i) => (
+              {showBoxes && primaryBox && (
                   <div
-                    key={f.name + i}
-                    aria-label={`${term(f.name)}, ${f.confidence}%`}
+                    aria-label={`${term(primaryBox.name)}, ${primaryBox.confidence}%`}
                     className={`group absolute border-2 border-dashed animate-fade-up ${
-                      f.color === "destructive" ? "border-destructive" : f.color === "warning" ? "border-warning" : "border-info"
+                      primaryBox.color === "destructive" ? "border-destructive" : primaryBox.color === "warning" ? "border-warning" : "border-info"
                     }`}
                     style={{
-                      left: `${f.bbox!.x}%`, top: `${f.bbox!.y}%`,
-                      width: `${f.bbox!.w}%`, height: `${f.bbox!.h}%`,
-                      animationDelay: `${i * 100}ms`,
+                      left: `${primaryBox.bbox!.x}%`, top: `${primaryBox.bbox!.y}%`,
+                      width: `${primaryBox.bbox!.w}%`, height: `${primaryBox.bbox!.h}%`,
                     }}
                   >
                     {showLabels && (
                       <span
                         className={`absolute -top-6 start-0 rounded px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wider text-background ${
-                          f.color === "destructive" ? "bg-destructive" : f.color === "warning" ? "bg-warning" : "bg-info"
+                          primaryBox.color === "destructive" ? "bg-destructive" : primaryBox.color === "warning" ? "bg-warning" : "bg-info"
                         }`}
                       >
-                        {term(f.name)} · {f.confidence.toFixed(1)}%
+                        {term(primaryBox.name)} · {primaryBox.confidence.toFixed(1)}%
                       </span>
                     )}
                   </div>
-                ))}
+                )}
               <div className="pointer-events-none absolute inset-0 overflow-hidden"><div className="scan-line" /></div>
             </div>
           </div>
