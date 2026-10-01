@@ -251,9 +251,18 @@ async def _run_routed_ensemble(
     # against noise, same as before.
     # Deliberately NOT max()'d against the global `confidence_threshold`
     # (0.40 by default) — that default was calibrated for the old model and
-    # would just override this back up to 0.40, defeating the point.
-    FRACTURE_THRESHOLD = 0.15
+    # would just override this back up to 0.25, defeating the point.
+    #
+    # First tried 0.15 — live-tested against a real client image (a stock
+    # photo with a repeated Shutterstock watermark tiled across it) and it
+    # was a disaster: ~20 separate low-confidence "Metallic Implant" calls,
+    # one per watermark tile, since each tiny bright icon independently
+    # pattern-matches "metal" to the model. NMS doesn't merge these — they're
+    # genuinely non-overlapping detections, just all wrong. 0.25 plus the
+    # MAX_FRACTURE_FINDINGS cap below are the two guards against that.
+    FRACTURE_THRESHOLD = 0.25
     MAX_CHEST_FINDINGS = 6
+    MAX_FRACTURE_FINDINGS = 5
 
     if scan_type == "chest":
         tasks.append(("DenseNet121", asyncio.create_task(
@@ -279,6 +288,12 @@ async def _run_routed_ensemble(
         # chest pathologies doesn't bury the clinically relevant findings.
         if name == "DenseNet121":
             result = sorted(result, key=lambda f: f.get("confidence", 0), reverse=True)[:MAX_CHEST_FINDINGS]
+        # Same idea for fracture: a tiled watermark or repetitive pattern can
+        # make YOLO fire many separate low-confidence boxes (one per tile) —
+        # genuinely non-overlapping, so NMS doesn't merge them. Keep only the
+        # strongest handful.
+        if name == "YOLOv8-Fracture" and len(result) > MAX_FRACTURE_FINDINGS:
+            result = sorted(result, key=lambda f: f.get("confidence", 0), reverse=True)[:MAX_FRACTURE_FINDINGS]
         raw_findings.extend(result)
 
     if not raw_findings and model_errors:
@@ -294,29 +309,6 @@ def _run_chest(file_bytes: bytes, confidence_threshold: float) -> list[dict]:
 
     preprocessed = image_preprocess.preprocess_for_chest(file_bytes)
     return predict_chest_pathologies(preprocessed, confidence_threshold)
-
-
-def _detect_metallic_hardware(file_bytes: bytes) -> bool:
-    """Detect surgical implants (screws/plates) as a compact, solid bright blob.
-
-    See image_preprocess.detect_metallic_hardware for why this isn't a plain
-    "some fraction of pixels are near-white" check — that falsely fired on a
-    bright, high-contrast (but implant-free) X-ray, silently relabeling a
-    confident active-fracture finding as "prior/healed with hardware".
-    """
-    try:
-        import cv2
-        import numpy as np
-
-        from app.services.image_preprocess import detect_metallic_hardware
-
-        nparr = np.frombuffer(file_bytes, np.uint8)
-        img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
-        if img is None:
-            return False
-        return detect_metallic_hardware(img)
-    except Exception:
-        return False
 
 
 _SITE_METAL_FRACTION = 0.02  # ≥2% saturated-white pixels around a box → implant at the site
@@ -418,7 +410,6 @@ def _run_fracture(file_bytes: bytes, confidence_threshold: float) -> list[dict]:
         findings.append(box)
 
     has_active_box = any(_is_active_fracture(f) for f in findings)
-    has_hardware = _detect_metallic_hardware(file_bytes)
 
     for cf in classifier_findings:
         if "fracture suspected" not in cf.get("name", "").lower():
@@ -432,24 +423,19 @@ def _run_fracture(file_bytes: bytes, confidence_threshold: float) -> list[dict]:
         # seen live: a real fracture image where YOLO's only box was a
         # (wrong) "Metallic Implant" call, which used to silently swallow the
         # classifier's correct 86% "Fracture suspected" finding entirely.
-        cf = dict(cf)
-        if has_hardware:
-            # Implants are real, positive evidence of a prior/healed fracture —
-            # safe to reclassify.
-            cf.update(
-                name="Prior Fracture Site — Surgical Implants Present",
-                severity="low", color="info", icd_code="Z96.6",
-            )
-        # Otherwise: YOLO failed to localize a box (a known weakness of the
-        # detector on subtle/hairline fractures), but the image-level classifier
-        # is still the only signal we have. Calling it "healed / old" here would
-        # be fabricated — we have no evidence of that, only a missing box. Pass
-        # the classifier's own finding through unchanged; it already carries a
-        # confidence-tiered severity (predict_fracture_presence), so a
-        # high-confidence call still reads as urgent instead of being flattened
-        # to "low". This was hiding real fractures the classifier caught but
-        # YOLO didn't box.
-        findings.append(cf)
+        #
+        # Also deliberately NOT consulting _detect_metallic_hardware() (the
+        # whole-image pixel heuristic) here anymore. It kept false-positiving
+        # on real, clean, implant-free X-rays — a stock photo's watermark
+        # banner, a red arrow annotation, a bright joint surface — each time
+        # silently turning a confident, correct "Fracture suspected" into
+        # "Prior Fracture Site" (implying old/non-urgent) with no real
+        # evidence behind it. That's a worse failure mode than just not
+        # catching unlocalized hardware: an active fracture read as low-
+        # urgency healed tissue. A YOLO-localized "metal" box (handled above,
+        # scoped to that specific box via _metal_fraction_in_box) is real,
+        # localized evidence; a whole-image pixel-brightness guess isn't.
+        findings.append(dict(cf))
 
     if not findings:
         findings = yolo_findings  # the "No fracture box localized" placeholder

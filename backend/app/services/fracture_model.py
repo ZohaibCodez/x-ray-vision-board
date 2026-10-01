@@ -67,15 +67,17 @@ def _get_model():
 
 
 def predict_fractures(image: np.ndarray,
-                      confidence_threshold: float = 0.15) -> list[dict]:
+                      confidence_threshold: float = 0.25) -> list[dict]:
     """Run fracture detection inference with intelligent post-processing.
 
     Args:
         image: BGR numpy array (original size, YOLO handles resizing).
-        confidence_threshold: minimum confidence for fracture detections (default 0.15
+        confidence_threshold: minimum confidence for fracture detections (default 0.25
             — see the comment in analyze.py on FRACTURE_THRESHOLD for why this model's
-            weights need a much lower bar than the old ones did).
-            Hardware/metal detections use a lower cutoff (0.08) to ensure implants
+            weights need a lower bar than the old ones did, and why it isn't lower
+            still: a tiled watermark pattern made conf=0.08 fire ~20 separate
+            low-confidence "metal" detections, one per repeated tile).
+            Hardware/metal detections use a lower cutoff (0.15) to ensure implants
             are captured even when low-contrast.
 
     Returns:
@@ -87,7 +89,7 @@ def predict_fractures(image: np.ndarray,
     # between never reach the filtering below. imgsz raised 960->1280: on a
     # real but degraded/off-angle test photo, the fracture class only showed
     # up at all at 1280 (nothing at 960, even at conf=0.01).
-    results = model(image, conf=0.08, imgsz=1280, verbose=False)
+    results = model(image, conf=0.15, imgsz=1280, verbose=False)
 
     raw_detections: list[dict] = []
     img_h, img_w = image.shape[:2]

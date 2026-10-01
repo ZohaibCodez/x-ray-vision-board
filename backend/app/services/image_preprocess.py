@@ -26,16 +26,28 @@ _MIN_DIMENSION = 200               # px per side
 _HARDWARE_MIN_RATIO = 0.0008       # minimum overall bright-pixel fraction to even consider
 _HARDWARE_MAX_BBOX_FRACTION = 0.45  # component's bbox must stay under this fraction of width/height
 _HARDWARE_MIN_BBOX_FILL = 0.25      # ...and be mostly solid, not a scattered texture
+# A real screw/plate/rod is visibly sized, not a handful of pixels. A min area
+# of 25px (the original value) and no size floor let a Shutterstock watermark
+# corner, a red arrow's antialiased edge, or a bright joint-surface speck all
+# pass as "implants" on otherwise clean, hardware-free X-rays — confirmed live
+# on three separate real client images. Scale the area floor to the image
+# (tiny images still need a sane minimum) and additionally require the
+# component's longer side to span a real fraction of the image, since an
+# implant reads as elongated/substantial, not a dot.
+_HARDWARE_MIN_AREA_FLOOR = 150
+_HARDWARE_MIN_AREA_RATIO = 0.00025  # ...or this fraction of the image, whichever is bigger
+_HARDWARE_MIN_MAJOR_DIM_FRACTION = 0.02  # longer side of the bbox vs. image's matching dimension
 
 
 def detect_metallic_hardware(gray: np.ndarray) -> bool:
     """Detect a compact, solid bright blob consistent with surgical hardware.
 
     Takes a grayscale image. Looks for a connected region of near-saturated
-    pixels (>=240) that is small relative to the image and mostly filled in —
-    screws/plates/rods look like that; diffuse bright bone texture or an
-    overexposed/stylised image does not, even though both can trip a naive
-    "some fraction of pixels are bright" check.
+    pixels (>=240) that is small relative to the image, mostly filled in, and
+    large enough to plausibly be a screw/plate/rod rather than noise — diffuse
+    bright bone texture, a watermark, an annotation edge, or a tiny bright
+    speck does not, even though all of those can trip a naive "some fraction
+    of pixels are bright" check.
     """
     mask = (gray >= 240).astype(np.uint8)
     if mask.mean() < _HARDWARE_MIN_RATIO:
@@ -46,11 +58,14 @@ def detect_metallic_hardware(gray: np.ndarray) -> bool:
         return False
 
     h, w = gray.shape[:2]
+    min_area = max(_HARDWARE_MIN_AREA_FLOOR, _HARDWARE_MIN_AREA_RATIO * h * w)
     for x, y, cw, ch, area in stats[1:]:  # skip label 0 (background)
-        if area < 25:
+        if area < min_area:
             continue
         if cw > w * _HARDWARE_MAX_BBOX_FRACTION or ch > h * _HARDWARE_MAX_BBOX_FRACTION:
             continue  # spans too much of the image to be a discrete implant
+        if cw < w * _HARDWARE_MIN_MAJOR_DIM_FRACTION and ch < h * _HARDWARE_MIN_MAJOR_DIM_FRACTION:
+            continue  # too small in both dimensions to be a visible implant
         bbox_fill = area / float(cw * ch)
         if bbox_fill >= _HARDWARE_MIN_BBOX_FILL:
             return True

@@ -131,9 +131,35 @@ IMPORTANT RULES:
 """
 
 
+class _SynthesisRefused(RuntimeError):
+    """The model returned a safety-refusal / moderation verdict instead of a synthesis."""
+
+
+# Seen live: some OpenRouter free-tier models/fallbacks occasionally return a
+# bare moderation verdict ("User Safety: unsafe Safety Categories: ...")
+# instead of the requested JSON — not a conversational refusal, just a
+# classifier's label. Since this never parses as JSON, it used to fall
+# through to the raw-text fallback below and get shown to the user as the
+# "clinical synthesis" verbatim. Treat it as a failure instead, so
+# synthesize_report()'s except-branch produces the deterministic fallback.
+_REFUSAL_MARKERS = (
+    "safety categories", "unauthorized advice", "i cannot provide",
+    "i can't provide", "i am unable to", "i'm unable to", "cannot assist",
+    "can't assist", "against my guidelines", "content policy",
+)
+
+
+def _looks_like_refusal(text: str) -> bool:
+    lowered = text.lower()
+    return len(text) < 300 and any(marker in lowered for marker in _REFUSAL_MARKERS)
+
+
 def _parse_synthesis_response(response_text: str) -> dict:
     """Parse the model response into a structured dict."""
     text = response_text.strip()
+
+    if _looks_like_refusal(text):
+        raise _SynthesisRefused(f"Model returned a refusal/moderation verdict: {text[:200]!r}")
 
     # Remove markdown code fences if present
     if text.startswith("```"):
