@@ -238,10 +238,21 @@ async def _run_routed_ensemble(
     # correlated labels cluster near their decision boundary. Raise the bar to 60% and
     # cap the count so the report surfaces only meaningful findings, not the full list.
     CHEST_THRESHOLD    = max(confidence_threshold, 0.60)   # raise bar for chest: 60%
-    # Fracture threshold raised from 0.15 → 0.35 to cut false positives on
-    # healed bones, implants, and noise.  The YOLO service also filters
-    # oversized boxes and cross-checks hardware detections internally.
-    FRACTURE_THRESHOLD = max(confidence_threshold, 0.35)
+    # Swapped the fracture YOLO weights to RuiyangJu's GRAZPEDWRI-DX-trained
+    # model (Scientific Reports 2023) — trained on 20k+ real pediatric wrist
+    # trauma X-rays vs. the few hundred images the old weights had, and it's
+    # what the class-name mapping in fracture_model.py was already written
+    # for (boneanomaly/metal/periostealreaction/etc — the old 2-class
+    # Fracture/Not_Fracture weights never used most of that code). Its
+    # confidence calibration runs lower than the old model's, especially on
+    # anything that isn't a clean in-distribution clinical film — 0.35 would
+    # silently drop almost everything. 0.15 still leaves the oversized-box
+    # cap and hardware cross-check in fracture_model.py as the real guards
+    # against noise, same as before.
+    # Deliberately NOT max()'d against the global `confidence_threshold`
+    # (0.40 by default) — that default was calibrated for the old model and
+    # would just override this back up to 0.40, defeating the point.
+    FRACTURE_THRESHOLD = 0.15
     MAX_CHEST_FINDINGS = 6
 
     if scan_type == "chest":
@@ -413,8 +424,14 @@ def _run_fracture(file_bytes: bytes, confidence_threshold: float) -> list[dict]:
         if "fracture suspected" not in cf.get("name", "").lower():
             findings.append(cf)  # the classifier's "no fracture" note
             continue
-        if has_active_box or yolo_boxes:
-            continue  # a localized box already carries (or explains away) this
+        if has_active_box:
+            continue  # a localized active-fracture box already carries this
+        # Note: deliberately NOT skipping just because yolo_boxes is non-empty.
+        # YOLO can localize a *non*-fracture class (hardware/text/other) while
+        # the classifier is independently confident about an actual fracture —
+        # seen live: a real fracture image where YOLO's only box was a
+        # (wrong) "Metallic Implant" call, which used to silently swallow the
+        # classifier's correct 86% "Fracture suspected" finding entirely.
         cf = dict(cf)
         if has_hardware:
             # Implants are real, positive evidence of a prior/healed fracture —

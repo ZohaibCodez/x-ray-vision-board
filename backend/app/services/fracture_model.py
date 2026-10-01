@@ -3,8 +3,12 @@
 Uses the Ultralytics YOLOv8 model for real-time object detection
 and localization of fractures in X-ray images.
 
+Weights: RuiyangJu's GRAZPEDWRI-DX-trained YOLOv8 (Scientific Reports 2023),
+trained on 20k+ real pediatric wrist trauma X-rays — see app.routers.analyze
+for why the confidence thresholds here are much lower than you'd expect.
+
 Post-processing includes:
-  - Lower hardware detection threshold (0.20) to ensure implants are captured
+  - Lower hardware detection threshold to ensure implants are captured
   - Bounding box area cap (reject oversized boxes covering >35% of image)
   - Hardware / metal implant cross-referencing (reclassify healed sites)
   - Confidence-based severity mapping
@@ -63,13 +67,15 @@ def _get_model():
 
 
 def predict_fractures(image: np.ndarray,
-                      confidence_threshold: float = 0.35) -> list[dict]:
+                      confidence_threshold: float = 0.15) -> list[dict]:
     """Run fracture detection inference with intelligent post-processing.
 
     Args:
         image: BGR numpy array (original size, YOLO handles resizing).
-        confidence_threshold: minimum confidence for fracture detections (default 0.35).
-            Hardware/metal detections use a lower cutoff (0.20) to ensure implants
+        confidence_threshold: minimum confidence for fracture detections (default 0.15
+            — see the comment in analyze.py on FRACTURE_THRESHOLD for why this model's
+            weights need a much lower bar than the old ones did).
+            Hardware/metal detections use a lower cutoff (0.08) to ensure implants
             are captured even when low-contrast.
 
     Returns:
@@ -77,8 +83,11 @@ def predict_fractures(image: np.ndarray,
     """
     model = _get_model()
 
-    # Run YOLO with a sensitive base threshold of 0.20 to catch hardware/metal implants
-    results = model(image, conf=0.20, imgsz=960, verbose=False)
+    # Base YOLO call must stay below confidence_threshold or candidates in
+    # between never reach the filtering below. imgsz raised 960->1280: on a
+    # real but degraded/off-angle test photo, the fracture class only showed
+    # up at all at 1280 (nothing at 960, even at conf=0.01).
+    results = model(image, conf=0.08, imgsz=1280, verbose=False)
 
     raw_detections: list[dict] = []
     img_h, img_w = image.shape[:2]
@@ -95,8 +104,8 @@ def predict_fractures(image: np.ndarray,
             cls_name = str(result.names.get(cls_id, f"class_{cls_id}"))
             cls_key = cls_name.lower().replace(" ", "_")
 
-            # Filter fracture detections below the main confidence threshold (0.35),
-            # but keep hardware/metal detections down to 0.20
+            # Filter fracture detections below the main confidence threshold,
+            # but keep hardware/metal detections down to the base YOLO floor (0.08)
             is_hardware_class = cls_key in _HARDWARE_CLASSES
             if not is_hardware_class and conf < confidence_threshold:
                 continue
@@ -117,7 +126,10 @@ def predict_fractures(image: np.ndarray,
                 "x2": float(x2), "y2": float(y2),
             })
 
-    negative_keys = {"not_fracture", "normal", "negative"}
+    # "text" is the new model's class for radiographic marker letters (L/R/D
+    # etc burned into the film) — not a medical finding, would read as
+    # nonsense ("Text Detected, 75%, moderate severity") if shown as one.
+    negative_keys = {"not_fracture", "normal", "negative", "text"}
     raw_detections = [d for d in raw_detections if d["cls_key"] not in negative_keys]
 
     # ── Post-processing pipeline ────────────────────────────────────
@@ -281,6 +293,7 @@ def _clean_class_name(cls_name: str) -> str:
         "metal":         "Metallic Implant",
         "periostealreaction": "Periosteal Reaction",
         "pronationsign": "Pronation Sign",
+        "pronatorsign":  "Pronator Sign",
         "softtissue":    "Soft Tissue Finding",
         "hardware":      "Surgical Hardware",
     }
