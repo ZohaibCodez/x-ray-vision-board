@@ -77,28 +77,20 @@ function ResultsPage() {
   };
 
   const onDownloadPdf = async () => {
-    // Open the tab synchronously, inside the click handler, before any await.
-    // Fetching the PDF first and only then opening/clicking (the previous
-    // approach) loses the browser's "this came from a real click" flag on
-    // Safari/iOS once the fetch's await returns — the popup or the anchor
-    // click then gets silently blocked, which reads to the user as "PDF
-    // download nahi ho rahi" with no visible error. A blank tab opened before
-    // any awaiting keeps that user-gesture context; we just redirect it once
-    // the PDF is ready. Desktop Chrome/Firefox didn't need this, but it's
-    // harmless there too.
-    const tab = window.open("", "_blank");
+    // A previous version of this opened a blank tab synchronously and later
+    // set its location to the blob URL, to dodge a Safari user-gesture
+    // timing issue. Verified live (Android Chrome, the client's actual
+    // device) that approach is itself broken: the tab opens, the fetch
+    // succeeds, but the cross-window blob: URL navigation silently does
+    // nothing — the tab just sits at about:blank. A blob URL created in one
+    // document isn't reliably navigable from another window/tab. Fetching
+    // the blob and clicking a same-document anchor (verified working) is the
+    // simpler, actually-reliable approach.
     setExporting("pdf");
     try {
       const blob = await scansApi.downloadPdf(scanId);
-      const url = URL.createObjectURL(blob);
-      if (tab && !tab.closed) {
-        tab.location.href = url;
-      } else {
-        downloadBlob(blob, `xrayvision-report-${scanId}.pdf`);
-      }
-      setTimeout(() => URL.revokeObjectURL(url), 60_000);
+      downloadBlob(blob, `xrayvision-report-${scanId}.pdf`);
     } catch (err: unknown) {
-      tab?.close();
       alert(format("res.pdfFailed", { err: err instanceof Error ? err.message : "Unknown error" }));
     } finally {
       setExporting(null);
