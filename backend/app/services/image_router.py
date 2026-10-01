@@ -91,10 +91,12 @@ def _classify(img: np.ndarray, file_bytes: bytes) -> str:
     gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
     # ── Step 2: Metallic Hardware Check ─────────────────────────────
-    # Saturated max white pixels (>= 240) in bone X-rays indicate surgical plates & screws
-    high_density_px = int(np.sum(gray >= 240))
-    if high_density_px > 1000 or (high_density_px / float(gray.size)) > 0.001:
-        logger.info(f"image_router: metallic surgical hardware detected ({high_density_px} px) → fracture")
+    # A compact, solid bright blob (screw/plate/rod), not just "some pixels
+    # are near-white" — that alone fires on any bright/high-contrast bone.
+    from app.services.image_preprocess import detect_metallic_hardware
+
+    if detect_metallic_hardware(gray):
+        logger.info("image_router: metallic surgical hardware detected → fracture")
         return "fracture"
 
     # ── Step 3: Anatomical Body Width Ratio ─────────────────────────

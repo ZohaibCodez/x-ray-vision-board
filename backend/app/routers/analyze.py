@@ -286,19 +286,24 @@ def _run_chest(file_bytes: bytes, confidence_threshold: float) -> list[dict]:
 
 
 def _detect_metallic_hardware(file_bytes: bytes) -> bool:
-    """Detect high-density metallic surgical implants (screws/plates) via pixel intensity."""
+    """Detect surgical implants (screws/plates) as a compact, solid bright blob.
+
+    See image_preprocess.detect_metallic_hardware for why this isn't a plain
+    "some fraction of pixels are near-white" check — that falsely fired on a
+    bright, high-contrast (but implant-free) X-ray, silently relabeling a
+    confident active-fracture finding as "prior/healed with hardware".
+    """
     try:
         import cv2
         import numpy as np
+
+        from app.services.image_preprocess import detect_metallic_hardware
 
         nparr = np.frombuffer(file_bytes, np.uint8)
         img = cv2.imdecode(nparr, cv2.IMREAD_GRAYSCALE)
         if img is None:
             return False
-        # Saturated white pixels (>= 240) in bone radiographs indicate surgical metal plates/screws
-        high_density_px = int(np.sum(img >= 240))
-        ratio = high_density_px / float(img.size)
-        return ratio > 0.001 or high_density_px > 1000
+        return detect_metallic_hardware(img)
     except Exception:
         return False
 

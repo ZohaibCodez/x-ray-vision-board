@@ -10,6 +10,52 @@ import torch
 _MAX_FILE_SIZE = 20 * 1024 * 1024 # 20 MB
 _MIN_DIMENSION = 200               # px per side
 
+# ── Surgical hardware heuristic ──────────────────────────────────────
+
+# A genuine screw/plate is a small, compact, solid-bright blob. The old check
+# here was just "do >0.1% of pixels hit ~white" — on a confirmed real case (a
+# bright/high-contrast X-ray with no hardware at all) that alone hit 6.9% of
+# pixels, because dense cortical bone is often near-white too and that
+# brightness is smeared across the whole bone shape, not concentrated.
+# Confirmed on that image: the brightest connected region spanned 99% of the
+# image width and 100% of the height while only filling 5.7% of its own
+# bounding box — exactly the "diffuse highlight", not "compact solid object",
+# signature. A real implant's bounding box stays small relative to the image
+# and is mostly filled in, since it's one dense solid part, not scattered
+# highlights across the bone surface.
+_HARDWARE_MIN_RATIO = 0.0008       # minimum overall bright-pixel fraction to even consider
+_HARDWARE_MAX_BBOX_FRACTION = 0.45  # component's bbox must stay under this fraction of width/height
+_HARDWARE_MIN_BBOX_FILL = 0.25      # ...and be mostly solid, not a scattered texture
+
+
+def detect_metallic_hardware(gray: np.ndarray) -> bool:
+    """Detect a compact, solid bright blob consistent with surgical hardware.
+
+    Takes a grayscale image. Looks for a connected region of near-saturated
+    pixels (>=240) that is small relative to the image and mostly filled in —
+    screws/plates/rods look like that; diffuse bright bone texture or an
+    overexposed/stylised image does not, even though both can trip a naive
+    "some fraction of pixels are bright" check.
+    """
+    mask = (gray >= 240).astype(np.uint8)
+    if mask.mean() < _HARDWARE_MIN_RATIO:
+        return False
+
+    n, _labels, stats, _centroids = cv2.connectedComponentsWithStats(mask, connectivity=8)
+    if n <= 1:
+        return False
+
+    h, w = gray.shape[:2]
+    for x, y, cw, ch, area in stats[1:]:  # skip label 0 (background)
+        if area < 25:
+            continue
+        if cw > w * _HARDWARE_MAX_BBOX_FRACTION or ch > h * _HARDWARE_MAX_BBOX_FRACTION:
+            continue  # spans too much of the image to be a discrete implant
+        bbox_fill = area / float(cw * ch)
+        if bbox_fill >= _HARDWARE_MIN_BBOX_FILL:
+            return True
+    return False
+
 
 def validate_image_file(file_bytes: bytes, filename: str = "", content_type: str = "") -> None:
     """Raise ValueError with a user-readable message if the image fails quality checks.
