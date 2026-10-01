@@ -305,8 +305,14 @@ def _detect_metallic_hardware(file_bytes: bytes) -> bool:
 
 _SITE_METAL_FRACTION = 0.02  # ≥2% saturated-white pixels around a box → implant at the site
 _SITE_BOX_PAD = 0.15
-_SWITCH_MIN_SIGNAL = 60.0    # cross-check must be at least this confident to take over
+_SWITCH_MIN_SIGNAL = 50.0    # cross-check must be at least this confident to take over
 _SWITCH_MAX_PRIMARY = 50.0   # ...and the original route must be weaker than this
+# Lowered from 60 — tested against a real client image (a stylized, heavily
+# colour-graded fracture photo) where the fracture classifier correctly flagged
+# it with real but moderate confidence while the wound classifier's own guess
+# was weak but nonzero. Missing a real fracture by sitting on a high bar costs
+# far more than occasionally cross-checking a true wound photo a bit too
+# eagerly, so the bar for "trust the cross-check" should lean permissive.
 
 _INACTIVE_FRACTURE_WORDS = ("prior", "healed", "possible", "old finding")
 
